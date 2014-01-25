@@ -206,8 +206,7 @@ function json_prettyprint( $json ){
 
 /**
 * Defines a constant if undefined.
-* Returns the constant value in either case.
-* Shortcut for: if (!defined($X)) define($X); return constant($X);
+* Shortcut for: if (!defined($X)) define($X);
 *
 * @param string $constant The constant's name
 * @param mixed $default Value to set if constant not defined
@@ -374,7 +373,7 @@ function include_files_recursive( $dir, $pattern = "*.php" ){
 function maybe_include( $path ){
 	
 	if ( file_exists( $path ) ){
-		include_once $path;
+		include $path;
 		return true;
 	}
 	
@@ -520,11 +519,11 @@ if ( ! function_exists('get_request_header') ){
 
 /* ============ Helpers/Fallbacks ============ */
 
-if ( !function_exists('fnmatch') ){
+if ( ! function_exists( 'fnmatch' ) ){
 
 /** fnmatch
 *
-* fnmatch() is not available on non-POSIX compliant systems (except Windows PHP>5.3).
+* fnmatch() is not available on non-POSIX compliant systems (except Windows PHP>=5.3).
 * @link http://www.php.net/manual/en/function.fnmatch.php
 *
 * @param string $pattern Shell wildcard pattern to match.
@@ -573,7 +572,7 @@ if ( !function_exists('fnmatch') ){
 }
 
 // Stolen from WordPress
-if ( !function_exists('is_ssl') ){
+if ( ! function_exists( 'is_ssl' ) ){
 
 	function is_ssl() {
 		if ( isset($_SERVER['HTTPS']) ) {

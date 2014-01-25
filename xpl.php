@@ -6,10 +6,8 @@ Author: wells
 Version: 0.4.2
 Provides: xpl
 */
-
 define('XPL_VERSION', '0.4.2');
 
-// Define core constants
 define('STR_RAND_ALPHA', 'alpha');
 define('STR_RAND_ALNUM', 'alnum');
 define('STR_RAND_NUM', 'num');
@@ -28,7 +26,6 @@ define('STR_FORMAT_HASH_32', '00000000-0000-00000000-0000-00000000');
 define('STR_FORMAT_HASH_40', '00000000-0000-0000-00000000-0000-0000-00000000');
 define('STR_FORMAT_HASH_48', '00000000-0000-00000000-0000-0000-00000000-0000-00000000');
 
-// include core functions and classes
 require 'functions.php';
 require 'classes/XplAutoloader.php';
 require 'classes/XplDirectory.php';
@@ -39,10 +36,9 @@ define_default('SCANDIR_SORT_DESCENDING', 1);
 define_default('SCANDIR_SORT_ASCENDING', 0);
 
 // init
-if ( function_exists('add_action') ){
+if ( function_exists('add_action') ){ // in WordPress
 	add_action('plugins_loaded', 'xplPluginInit', 9);
-}
-else {
+} else {
 	xplPluginInit();
 }
 
@@ -50,8 +46,7 @@ function xplPluginInit(){
 	
 	if ( function_exists('apache_request_headers') ){
 		define('REQUEST_HEADERS_FUNC', 'apache_request_headers');
-	}
-	elseif ( extension_loaded('http') ){
+	} elseif ( extension_loaded('http') ){
 		define('REQUEST_HEADERS_FUNC', 'http_get_request_headers');
 	}
 	
@@ -62,19 +57,6 @@ function xplPluginInit(){
 		function xpl_get_include_path( $path = '' ){
 			return XPL_INCLUDE_PATH . '/' . $path;
 		}
-	}
-	
-	if ( function_exists('is_admin') && is_admin() && class_exists('WP_Plugin_Admin_Controller') ){
-		
-		WP_Plugin_Admin_Controller::instance( 'xpl', array(
-				'page_title'			=> 'XPL: x PHP Library',
-				'menu_title'			=> 'XPL',
-				'menu_slug'				=> 'xpl',
-				'page_class'			=> 'Xpl_Admin_Page',
-				'parent_slug'			=> 'tools.php',
-				'page_class_file_path'	=> dirname(__FILE__) . '/admin/Xpl_Admin_Page.php',
-				'template_file_path'	=> dirname(__FILE__) . '/admin/page.php',	
-		) );
 	}
 }
 

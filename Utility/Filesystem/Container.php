@@ -100,6 +100,10 @@ class Container
 	public function getPath($name) {
 		return isset($this->paths[$name]) ? $this->paths[$name] : null;
 	}
+	
+	public function getPaths() {
+		return $this->paths;
+	}
 
 	/**
 	 * Returns whether the file path is an absolute path.

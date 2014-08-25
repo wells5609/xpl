@@ -5,38 +5,31 @@ namespace xpl\System;
 trait ConnectionTrait {
 	
 	/**
-	 * @return \xpl\System\Container
+	 * @return \xpl\Dependency\Container
 	 */
-	final public function getContainer() {
-		return StaticFacade::getInstance();
+	final public function di() {
+		return Facade::getInstance();
 	}
 	
 	/**
 	 * @return \xpl\Bundle\Manager
 	 */
 	final public function getBundleManager() {
-		return $this->getContainer()->getBundleManager();
+		return $this->di()->resolve('bundles');
 	}
 	
 	/**
-	 * @return \xpl\Kernel\ServerKernel
-	 */
-	final public function getServerKernel() {
-		return $this->getContainer()->getServerKernel();
-	}
-	
-	/**
-	 * @return \xpl\Environment\Container
+	 * @return \xpl\System\Env
 	 */
 	final public function getEnvironment() {
-		return $this->getContainer()->getServerKernel()->getEnvironment();
+		return $this->di()->resolve('env');
 	}
 	
 	/**
-	 * @return \xpl\Kernel\ServerKernel
+	 * @return \Composer\Autoload\ClassLoader
 	 */
 	final public function getComposer() {
-		return $this->getContainer()->getServerKernel()->getComposer();
+		return $this->getEnvironment()->getComposer();
 	}
 	
 }

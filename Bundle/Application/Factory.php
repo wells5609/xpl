@@ -12,7 +12,6 @@ class Factory implements ProviderInterface {
 	protected $class;
 	protected $lastClass;
 	protected $allowOwnClass = true;
-	protected $onConfig;
 	protected $apps;
 	
 	public function __construct($apps_path, $class = self::DEFAULT_CLASS) {
@@ -53,7 +52,7 @@ class Factory implements ProviderInterface {
 	public function setClass($class) {
 		
 		if ($class !== static::DEFAULT_CLASS && ! is_subclass_of($class, static::DEFAULT_CLASS)) {
-			throw new \UnexpectedValueException("App class '$class' must implement ".static::DEFAULT_CLASS);
+			throw new \InvalidArgumentException("App class '$class' must implement ".static::DEFAULT_CLASS);
 		}
 		
 		isset($this->class) and $this->lastClass = $this->class;
@@ -76,7 +75,6 @@ class Factory implements ProviderInterface {
 		
 		if (! is_dir($path)) {
 			throw new \RuntimeException("Invalid application directory for '$name': '$path'.");
-		
 		}
 		
 		$config = new Config($name, $path);
@@ -93,16 +91,7 @@ class Factory implements ProviderInterface {
 			}
 		}
 		
-		if (isset($this->onConfig)) {
-			call_user_func($this->onConfig, $config);
-		}
-		
 		return $this->apps[$name] = new $class($config);
-	}
-	
-	public function onConfig(\Closure $call) {
-		$this->onConfig = $call;
-		return $this;
 	}
 	
 	public function get($name) {

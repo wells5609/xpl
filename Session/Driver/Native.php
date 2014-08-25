@@ -25,11 +25,8 @@ class Native implements SessionDriverInterface {
 			
 			if (defined('DOMAIN')) {
 				$params['domain'] = '.'.DOMAIN;
-			
 			} else {
-			
 				$n = substr_count($_SERVER['HTTP_HOST'], '.');
-			
 				switch($n) {
 					case 1:
 						$params['domain'] = '.'.$_SERVER['HTTP_HOST'];

@@ -6,10 +6,10 @@ use xpl\Http\Response as HttpResponse;
 
 class Formatter {
 	
-	protected $strategies;
 	protected $type;
 	protected $default_type;
 	protected $mimetype;
+	protected $strategies;
 	protected $default_strategies = array(
 		'html' => 'Strategy\\Html',
 		'json' => 'Strategy\\Json',
@@ -18,12 +18,14 @@ class Formatter {
 	);
 	
 	public function __construct() {
-		$this->formatters = array();
+		$this->strategies = array();
 	}
 	
 	public function addStrategy($type, $strategy) {
 		
-		if ($strategy instanceof FormatStrategyInterface || $strategy instanceof \Closure) {
+		if ($strategy instanceof \Closure 
+			|| is_subclass_of($strategy, 'xpl\\Http\\Response\\FormatStrategyInterface')
+		) {
 			$this->strategies[$type] = $strategy;
 		} else {
 			$given = is_object($strategy) ? get_class($strategy) : gettype($strategy);
@@ -87,7 +89,13 @@ class Formatter {
 		
 		if ($strategy instanceof \Closure) {
 			$body = $strategy($response, $this->mimetype);
+		
 		} else {
+			
+			if (is_string($strategy)) {
+				$strategy = new $strategy();
+			}
+			
 			$body = $strategy->format($response);
 			$this->mimetype = $strategy->getMimetype();
 		}

@@ -11,7 +11,6 @@ class Container implements \ArrayAccess, \Countable {
 	protected $registered = array();
 	protected $factories = array();
 	protected $protected = array();
-	protected $throw_exceptions = false;
 	
 	/**
 	 * Register a dependency.
@@ -32,7 +31,13 @@ class Container implements \ArrayAccess, \Countable {
 		}
 		
 		if (is_object($object) && ! $object instanceof Closure) {
+				
+			if ($object instanceof ContainerAwareInterface) {
+				$object->setContainer($this);
+			}
+			
 			$this->values[$key] = $object;
+		
 		} else {
 			$this->registered[$key] = new Dependency($object);
 		}
@@ -82,6 +87,7 @@ class Container implements \ArrayAccess, \Countable {
 			$value->setContainer($this);
 		}
 		
+		$this->keys[$key] = true;
 		$this->values[$key] = $value;
 		
 		return $this;
@@ -107,6 +113,10 @@ class Container implements \ArrayAccess, \Countable {
 			if ($object instanceof Closure) {
 				// Closures can return closures
 				return $this->register($key, $object)->resolve($key);
+			}
+			
+			if ($object instanceof ContainerAwareInterface) {
+				$object->setContainer($this);
 			}
 			
 			return $this->values[$key] = $object;
@@ -190,11 +200,6 @@ class Container implements \ArrayAccess, \Countable {
 	
 	public function __get($var) {
 		return $this->resolve($var);
-	}
-	
-	public function throwExceptions($value) {
-		$this->throw_exceptions = (bool) $value;
-		return $this;
 	}
 	
 }

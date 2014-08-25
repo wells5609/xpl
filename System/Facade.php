@@ -30,10 +30,4 @@ class Facade {
 		return static::$instance;
 	}
 	
-	public static function __callStatic($func, array $args) {
-		return empty($args)
-			? static::getInstance()->$func()
-			: call_user_func_array(array(static::getInstance(), $func), $args);
-	}
-	
 }

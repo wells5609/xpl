@@ -11,7 +11,7 @@ class Manager {
 	protected $bundles = array();
 	
 	/**
-	 * Callbacks or classes that provide bundles.
+	 * Callbacks or ProviderInterfaces that provide bundles.
 	 * @var array
 	 */
 	protected $providers = array();

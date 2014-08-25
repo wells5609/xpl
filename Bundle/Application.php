@@ -12,12 +12,12 @@ class Application extends Bundle
 {
 	
 	/**
-	 * @var \xpl\Component\Foundation\Config
+	 * @var \xpl\Common\Storage\Config
 	 */
 	protected $config;
 	
 	/**
-	 * @var \xpl\Component\Foundation\Registry
+	 * @var \xpl\Common\Storage\Registry
 	 */
 	protected $registry;
 	
@@ -29,12 +29,13 @@ class Application extends Bundle
 	/**
 	 * Constructor takes a config instance.
 	 * 
-	 * @param \xpl\Component\Foundation\Config $config
+	 * @param \xpl\Common\Storage\Config $config
+	 * @param \xpl\Common\Storage\Registry $registry [Optional]
 	 */
-	public function __construct(Config $config) {
+	public function __construct(Config $config, Registry $registry = null) {
 		
 		$this->config = $config;
-		$this->registry = new Registry;
+		$this->registry = $registry ?: new Registry;
 		
 		$this->config->setParent($this);
 		

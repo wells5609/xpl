@@ -13,4 +13,8 @@ trait ContainerAwareTrait implements ContainerAwareInterface {
 		$this->container = $container;
 	}
 	
+	public function getContainer() {
+		return isset($this->container) ? $this->container : null;
+	}
+	
 }

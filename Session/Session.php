@@ -155,7 +155,7 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	 * @return $this
 	 */
 	public function addNotice($markup) {
-		$this->addToGroup('flash_notices', uniqid(), $markup);
+		$this->set('flash_notices.'.uniqid(), $markup);
 		return $this;
 	}
 	

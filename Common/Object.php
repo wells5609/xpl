@@ -8,61 +8,28 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 	
 	public function __construct($data = null) {
 		parent::__construct($data);
-	#	if (isset($data)) {
-	#		$this->import($data);
-	#	}
 	}
 	
 	public function set($key, $value) {
-		
-		#$mutator = 'set'.ucfirst(strtolower($key));
-		
-		#if (is_callable(array($this, $mutator))) {
-		#	$this->$mutator($value);
-		#} else {
-		#	$this->$key = $value;
-		#}
 		$this->offsetSet($key, $value);
 		return $this;
 	}
 	
 	public function get($key) {
 		return $this->offsetGet($key);
-		#$accessor = 'get'.ucfirst(strtolower($key));
-		
-		#if (is_callable(array($this, $accessor))) {
-		#	return $this->$accessor();
-		#}
-		
-		return isset($this->$key) ? $this->$key : null;
 	}
 	
 	public function has($key) {
 		return $this->offsetExists($key);
-		#$accessor = 'has'.ucfirst(strtolower($key));
-		
-		#if (is_callable(array($this, $accessor))) {
-		#	return $this->$accessor();
-		#}
-		
-		return isset($this->$key);
 	}
 	
 	public function remove($key) {
 		$this->offsetUnset($key);
-		#$remover = 'remove'.ucfirst(strtolower($key));
-		
-		#if (is_callable(array($this, $remover))) {
-		#	$this->$remover();
-		#} else {
-		#	unset($this->$key);
-		#}
-		
 		return $this;
 	}
 	
 	public function isEmpty() {
-		return count($this) != 0;
+		return 0 == count($this);
 	}
 	
 	public function contains($value) {
@@ -77,23 +44,23 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 	}
 	
 	/**
-	 * Implements \Arrayable
+	 * Implements \xpl\Common\Arrayable
 	 */
 	public function toArray() {
-		return get_object_vars($this);
+		return iterator_to_array($this);
 	}
 	
 	/**
-	 * Implements \Importable
+	 * Implements \xpl\Common\Importable
 	 */
 	public function import($data) {
 		
 		if (! is_array($data)) {
-			$data = ($data instanceof Arrayable) ? $data->toArray() : (array)$data;
+			$data = is_callable(array($data, 'toArray')) ? $data->toArray() : (array)$data;
 		}
 		
 		foreach($data as $key => $value) {
-			$this->set($key, $value);
+			$this->offsetSet($key, $value);
 		}
 		
 		return $this;

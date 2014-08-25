@@ -8,10 +8,17 @@ namespace xpl\Dependency;
 interface ContainerAwareInterface {
 	
 	/**
-	 * Sets the container.
+	 * Sets the DI container.
 	 * 
 	 * @param \xpl\Dependency\Container
 	 */
 	public function setContainer(Container $container);
+	
+	/**
+	 * Returns the DI container.
+	 * 
+	 * @return \xpl\Dependency\Container
+	 */
+	public function getContainer();
 	
 }

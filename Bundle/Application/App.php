@@ -3,6 +3,8 @@
 namespace xpl\Bundle\Application;
 
 use xpl\Bundle\Application;
+use xpl\Common\Storage\Config;
+use xpl\Common\Storage\Registry;
 use xpl\Framework\RequestInterface;
 use xpl\Routing\RouteInterface;
 use xpl\Routing\Resource;
@@ -18,62 +20,41 @@ class App extends Application implements AppInterface {
 	protected static $primary;
 	
 	/**
-	 * Sets up a new application instance.
+	 * Constructor takes a config instance.
 	 * 
-	 * @param \xpl\Bundle\Application\Config $config
-	 * 
-	 * @return \xpl\Bundle\Application\App
+	 * @param \xpl\Common\Storage\Config $config
+	 * @param \xpl\Common\Storage\Registry $registry [Optional]
 	 */
-	public static function create(Config $config) {
+	public function __construct(Config $config, Registry $registry = null) {
 		
-		$path = $config->getPath();
-		$name = $config->get('name');
-		
-		if (! is_readable($path.'config/config.php')) {
-			throw new RuntimeException("Missing config.php file for application '$name'.");
+		if (! is_readable($config->getPath().'config/config.php')) {
+			throw new \RuntimeException('Missing config.php for app: "'.$config->get('name').'".');
 		}
 		
-		$config->setPath('config', 'config/');
+		$this->config = $config;
+		$this->registry = $registry ?: new Registry;
 		
-		$vars = import($path.'config/config.php');
+		$this->config->setParent($this);
+		$this->config->setPath('config', 'config/');
 		
-		if (! is_array($vars)) {
-			throw new RuntimeException("App config.php must return array, got: ".gettype($vars));
-		}
+		$vars = import($this->config->getPath('config').'config.php');
 		
-		// the 1st app is primary
-		if (! isset(static::$primary)) {
-			static::$primary = $name;
-			$config->set('is_primary', true);
-		}
-		
-		// Set vars
 		if (! empty($vars['app'])) {
-			$config->import($vars['app']);
+			$this->config->import($vars['app']);
 		}
 		
-		// Set paths
 		if (! empty($vars['paths'])) {
 			foreach($vars['paths'] as $name => $path) {
-				$config->setPath($name, $path);
+				$this->config->setPath($name, $path);
 			}
 		}
 		
-		// Set env vars
-		if (! empty($vars['general'])) {
-			
-			$config->import($vars['general']);
-			
-			// import into env if primary
-			if ($config->get('is_primary')) {
-							
-				$env_vars = array_combine(array_map('strtoupper', array_keys($vars['general'])), $vars['general']);
-				
-				di()->resolve('kernel')->getEnvironment()->import($env_vars);
-			}
+		if (! isset(static::$primary)) {
+			static::$primary = $this->config->get('name');
+			$this->config->set('is_primary', true);
 		}
 		
-		return new static($config);
+		$this->onInit();
 	}
 	
 	public function onDispatch(RouteInterface $route, RequestInterface $request) {

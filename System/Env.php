@@ -1,26 +1,112 @@
 <?php
 
-use xpl\Utility\Filesystem\Container as Paths;
+namespace xpl\System;
 
-class Env {
+use xpl\Common\Arrayable;
+use xpl\Common\Importable;
+use xpl\Utility\Filesystem\Container as Paths;
+use xpl\Common\Storage\Container;
+use Composer\Autoload\ClassLoader;
+
+class Env implements \ArrayAccess, Arrayable, Importable {
+	
+	use \xpl\Common\Singleton;
 	
 	const DEV	= 'development';
 	const PROD	= 'production';
 	const STAGE	= 'staging';
 	
-	protected static $type;
-	protected static $paths;
-	protected static $vars = array(
-		'charset' => 'UTF-8',
-		'timezone' => 'UTC',
-		'debug' => false,
-		'domain' => null,
-		'subdomain' => null,
-	);
+	protected $type;
+	protected $paths;
+	protected $vars;
+	protected $composer;
 	
-	public static function init($type, Paths $paths = null) {
-		static::setType($type);
-		static::$paths = $paths ?: new Paths;
+	/**
+	 * Init with environment type and root directory path.
+	 * 
+	 * @param string $type Environment type. One of class constants.
+	 * @param string $root_path [Optional] Root path.
+	 */
+	public function init($type, $root_path = null) {
+		
+		$this->paths = new Paths();
+		$this->vars = new Container();
+		
+		$this->setType($type);
+		
+		isset($root_path) and $this->paths->setRootPath($root_path);
+	}
+	
+	/**
+	 * Set the environment type, one of the class constants.
+	 * 
+	 * @param string $type
+	 * @return $this
+	 */
+	public function setType($type) {
+		
+		if (! in_array($type, array(static::DEV, static::PROD, static::STAGE), true)) {
+			throw new \InvalidArgumentException("Invalid environment type: '$type'.");
+		}
+		
+		$this->type = $type;
+		
+		return $this;
+	}
+	
+	/**
+	 * Returns the environment type.
+	 * 
+	 * @return string
+	 */
+	public function getType() {
+		return $this->type;
+	}
+	
+	/**
+	 * Checks whether the environment is "development".
+	 * 
+	 * @return boolean
+	 */
+	public function isDev() {
+		return $this->type === static::DEV;
+	}
+	
+	/**
+	 * Checks whether the environment is "production".
+	 * 
+	 * @return boolean
+	 */
+	public function isProd() {
+		return $this->type === static::PROD;
+	}
+	
+	/**
+	 * Checks whether the environment is "staging".
+	 * 
+	 * @return boolean
+	 */
+	public function isStaging() {
+		return $this->type === static::STAGE;
+	}
+	
+	/**
+	 * Sets Composer ClassLoader.
+	 * 
+	 * @param \Composer\Autoload\ClassLoader $classLoader
+	 */
+	public function setComposer(ClassLoader $composer) {
+		$this->composer = $composer;
+		return $this;
+	}
+	
+	/**
+	 * Returns the Composer class loader.
+	 * 
+	 * @return \Composer\Autoload\ClassLoader
+	 */
+	public function getComposer() {
+		return $this->composer;
 	}
 	
 	/**
@@ -29,54 +115,181 @@ class Env {
 	 * @param string $name [Optional] Name of directory, or null for root.
 	 * @return string Filesystem path.
 	 */
-	public static function getPath($name = null) {
+	public function getPath($name = null) {
 		
 		if (null === $name) {
-			return static::$paths->getRootPath();
+			return $this->paths->getRootPath();
 		}
 		
-		if ($path = static::$paths->getPath($name)) {
+		if ($path = $this->paths->getPath($name)) {
 			return $path;
 		}
 		
-		return static::$paths->getRootPath().trim($name, '/\\').DIRECTORY_SEPARATOR;
+		return $this->paths->getRootPath().trim($name, '/\\').DIRECTORY_SEPARATOR;
 	}
 	
-	public static function setType($type) {
+	/**
+	 * Sets a directory path.
+	 * 
+	 * @param string $name Directory name.
+	 * @param string $path Directory path (can be relative to root).
+	 * @return $this
+	 */
+	public function setPath($name, $path) {
+		$this->paths->setPath($name, $path);
+		return $this;
+	}
+	
+	/**
+	 * Sets an array of directory paths.
+	 * 
+	 * @param array $paths
+	 * @return $this
+	 */
+	public function setPaths(array $paths) {
+		foreach($paths as $name => $path) {
+			$this->paths->setPath($name, $path);
+		}
+		return $this;
+	}
+	
+	/**
+	 * Returns an array of directory paths.
+	 * 
+	 * @return array
+	 */
+	public function getPaths() {
+		return $this->paths->getPaths();
+	}
+	
+	/**
+	 * Sets the root directory path (absolute).
+	 * 
+	 * @param string $path
+	 * @return $this
+	 */
+	public function setRootPath($path) {
+		$this->paths->setRootPath($path);
+		return $this;
+	}
+	
+	/**
+	 * Stores an environment variable in the var container.
+	 * 
+	 * @param string $var Variable key.
+	 * @param mixed $value Variable value.
+	 * @return $this
+	 */
+	public function set($var, $value) {
+		$this->vars->set($var, $value);
+		return $this;
+	}
+	
+	/**
+	 * Returns an environment variable value.
+	 * 
+	 * @param string $var Variable key.
+	 * @return mixed
+	 */
+	public function get($var) {
+		return $this->vars->get($var);
+	}
+	
+	/**
+	 * Checks whether an environment variable is set.
+	 * 
+	 * @param string $var
+	 * @return boolean
+	 */
+	public function has($var) {
+		return $this->vars->has($var);
+	}
+	
+	/**
+	 * Unsets an environment variable.
+	 * 
+	 * @param string $var
+	 * @return $this
+	 */
+	public function remove($var) {
+		$this->vars->remove($var);
+		return $this;
+	}
+	
+	/**
+	 * Sets an associative array of environment variables.
+	 * 
+	 * @param array $data
+	 * @return $this
+	 */
+	public function import($data) {
 		
-		if (! in_array($type, array(static::DEV, static::PROD, static::STAGE), true)) {
-			throw new \InvalidArgumentException("Invalid environment type: '$type'.");
+		if (! is_array($data)) {
+			$data = is_callable(array($data, 'toArray')) ? $data->toArray() : (array)$data;
 		}
 		
-		static::$type = $type;
+		$this->vars->import($data);
+		
+		return $this;
 	}
 	
-	public static function getType() {
-		return static::$type;
+	/**
+	 * Returns an associative array of all environment variables.
+	 * 
+	 * @return array
+	 */
+	public function toArray() {
+		return $this->vars->toArray();
 	}
 	
-	public static function isDev() {
-		return static::$type === static::DEV;
+	/**
+	 * Alias of toArray()
+	 * For consistency with "getPaths()"
+	 */
+	public function getVars() {
+		return $this->toArray();
 	}
 	
-	public static function isProd() {
-		return static::$type === static::PROD;
+	/**
+	 * Returns the environment variable storage container.
+	 * 
+	 * @return \xpl\Common\Storage\Container
+	 */
+	public function getVarContainer() {
+		return $this->vars;
 	}
 	
-	public static function isStaging() {
-		return static::$type === static::STAGE;
+	/**
+	 * @param string|int $var
+	 * @return mixed
+	 */
+	public function offsetGet($var) {
+		return $this->vars->get($var);
 	}
-	
-	public static function set($var, $value) {
-		static::$vars[$var] = $value;
+
+	/**
+	 * @param string|int $var
+	 * @param mixed $val
+	 * @return void
+	 */
+	public function offsetSet($var, $val) {
+		$this->vars->set($var, $val);
 	}
-	
-	public static function get($var) {
-		return isset(static::$vars[$var]) ? static::$vars[$var] : null;
+
+	/**
+	 * @param string|int $var
+	 * @return boolean
+	 */
+	public function offsetExists($var) {
+		return $this->vars->has($var);
 	}
-	
-	public static function has($var) {
-		return array_key_exists($var, static::$vars);
+
+	/**
+	 * @param string|int $var
+	 * @return void
+	 */
+	public function offsetUnset($var) {
+		$this->vars->remove($var);
 	}
 	
 	/**
@@ -85,7 +298,7 @@ class Env {
 	 * @return boolean
 	 */
 	public function isDebug() {
-		return (bool) static::$vars['debug'];
+		return (bool) $this->vars->get('debug');
 	}
 	
 	/**
@@ -94,7 +307,7 @@ class Env {
 	 * @return string
 	 */
 	public function getCharset() {
-		return static::$vars['charset'];
+		return $this->vars->get('charset');
 	}
 
 	/**
@@ -103,7 +316,7 @@ class Env {
 	 * @return string
 	 */
 	public function getTimezone() {
-		return static::$vars['timezone'];
+		return $this->vars->get('timezone');
 	}
 	
 	/**
@@ -113,22 +326,20 @@ class Env {
 	 */
 	public function getDomain() {
 		
-		if (empty(static::$vars['domain'])) {
-			
+		if (! $this->vars->has('domain')) {
+				
 			$host = getenv('HTTP_HOST');
 			
 			if (substr_count($host, '.') === 1) {
 				$domain = $host;
-				$subdomain = 'main';
 			} else {
-				list($subdomain, $domain) = explode('.', $host, 2);
+				list(,$domain) = explode('.', $host, 2);
 			}
 			
-			static::$vars['domain'] = $domain;
-			static::$vars['subdomain'] = $subdomain;
+			$this->vars->set('domain', $domain);
 		}
 		
-		return static::$vars['domain'];
+		return $this->vars->get('domain');
 	}
 	
 	/**
@@ -138,11 +349,20 @@ class Env {
 	 */
 	public function getSubdomain() {
 		
-		if (empty(static::$vars['subdomain'])) {
-			static::getDomain();
+		if (! $this->vars->has('subdomain')) {
+			
+			$host = getenv('HTTP_HOST');
+			
+			if (substr_count($host, '.') === 1) {
+				$subdomain = 'main';
+			} else {
+				list($subdomain,) = explode('.', $host, 2);
+			}
+			
+			$this->vars->set('subdomain', $subdomain);
 		}
 		
-		return static::$vars['subdomain'];
+		return $this->vars->get('subdomain');
 	}
 	
 }

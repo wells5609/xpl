@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\Bundle\Application;
+namespace xpl\Framework\Application;
 
 class Config extends \xpl\Common\Storage\Config {
 	

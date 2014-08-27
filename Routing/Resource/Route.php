@@ -3,6 +3,7 @@
 namespace xpl\Routing\Resource;
 
 use xpl\Routing\RouteInterface;
+use xpl\Routing\MatcherInterface;
 use xpl\Routing\Resource;
 
 class Route implements RouteInterface 
@@ -19,7 +20,7 @@ class Route implements RouteInterface
 	protected $params;
 	protected $options;
 	
-	public function __construct(Resource $resource, $name, $uri, array $http_methods) {
+	public function __construct(MatcherInterface $resource, $name, $uri, array $http_methods) {
 		$this->resource = $resource;
 		$this->name = $name;
 		$this->uri = trim($uri, '/');
@@ -29,7 +30,7 @@ class Route implements RouteInterface
 		$this->options = array();
 	}
 	
-	public function setResource($resource) {
+	public function setMatcher(MatcherInterface $resource) {
 		$this->resource = $resource;
 		return $this;
 	}
@@ -108,11 +109,9 @@ class Route implements RouteInterface
 		$method = $this->getControllerMethod();
 		
 		if (empty($args)) {
-			// call directly
 			return $controller->$method();
 		}
 		
-		// call slowly
 		return call_user_func_array(array($controller, $method), $args);
 	}
 	

@@ -199,6 +199,13 @@ class Request implements RequestInterface
 		return $this->uri;	
 	}
 	
+	public function getFullUri() {
+		if (empty($this->query)) {
+			return $this->uri;
+		}
+		return $this->uri.'?'.$this->query;
+	}
+	
 	/**
 	 * Returns the request query string if set.
 	 * 

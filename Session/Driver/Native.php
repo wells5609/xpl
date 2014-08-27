@@ -3,6 +3,7 @@
 namespace xpl\Session\Driver;
 
 use xpl\Utility\Arr;
+use xpl\System\Server;
 
 class Native implements SessionDriverInterface {
 	
@@ -22,21 +23,7 @@ class Native implements SessionDriverInterface {
 		), $cookie_params);
 		
 		if (empty($params['domain'])) {
-			
-			if (defined('DOMAIN')) {
-				$params['domain'] = '.'.DOMAIN;
-			} else {
-				$n = substr_count($_SERVER['HTTP_HOST'], '.');
-				switch($n) {
-					case 1:
-						$params['domain'] = '.'.$_SERVER['HTTP_HOST'];
-						break;
-					default:
-						$parts = explode('.', $_SERVER['HTTP_HOST'], $n);
-						$params['domain'] = '.'.$parts[$n-1].$parts[$n];
-						break;
-				}
-			}
+			$params['domain'] = '.' . Server::getDomainName(Server::DOMAIN|Server::TLD);
 		}
 		
 		session_set_cookie_params(
@@ -85,7 +72,7 @@ class Native implements SessionDriverInterface {
 	 * 
 	 * @return boolean True if session started, otherwise false.
 	 */
-	public function isStarted() {
+	public function started() {
 		return '' !== session_id();
 	}
 	
@@ -108,7 +95,7 @@ class Native implements SessionDriverInterface {
 	public function setId($id) {
 		
 		if ($this->isStarted()) {
-			throw new RuntimeException("Cannot set ID - session already started.");
+			throw new \RuntimeException("Cannot set ID once session has been started.");
 		}
 		
 		return session_id($id);
@@ -171,7 +158,7 @@ class Native implements SessionDriverInterface {
 	 * @param string $var Name of session variable.
 	 * @return boolean Whether session variable exists.
 	 */
-	public function exists($var) {
+	public function has($var) {
 		return Arr::exists($_SESSION, $var);
 	}
 	
@@ -187,36 +174,6 @@ class Native implements SessionDriverInterface {
 	}
 	
 	/**
-	 * Adds a value to a group of items.
-	 * 
-	 * @param string $group Property name.
-	 * @param string $key Item key.
-	 * @param mixed $value Item value.
-	 * @return $this
-	 */
-	public function addToGroup($group, $key, $value) {
-		if (! isset($_SESSION[$group])) {
-			$_SESSION[$group] = array();
-		}
-		$_SESSION[$group][$key] = $value;
-		return $this;
-	}
-	
-	/**
-	 * Returns a value from a group of items.
-	 * 
-	 * @param string $group Group/property name.
-	 * @param string $key Item name.
-	 * @return mixed Item value if set, otherwise null.
-	 */
-	public function getFromGroup($group, $key) {
-		if (! isset($_SESSION[$group])) {
-			return null;
-		}
-		return isset($_SESSION[$group][$key]) ? $_SESSION[$group][$key] : null;
-	}
-	
-	/**
 	 * @return integer
 	 */
 	public function count() {
@@ -229,7 +186,7 @@ class Native implements SessionDriverInterface {
 	 * @return $this
 	 */
 	protected function unsetCookie() {
-			
+		
 		unset($_COOKIE[session_name()]);
 		
 		$p = session_get_cookie_params();

@@ -27,6 +27,12 @@ class Cache
 	 */
 	protected $driver;
 	
+	public function start() {
+		if (! isset($this->driver)) {
+			$this->setDriver(Driver\Factory::create());
+		}
+	}
+	
 	public function setDriver(CacheDriverInterface $driver) {
 		$this->driver = $driver;
 	}

@@ -1,9 +1,7 @@
 <?php
 
-namespace xpl\Bundle\Application;
+namespace xpl\Framework\Application;
 
-use xpl\Bundle\Application;
-use xpl\Common\Storage\Config;
 use xpl\Common\Storage\Registry;
 use xpl\Framework\RequestInterface;
 use xpl\Routing\RouteInterface;
@@ -12,7 +10,7 @@ use xpl\Routing\Router;
 use xpl\Http\Response;
 use RuntimeException;
 
-class App extends Application implements AppInterface {
+class App extends \xpl\Bundle\Application implements AppInterface {
 	
 	/**
 	 * @var string
@@ -85,27 +83,25 @@ class App extends Application implements AppInterface {
 	}
 	
 	/**
-	 * @return \Resource\Resource
+	 * @return \xpl\Routing\Resource
 	 */
-	public function getResource($name = null) {
+	public function getResource() {
 		
-		$key = 'resource'.(isset($name) ? ".{$name}" : '');
-		
-		if ($this->registry->has($key)) {
-			return $this->registry->get($key);
+		if ($this->registry->has('resource')) {
+			return $this->registry->get('resource');
 		}
 		
 		$class = $this->getNamespace().'\\Resource';
 		
-		isset($name) and $class .= '\\'.ucfirst($name);
-		
 		if (! class_exists($class, true)) {
-			throw new \InvalidArgumentException("Resource class does not exist: '$class'.");
+			throw new \InvalidArgumentException("Resource definition class does not exist: '$class'.");
 		}
 		
-		$resource = Resource::createFromClass($class);
+		$definition = new $class();
 		
-		$this->registry->set($key, $resource);
+		$resource = $definition->createResource();
+		
+		$this->registry->set('resource', $resource);
 		
 		return $resource;
 	}
@@ -218,14 +214,6 @@ class App extends Application implements AppInterface {
 	 */
 	protected function loadComponents() {
 		
-		if (true !== $this->useResources()) {
-			
-			$this->registry->set('router', $router = new Router);
-			
-			$__FILE__ = $this->getPath('config').'routes.php';
-		
-			file_exists($__FILE__) and include $__FILE__;
-		}
 	}
 	
 	/**

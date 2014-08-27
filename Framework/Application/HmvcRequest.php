@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\Bundle\Application;
+namespace xpl\Framework\Application;
 
 use xpl\Framework\RequestInterface;
 use xpl\Http\Request as HttpRequest;
@@ -95,6 +95,15 @@ class HmvcRequest implements RequestInterface
 	
 	public function getQuery() {
 		return isset($this->query) ? $this->query : $this->fallback('getQuery');
+	}
+	
+	public function getFullUri() {
+		
+		if ($q = $this->getQuery()) {
+			return $this->getUri().'?'.$q;
+		}
+		
+		return $this->getUri();
 	}
 	
 	public function getHeaders() {

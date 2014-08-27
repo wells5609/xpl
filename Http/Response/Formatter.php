@@ -88,18 +88,16 @@ class Formatter {
 		}
 		
 		if ($strategy instanceof \Closure) {
-			$body = $strategy($response, $this->mimetype);
+			return $strategy($response, $this->mimetype);
+		} 
 		
-		} else {
-			
-			if (is_string($strategy)) {
-				$strategy = new $strategy();
-			}
-			
-			$body = $strategy->format($response);
-			$this->mimetype = $strategy->getMimetype();
+		if (is_string($strategy)) {
+			$strategy = new $strategy();
 		}
 		
+		$body = $strategy->format($response);
+		$this->mimetype = $strategy->getMimetype();
+			
 		return $body;
 	}
 	

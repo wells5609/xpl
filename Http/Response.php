@@ -31,6 +31,14 @@ class Response {
 		return $this->formatter;
 	}
 	
+	public function setDefaultFormat($type) {
+		return $this->formatter->setDefaultType($type);
+	}
+	
+	public function getDefaultFormat() {
+		return $this->formatter->getDefaultType();
+	}
+	
 	/**
 	 * Sets the body content.
 	 * 
@@ -209,17 +217,15 @@ class Response {
 	}
 	
 	protected function sendBody() {
-		
+			
 		if ($this->body instanceof Response\BodyStream) {
 			$body = call_user_func($this->body, $this);
-		
 		} else {
-			
 			// The content type may change depending on the data, so
 			// send the content-type header after building the output.
-			$body = $this->getFormatter()->format($this);
-			
-			Util::sendContentType($this->getFormatter()->getMimetype(), $this->getCharset());
+			$formatter = $this->getFormatter();
+			$body = $formatter->format($this);
+			Util::sendContentType($formatter->getMimetype(), $this->getCharset());
 		}
 		
 		echo $body;

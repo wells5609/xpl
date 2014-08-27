@@ -6,11 +6,17 @@ interface RouteInterface {
 	
 	public function getUri();
 	
+	public function getCompiledUri();
+	
+	public function getStrippedUri();
+	
+	public function getAction();
+	
 	public function getParams();
 	
-	public function setResource($resource);
+	public function getMethods();
 	
-	public function getControllerInstance();
+	public function hasMethod($method);
 	
 	public function getOption($var);
 	

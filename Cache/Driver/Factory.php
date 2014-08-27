@@ -18,6 +18,11 @@ class Factory {
 		foreach($func_class_map as $func => $class) {
 			
 			if (function_exists($func)) {
+				
+				if ('apcu_fetch' === $func && ! apcu_enabled()) {
+					continue;
+				}
+				
 				return $class;
 			}
 		}

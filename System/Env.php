@@ -128,6 +128,11 @@ class Env implements \ArrayAccess, Arrayable, Importable {
 		return $this->paths->getRootPath().trim($name, '/\\').DIRECTORY_SEPARATOR;
 	}
 	
+	/** Alias of getPath() */
+	public function path($name = null) {
+		return $this->getPath($name);
+	}
+	
 	/**
 	 * Sets a directory path.
 	 * 
@@ -327,16 +332,7 @@ class Env implements \ArrayAccess, Arrayable, Importable {
 	public function getDomain() {
 		
 		if (! $this->vars->has('domain')) {
-				
-			$host = getenv('HTTP_HOST');
-			
-			if (substr_count($host, '.') === 1) {
-				$domain = $host;
-			} else {
-				list(,$domain) = explode('.', $host, 2);
-			}
-			
-			$this->vars->set('domain', $domain);
+			$this->vars->set('domain', Server::getDomainName(Server::DOMAIN|Server::TLD));
 		}
 		
 		return $this->vars->get('domain');
@@ -350,16 +346,7 @@ class Env implements \ArrayAccess, Arrayable, Importable {
 	public function getSubdomain() {
 		
 		if (! $this->vars->has('subdomain')) {
-			
-			$host = getenv('HTTP_HOST');
-			
-			if (substr_count($host, '.') === 1) {
-				$subdomain = 'main';
-			} else {
-				list($subdomain,) = explode('.', $host, 2);
-			}
-			
-			$this->vars->set('subdomain', $subdomain);
+			$this->vars->set('subdomain', Server::getDomainName(Server::SUBDOMAIN) ?: 'main');
 		}
 		
 		return $this->vars->get('subdomain');

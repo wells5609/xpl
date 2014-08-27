@@ -4,7 +4,7 @@ namespace xpl\Session;
 
 use xpl\Common\Singleton;
 
-class Session implements SessionInterface, \ArrayAccess, \Countable {
+class Session implements SessionInterface {
 	
 	use Singleton;
 	
@@ -26,6 +26,11 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	 * @return boolean
 	 */
 	public function start() {
+		
+		if (! isset($this->driver)) {
+			$this->setDriver(new Driver\Native);
+		}
+		
 		return $this->driver->start();
 	}
 	
@@ -33,8 +38,8 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	 * Whether session is started.
 	 * @return boolean
 	 */
-	public function isStarted() {
-		return $this->driver->isStarted();
+	public function started() {
+		return $this->driver->started();
 	}
 	
 	/**
@@ -107,8 +112,12 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	 * @param string $var
 	 * @return boolean
 	 */
+	public function has($var) {
+		return $this->driver->has($var);
+	}
+	
 	public function exists($var) {
-		return $this->driver->exists($var);
+		return $this->has($var);
 	}
 	
 	/**
@@ -119,30 +128,6 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	public function remove($var) {
 		$this->driver->remove($var);
 		return $this;
-	}
-	
-	/**
-	 * Adds an item to a named group (an array).
-	 * 
-	 * @param string $group Group name (an array if used with get(), etc.).
-	 * @param string $key Item name (key in array).
-	 * @param mixed $value Item value (array value).
-	 * @return $this;
-	 */
-	public function addToGroup($group, $key, $value) {
-		$this->driver->addToGroup($group, $key, $value);
-		return $this;
-	}
-	
-	/**
-	 * Returns an item from a named group.
-	 * 
-	 * @param string $group Group name.
-	 * @param string $key Item name.
-	 * @return mixed Item value if set, otherwise null.
-	 */
-	public function getFromGroup($group, $key) {
-		return $this->driver->getFromGroup($group, $key);
 	}
 	
 	/**
@@ -159,10 +144,6 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 		return $this;
 	}
 	
-	public function hasNotices() {
-		return $this->exists('flash_notices');
-	}
-	
 	/**
 	 * Returns a concatenated HTML string of the flash notice(s).
 	 * 
@@ -170,11 +151,19 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	 */
 	public function renderNotices() {
 		$str = '';
-		if ($this->hasNotices()) {
-			$str = implode(PHP_EOL, $this->get('flash_notices'));
+		
+		if ($this->has('flash_notices')) {
+				
+			$str = implode("\r\n", $this->get('flash_notices'));
+			
 			$this->remove('flash_notices');
 		}
+		
 		return $str;
+	}
+	
+	public function hasNotices() {
+		return $this->has('flash_notices');
 	}
 	
 	/**
@@ -183,7 +172,7 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	 * @return void
 	 */
 	public function offsetSet($index, $newval) {
-		$this->driver->set($index, $newval);
+		$this->set($index, $newval);
 	}
 
 	/**
@@ -191,7 +180,7 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	 * @return mixed
 	 */
 	public function offsetGet($index) {
-		return $this->driver->get($index);
+		return $this->get($index);
 	}
 
 	/**
@@ -199,7 +188,7 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	 * @return void
 	 */
 	public function offsetUnset($index) {
-		$this->driver->remove($index);
+		$this->remove($index);
 	}
 
 	/**
@@ -207,14 +196,7 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	 * @return boolean
 	 */
 	public function offsetExists($index) {
-		return $this->driver->exists($index);
-	}
-	
-	/**
-	 * @return integer
-	 */
-	public function count() {
-		return $this->driver->count();
+		return $this->has($index);
 	}
 	
 	public function __get($var) {
@@ -226,11 +208,18 @@ class Session implements SessionInterface, \ArrayAccess, \Countable {
 	}
 	
 	public function __isset($var) {
-		return $this->exists($var);
+		return $this->has($var);
 	}
 	
 	public function __unset($var) {
 		$this->remove($var);
+	}
+	
+	/**
+	 * @return integer
+	 */
+	public function count() {
+		return $this->driver->count();
 	}
 	
 }

@@ -29,7 +29,7 @@ trait ConnectionTrait {
 	 * @return \Composer\Autoload\ClassLoader
 	 */
 	final public function getComposer() {
-		return $this->getEnvironment()->getComposer();
+		return $this->di()->resolve('env')->getComposer();
 	}
 	
 }

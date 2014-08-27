@@ -1,13 +1,11 @@
 <?php
 
-namespace xpl\Bundle\Application;
+namespace xpl\Framework\Application;
 
 use xpl\Bundle\BundleInterface;
 use xpl\Routing\RouteInterface;
 use xpl\Framework\RequestInterface;
 use xpl\Http\Response;
-
-use View\Manager as ViewManager;
 
 interface AppInterface extends BundleInterface 
 {
@@ -28,6 +26,4 @@ interface AppInterface extends BundleInterface
 	
 	public function onRespond(Response $response);
 	
-	public function initViews(ViewManager $views);
-		
 }

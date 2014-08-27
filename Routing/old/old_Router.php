@@ -11,18 +11,12 @@ class Router implements MatcherInterface
 {
 	/**
 	 * Matched route object.
-	 * @var \xpl\Component\Routing\Route
+	 * @var \xpl\Routing\RouteInterface
 	 */
 	protected $route;
 	
 	/**
-	 * Fluent interface for adding routes.
-	 * @var \xpl\Component\Routing\Fluent
-	 */
-	protected $fluentInterface;
-	
-	/**
-	 * Route objects.
+	 * Route instances.
 	 * @var array
 	 */
 	protected $routes = array();
@@ -128,14 +122,12 @@ class Router implements MatcherInterface
 	/**
 	 * Creates and adds a single route object.
 	 * 
-	 * @see \Phpf\Route\Route
-	 * 
 	 * @param string $uri URI path.
 	 * @param array $args Route arguments passed to constructor.
 	 * @param int $priority Route priority. Default 10.
 	 * @return $this
 	 */
-	public function addRoute($uri, $action_callback, array $methods = null, $priority = 10) {
+	public function addRoute($uri, $callback, array $methods = null, $priority = 10) {
 		
 		$route_options = array();
 		
@@ -144,15 +136,9 @@ class Router implements MatcherInterface
 			$priority = 10;
 		}
 		
-		if (isset($this->defaultOptions)) {
-			$route_options = array_merge($this->defaultOptions, $route_options);
-		}
-		
 		$uri = ltrim($uri, '/');
 		
-		if (empty($methods)) {
-			$methods = array('GET','HEAD','POST');
-		}
+		empty($methods) and $methods = array('GET','HEAD','POST');
 		
 		if ($this->endpointPath) {
 			// We are currently running an endpoint closure!
@@ -162,15 +148,14 @@ class Router implements MatcherInterface
 			}
 			
 			$this->addEndpointRoute($this->endpointPath, $uri, array(
-				'action' => $action_callback,
+				'action' => $callback,
 				'methods' => $methods,
 				'options' => $route_options,
 			));
 			
 		} else {
 			
-			$route = new Route($uri, $action_callback, $methods, $route_options);
-			$route->setResource($this);
+			$route = new Route($this, $uri, $callback, $methods, $route_options);
 			
 			$this->routes[$priority][$uri] = $route;
 		}
@@ -188,18 +173,6 @@ class Router implements MatcherInterface
 		return $this;
 	}
 	
-	/**
-	 * Returns the fluent interface for adding routes.
-	 * 
-	 * @return \Route\Fluent Fluent interface instance.
-	 */
-	public function fluent() {
-		if (! isset($this->fluentInterface)) {
-			$this->fluentInterface = new Fluent($this);
-		}
-		return $this->fluentInterface;
-	}
-
 	/**
 	 * Add a group of routes under an endpoint/namespace
 	 * 
@@ -346,8 +319,7 @@ class Router implements MatcherInterface
 			$array['options'] = array();
 		}
 
-		$route = new Route($basepath.$path, $callback, $methods, $array['options']);
-		$route->setResource($this);
+		$route = new Route($this, $basepath.$path, $callback, $methods, $array['options']);
 		
 		isset($this->routes[$basepath]) or $this->routes[$basepath] = array();
 				

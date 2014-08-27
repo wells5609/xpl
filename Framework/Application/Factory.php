@@ -1,12 +1,12 @@
 <?php
 
-namespace xpl\Bundle\Application;
+namespace xpl\Framework\Application;
 
 use xpl\Bundle\ProviderInterface;
 
 class Factory implements ProviderInterface {
 	
-	const DEFAULT_CLASS = 'xpl\\Bundle\\Application\\App';
+	const DEFAULT_CLASS = 'xpl\\Framework\\Application\\App';
 	
 	protected $path;
 	protected $class;

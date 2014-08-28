@@ -4,7 +4,7 @@ namespace xpl\Dependency;
 
 use Closure;
 
-class Container implements \ArrayAccess, \Countable {
+class Container implements \ArrayAccess, \Countable, \xpl\Common\Arrayable {
 	
 	protected $keys = array();
 	protected $values = array();
@@ -102,6 +102,7 @@ class Container implements \ArrayAccess, \Countable {
 	public function resolve($key) {
 		
 		if (isset($this->values[$key])) {
+			// most calls go here
 			return $this->values[$key];
 		}
 		
@@ -192,6 +193,10 @@ class Container implements \ArrayAccess, \Countable {
 	
 	public function count() {
 		return count($this->keys);
+	}
+	
+	public function toArray() {
+		return $this->values;
 	}
 	
 	public function get($key) {

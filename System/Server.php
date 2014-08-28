@@ -16,7 +16,7 @@ class Server {
 	
 	public static function getDomainInfo($flags = null) {
 		
-		if (! isset(static::$domain_info)) {
+		if (null === static::$domain_info) {
 			static::setDomainInfo();
 		}
 		
@@ -46,9 +46,9 @@ class Server {
 	public static function isSslEnabled() {
 		
 		if (! isset(static::$ssl_enabled)) {
-			if ($https = getenv('https')) {
+			if ($https = getenv('HTTPS')) {
 				static::$ssl_enabled = ('on' === strtolower($https) || 1 == $https);
-			} else if ('https' === getenv('http_x_forwarded_proto') || 443 == getenv('server_port')) {
+			} else if ('https' === getenv('HTTP_X_FORWARDED_PROTO') || 443 == getenv('SERVER_PORT')) {
 				static::$ssl_enabled = true;
 			} else {
 				static::$ssl_enabled = false;
@@ -65,7 +65,7 @@ class Server {
 	protected static function setDomainInfo() {
 	
 		if (! isset($_SERVER['HTTP_HOST'])) {
-			throw new \RuntimeException("Cannot get domain info - no HTTP host name available.");
+			throw new \RuntimeException("Cannot get domain info: HTTP host name not available.");
 		}
 		
 		$host = $_SERVER['HTTP_HOST'];

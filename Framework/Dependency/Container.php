@@ -16,12 +16,8 @@ class Container extends \xpl\Dependency\Container {
 			return new \xpl\Http\Response($di['request'], $di['response_formatter']);
 		});
 		
-		$this->register('app_factory', function ($di) { 
-			return new \xpl\Framework\Application\Factory($di['env']->getPath('apps'));
-		});
-		
 		$this->register('dbal', function ($di) {
-			return new \xpl\Database\ConnectionPool($di['env.path']);
+			return new \xpl\Database\ConnectionPool($di['env']->getPath('env'));
 		});
 		
 		$this->register('response_formatter', function () {

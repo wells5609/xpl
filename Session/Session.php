@@ -25,10 +25,10 @@ class Session implements SessionInterface {
 	 * Start the session.
 	 * @return boolean
 	 */
-	public function start() {
+	public function start(array $cookie_params = array()) {
 		
 		if (! isset($this->driver)) {
-			$this->setDriver(new Driver\Native);
+			$this->setDriver(new Driver\Native($cookie_params));
 		}
 		
 		return $this->driver->start();

@@ -2,8 +2,11 @@
 
 namespace xpl\Bundle;
 
-class Manager {
-	
+use xpl\Dependency\Container;
+use xpl\Dependency\ContainerAwareInterface;
+
+class Manager implements ContainerAwareInterface 
+{	
 	/**
 	 * Bundles of joy.
 	 * @var array
@@ -15,6 +18,30 @@ class Manager {
 	 * @var array
 	 */
 	protected $providers = array();
+	
+	/**
+	 * Dependency injection container.
+	 * @var \xpl\Dependency\Container
+	 */
+	protected $container;
+	
+	/**
+	 * Sets the DI container.
+	 * 
+	 * @param \xpl\Dependency\Container $di
+	 */
+	public function setContainer(Container $di) {
+		$this->container = $di;
+	}
+	
+	/**
+	 * Returns the DI container.
+	 * 
+	 * @return \xpl\Dependency\Container
+	 */
+	public function getContainer() {
+		return isset($this->container) ? $this->container : null;
+	}
 	
 	/**
 	 * Sets an object or callback that provides a bundle upon request.
@@ -125,8 +152,9 @@ class Manager {
 	/**
 	 * Checks whether a bundle exists.
 	 * 
-	 * A bundle exists either when it has been created (and possibly booted)
-	 * or has a provider registered.
+	 * A bundle exists when it:
+	 * (a) has been created (and possibly booted), or
+	 * (b) has a provider registered (exclusively or for its type)
 	 * 
 	 * @param string $name Bundle name.
 	 * @return boolean True if bundle exists, otherwise false.
@@ -152,7 +180,7 @@ class Manager {
 	 * 
 	 * @param string $name Bundle name.
 	 * @return boolean True if bundle was provided, otherwise false.
-	 * @throws \RuntimeException if a BundleInterface was not provided.
+	 * @throws \UnexpectedValueException if an implementation of BundleInterface is not provided.
 	 */
 	protected function provideBundle($name) {
 		
@@ -166,11 +194,9 @@ class Manager {
 		if (isset($this->providers[$name])) {
 			// Bundle-specific provider
 			$provider = $this->providers[$name];
-		
 		} else if (isset($this->providers[$bundle_type])) {
 			// Bundle type provider
 			$provider = $this->providers[$bundle_type];
-			
 		} else {
 			return false;
 		}
@@ -182,7 +208,11 @@ class Manager {
 		}
 		
 		if (! $bundle instanceof BundleInterface) {
-			throw new \RuntimeException("A valid bundle was not provided for '$name'.");
+			throw new \UnexpectedValueException("A valid bundle was not provided for '$name'.");
+		}
+		
+		if ($bundle instanceof ContainerAwareInterface) {
+			$bundle->setContainer($this->container);
 		}
 		
 		$this->bundles[$name] = $bundle;
@@ -220,7 +250,7 @@ class Manager {
 	 * 
 	 * @param \xpl\Bundle\BundleInterface $bundle
 	 * 
-	 * @throws \xpl\Bundle\Exception\DependencyException
+	 * @throws \xpl\Bundle\Exception\DependencyException if missing dependency bundles.
 	 */
 	protected function loadDependencies(BundleInterface $bundle) {
 		
@@ -231,7 +261,6 @@ class Manager {
 		$missing = array();
 		
 		foreach($deps as $depend) {
-			
 			try {
 				
 				$dependency = $this->getBundle($depend);
@@ -241,12 +270,12 @@ class Manager {
 				}
 				
 			} catch (Exception\DependencyException $e) {
+				
 				// catch dependency exceptions while recursing
 				$missing = array_merge($missing, $e->getMissing());
 			}
 		}
 		
-		// Throw DependencyException if missing dependencies
 		if (! empty($missing)) {
 			
 			$message = sprintf(

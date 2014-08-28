@@ -9,7 +9,6 @@ class Manifest implements ContainerAwareInterface
 {
 	
 	protected $file;
-	protected $manifest;
 	protected $container;
 	
 	public function __construct($file) {
@@ -32,16 +31,16 @@ class Manifest implements ContainerAwareInterface
 	
 	protected function init(Container $di) {
 		
-		$this->manifest = import($this->file);
+		$manifest = import($this->file);
 		
 		$env = $di['env'];
 		
-		if (! empty($this->manifest['vars'])) {
-			$env->import($this->manifest['vars']);
+		if (! empty($manifest['vars'])) {
+			$env->import($manifest['vars']);
 		}
 		
-		if (! empty($this->manifest['dirs'])) {
-			$env->setPaths($this->manifest['dirs']);
+		if (! empty($manifest['dirs'])) {
+			$env->setPaths($manifest['dirs']);
 		}
 		
 		// var set with Apache SetEnvIf

@@ -3,72 +3,16 @@
 namespace xpl\Common\Storage;
 
 use xpl\Common\Sortable;
-use xpl\Common\Structure\StackInterface;
+use xpl\Common\Arrayable;
 
 /**
- * Collection is a KeyList that implements Indexed and Sortable.
+ * Collection is a Bin that implements Sortable.
  * 
  * It also has several methods that mimic those of several array_*() functions.
  */
-class Collection extends \xpl\Common\Structure\Base implements StackInterface, Sortable {
+class Collection extends Bin implements Sortable 
+{
 	
-	/**
-	 * Collection accepts null as a key (item key will be an index).
-	 * 
-	 * @param string|NULL $key
-	 * @param mixed $value
-	 */
-	public function set($key, $value) {
-		if (null === $key) {
-			$this->_data[] = $value;
-		} else {
-			$this->_data[$key] = $value;
-		}
-	}
-	
-	/**
-	 * Clears the collection, removing all items.
-	 * 
-	 * @return void
-	 */
-	public function clear() {
-		$this->_data = array();
-	}
-	
-	public function attach($value, $prepend = false) {
-		
-		if ($prepend) {
-			return array_unshift($this->_data, $value);
-		}
-		
-		return array_push($this->_data, $value);
-	}
-	
-	public function detach($value) {
-		if ($key = array_search($value, $this->_data, true)) {
-			$item = $this->_data[$key];
-			unset($this->_data[$key]);
-			return $item;
-		}
-		return null;
-	}
-	
-	public function push($value) {
-		return array_push($this->_data, $value);
-	}
-	
-	public function pop() {
-		return array_pop($this->_data);
-	}
-	
-	public function unshift($value) {
-		return array_unshift($this->_data, $value);
-	}
-	
-	public function shift() {
-		return array_shift($this->_data);
-	}
-
 	public function walk($callback, $userdata = null) {
 		return array_walk($this->_data, $callback, $userdata);
 	}
@@ -81,20 +25,9 @@ class Collection extends \xpl\Common\Structure\Base implements StackInterface, S
 	 */
 	public function merge($data) {
 
-		if (! is_array($data)) {
-				
-			if (! $data instanceof Arrayable) {
-				throw new \InvalidArgumentException("Data must be array or Arrayable, given ".gettype($data));
-			}
-			
-			$data = $data->toArray();
-		}
-
-		if (! isset($this->_data)) {
-			$this->_data = array();
-		}
-
-		$this->_data = array_merge($this->_data, $data);
+		is_array($data) or $data = $this->makeArray($data);
+		
+		$this->_data = isset($this->_data) ? array_merge($this->_data, $data) : $data;
 	}
 	
 	/**
@@ -105,20 +38,9 @@ class Collection extends \xpl\Common\Structure\Base implements StackInterface, S
 	 */
 	public function replace($data) {
 
-		if (! is_array($data)) {
-			
-			if (! $data instanceof Arrayable) {
-				throw new \InvalidArgumentException("Data must be array or Arrayable, given ".gettype($data));
-			}
-			
-			$data = $data->toArray();
-		}
-
-		if (! isset($this->_data)) {
-			$this->_data = array();
-		}
-
-		$this->_data = array_replace($this->_data, $data);
+		is_array($data) or $data = $this->makeArray($data);
+		
+		$this->_data = isset($this->_data) ? array_replace($this->_data, $data) : $data;
 	}
 	
 	/**
@@ -127,7 +49,7 @@ class Collection extends \xpl\Common\Structure\Base implements StackInterface, S
 	 * @return \xpl\Common\Storage\Collection
 	 */
 	public function filter($func) {
-		return new static(array_filter($this->items, $func));
+		return new static(array_filter($this->_data, $func));
 	}
 	
 	/**
@@ -137,7 +59,7 @@ class Collection extends \xpl\Common\Structure\Base implements StackInterface, S
 	 * @return \xpl\Common\Storage\Collection
 	 */
 	public function map($func) {
-		return new static(array_map($func, $this->items));
+		return new static(array_map($func, $this->_data));
 	}
 	
 	/**
@@ -152,38 +74,28 @@ class Collection extends \xpl\Common\Structure\Base implements StackInterface, S
 	}
 	
 	/**
-	 * Computes the intersection with the given array and returns a new Collection.
+	 * Computes the intersection with the given array and returns a new collection.
 	 * 
 	 * @param array|\xpl\Common\Arrayable $data
 	 * @return \xpl\Common\Storage\Collection
 	 */
 	public function intersect($data) {
 		
-		if (! is_array($data)) {
-			if (! $data instanceof Arrayable) {
-				throw new InvalidArgumentException("Data must be array or Arrayable, given ".gettype($data));
-			}
-			$data = $data->toArray();
-		}
+		is_array($data) or $data = $this->makeArray($data);
 		
 		return new static(array_intersect_assoc($this->_data, $data));
 	}
 	
 	/**
-	 * Returns a new Collection containing items do not appear in $data.
+	 * Returns a new collection containing items that do not appear in $data.
 	 * 
 	 * @param array|\xpl\Common\Arrayable
 	 * @return \xpl\Common\Storage\Collection
 	 */
 	public function diff($data) {
 
-		if (! is_array($data)) {
-			if (! $data instanceof Arrayable) {
-				throw new InvalidArgumentException("Data must be array or Arrayable, given ".gettype($data));
-			}
-			$data = $data->toArray();
-		}
-
+		is_array($data) or $data = $this->makeArray($data);
+		
 		return new static(array_diff_assoc($this->_data, $data));
 	}
 
@@ -195,37 +107,30 @@ class Collection extends \xpl\Common\Structure\Base implements StackInterface, S
 	 */
 	public function keyDiff($data) {
 
-		if (! is_array($data)) {
-			
-			if (! $data instanceof Arrayable) {
-				throw new InvalidArgumentException("Elements must be array or Arrayable - given ".gettype($data));
-			}
-			
-			$data = $data->toArray();
-		}
-
+		is_array($data) or $data = $this->makeArray($data);
+		
 		return new static(array_diff_key($this->_data, $data));
 	}
 	
 	/**
-	 * Filters the element keys and returns a new Collection.
+	 * Filters the items by key and returns a new collection.
 	 * 
 	 * @param callable $func
 	 * @return \xpl\Common\Storage\Collection
 	 */
 	public function keyFilter($func) {
-		$filtered = array_filter($this->getKeys(), $func);
+		$filtered = array_filter($this->keys(), $func);
 		return new static(array_intersect_key($this->_data, array_flip($filtered)));
 	}
 	
 	/**
-	 * Applies a callback function to each element key and returns a new collection.
+	 * Applies a callback function to each item key and returns a new collection.
 	 * 
 	 * @param callable $func
 	 * @return \xpl\Common\Storage\Collection
 	 */
 	public function keyMap($func) {
-		return new static(array_combine(array_map($func, $this->getKeys()), $this->getValues()));
+		return new static(array_combine(array_map($func, $this->keys()), $this->values()));
 	}
 	
 	/**
@@ -233,13 +138,10 @@ class Collection extends \xpl\Common\Structure\Base implements StackInterface, S
 	 */
 	public function each(\Closure $func) {
 		
-		$func->bindTo($this, $this);
+		$func->bindTo($this, get_class($this));
 		
-		$this->first();
-		
-		while ($this->valid()) {
-			$func($this->current(), $this->key());
-			$this->next();
+		foreach($this->_data as $key => $value) {
+			$func($value, $key);
 		}
 	}
 	
@@ -295,44 +197,4 @@ class Collection extends \xpl\Common\Structure\Base implements StackInterface, S
 		return uksort($this->_data, $func);
 	}
 	
-	/**
-	 * Magic __get()
-	 *
-	 * @param string|int $var Element key/index.
-	 * @return mixed
-	 */
-	public function __get($var) {
-		return $this->get($var);
-	}
-
-	/**
-	 * Magic __set()
-	 *
-	 * @param string|int $var Element key/index.
-	 * @param mixed $val Element value.
-	 * @return void
-	 */
-	public function __set($var, $val) {
-		$this->set($var, $val);
-	}
-
-	/**
-	 * Magic __isset()
-	 *
-	 * @param string|int $var Element key/index.
-	 * @return boolean
-	 */
-	public function __isset($var) {
-		return $this->exists($var);
-	}
-
-	/**
-	 * Magic __unset()
-	 *
-	 * @param string|int $var Element key/index.
-	 * @return void
-	 */
-	public function __unset($var) {
-		$this->remove($var);
-	}
 }

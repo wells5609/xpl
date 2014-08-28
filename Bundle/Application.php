@@ -50,7 +50,7 @@ class Application extends Bundle
 	public function boot() {
 		
 		if ($this->booted) {
-			throw new \RuntimeException("Application has already been loaded.");
+			throw new \RuntimeException("Application has already been booted.");
 		}
 		
 		$this->booted = true;

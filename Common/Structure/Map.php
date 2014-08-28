@@ -14,7 +14,6 @@ class Map extends Base implements MapInterface {
 	
 	public function set($key, $value) {
 		$this->_data[$key] = $value;
-		return $this;
 	}
 	
 	public function has($key) {
@@ -23,20 +22,26 @@ class Map extends Base implements MapInterface {
 	
 	public function remove($key) {
 		unset($this->_data[$key]);
-		return $this;
+	}
+	
+	public function keys() {
+		return array_keys($this->_data);
+	}
+	
+	public function values() {
+		return array_values($this->_data);
 	}
 	
 	/**
 	 * Implements \xpl\Commmon\Importable
 	 */
 	public function import($data) {
-		if (! is_array($data)) {
-			$data = is_callable(array($data, 'toArray')) ? $data->toArray() : (array)$data;
-		}
+		
+		is_array($data) or $data = $this->makeArray($data);
+		
 		foreach($data as $key => $value) {
 			$this->set($key, $value);
 		}
-		return $this;
 	}
 	
 	/**
@@ -57,6 +62,24 @@ class Map extends Base implements MapInterface {
 	
 	public function offsetUnset($index) {
 		$this->remove($index);
+	}
+	
+	protected function makeArray($data) {
+		
+		if (is_object($data)) {
+			
+			if ($data instanceof \xpl\Common\Arrayable) {
+				return $data->toArray();
+			}
+			
+			if ($data instanceof \Traversable) {
+				return iterator_to_array($data);
+			}
+			
+			return get_object_vars($data);
+		}
+	
+		return (array) $data;
 	}
 	
 }

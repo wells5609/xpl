@@ -9,7 +9,6 @@ class Stack extends Base implements StackInterface {
 	
 	public function push($value) {
 		array_push($this->_data, $value);
-		return $this;
 	}
 	
 	public function pop() {
@@ -28,8 +27,6 @@ class Stack extends Base implements StackInterface {
 		foreach($data as $value) {
 			$this->push($value);
 		}
-		
-		return $this;
 	}
 	
 	public function offsetGet($value) {

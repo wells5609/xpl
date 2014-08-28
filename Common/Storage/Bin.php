@@ -3,69 +3,101 @@
 namespace xpl\Common\Storage;
 
 use xpl\Common\Structure\Map;
+use xpl\Common\Structure\StackInterface;
 
-class Bin extends Map {
+/**
+ * Bin is a Map that implements StackInterface with magic methods for accessing data as properties.
+ * 
+ * It also has some "array_*" type methods: clear(), shift(), and unshift(). 
+ */
+class Bin extends Map implements StackInterface {
 	
-	const MODE_NORMAL = 0;
-	const MODE_DOT_NOTATION = 1;
-	
-	private $_mode = 1;
-	
-	public function setMode($mode) {
-		
-		if (! in_array($mode, $this->getModes(), true)) {
-			throw new \InvalidArgumentException("Invalid mode: '$mode'.");
-		}
-		
-		$this->_mode = $mode;
-	}
-	
-	public function getMode() {
-		return $this->_mode;
-	}
-	
-	public function getModes() {
-		return array(static::MODE_DOT_NOTATION, static::MODE_NORMAL);
-	}
-	
-	public function get($key) {
-		
-		if ($this->_mode === static::MODE_DOT_NOTATION) {
-			return Arr::get($this->_data, $key);
-		}
-		
-		return isset($this->_data[$key]) ? $this->_data[$key] : null;
-	}
-	
+	/**
+	 * Set an item value by key.
+	 * 
+	 * Accepts null as a key (item key will be an index).
+	 * 
+	 * @param string|null $key
+	 * @param mixed $value
+	 */
 	public function set($key, $value) {
-		
-		if ($this->_mode === static::MODE_DOT_NOTATION) {
-			Arr::set($this->_data, $key, $value);
+		if (null === $key) {
+			$this->_data[] = $value;
 		} else {
 			$this->_data[$key] = $value;
 		}
-		
-		return $this;
 	}
 	
-	public function has($key) {
-		
-		if ($this->_mode === static::MODE_DOT_NOTATION) {
-			return Arr::exists($this->_data, $key);
+	/**
+	 * Removes all items, sets data to empty array.
+	 */
+	public function clear() {
+		$this->_data = array();
+	}
+	
+	public function push($value) {
+		return array_push($this->_data, $value);
+	}
+	
+	public function pop() {
+		return array_pop($this->_data);
+	}
+	
+	public function unshift($value) {
+		return array_unshift($this->_data, $value);
+	}
+	
+	public function shift() {
+		return array_shift($this->_data);
+	}
+	
+	public function attach($value, $prepend = false) {
+		if ($prepend) {
+			return array_unshift($this->_data, $value);
 		}
-		
-		return isset($this->_data[$key]);
+		return array_push($this->_data, $value);
 	}
 	
-	public function remove($key) {
-			
-		if ($this->_mode === static::MODE_DOT_NOTATION) {
-			Arr::remove($this->_data, $key);
-		} else {
+	public function detach($value) {
+		if ($key = array_search($value, $this->_data, true)) {
+			$item = $this->_data[$key];
 			unset($this->_data[$key]);
+			return $item;
 		}
-		
-		return $this;
+		return null;
+	}
+	
+	/**
+	 * @param string|int $var Element key/index.
+	 * @return mixed
+	 */
+	public function __get($var) {
+		return $this->get($var);
+	}
+
+	/**
+	 * @param string|int $var Element key/index.
+	 * @param mixed $val Element value.
+	 * @return void
+	 */
+	public function __set($var, $val) {
+		$this->set($var, $val);
+	}
+
+	/**
+	 * @param string|int $var Element key/index.
+	 * @return boolean
+	 */
+	public function __isset($var) {
+		return $this->exists($var);
+	}
+
+	/**
+	 *@param string|int $var Element key/index.
+	 * @return void
+	 */
+	public function __unset($var) {
+		$this->remove($var);
 	}
 	
 }

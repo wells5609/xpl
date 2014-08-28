@@ -9,7 +9,6 @@ class Queue extends Base implements QueueInterface {
 	
 	public function enqueue($value) {
 		array_unshift($this->_data, $value);
-		return $this;
 	}
 	
 	public function dequeue() {
@@ -28,8 +27,6 @@ class Queue extends Base implements QueueInterface {
 		foreach($data as $value) {
 			$this->enqueue($value);
 		}
-		
-		return $this;
 	}
 	
 	public function offsetGet($value) {

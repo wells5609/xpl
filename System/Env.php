@@ -4,8 +4,8 @@ namespace xpl\System;
 
 use xpl\Common\Arrayable;
 use xpl\Common\Importable;
-use xpl\Utility\Filesystem\Container as Paths;
 use xpl\Common\Storage\Container;
+use xpl\Utility\Filesystem\Container as Paths;
 use Composer\Autoload\ClassLoader;
 
 class Env implements \ArrayAccess, Arrayable, Importable {
@@ -44,13 +44,7 @@ class Env implements \ArrayAccess, Arrayable, Importable {
 	 * @return $this
 	 */
 	public function setType($type) {
-		
-		if (! in_array($type, array(static::DEV, static::PROD, static::STAGE), true)) {
-			throw new \InvalidArgumentException("Invalid environment type: '$type'.");
-		}
-		
 		$this->type = $type;
-		
 		return $this;
 	}
 	

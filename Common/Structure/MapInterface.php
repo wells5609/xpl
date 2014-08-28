@@ -14,4 +14,8 @@ interface MapInterface extends \xpl\Common\DataStructure {
 	
 	public function indexOf($value);
 	
+	public function keys();
+	
+	public function values();
+	
 }

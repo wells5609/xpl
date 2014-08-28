@@ -1,0 +1,24 @@
+{
+	"name": "wells5609/xpl",
+	"type": "library",
+	"description": "XPL, a PHP Component Library",
+	"keywords": ["Components", "Library", "Framework", "MVC", "HMVC"],
+	"homepage": "https://github.com/wells5609/xpl",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "The Developer",
+			"email": "wellspeterson@live.com"
+		}
+	],
+	"require": {
+		"php": ">=5.4",
+		"wells5609/php-util": "dev-master"
+	},
+	"autoload": {
+		"psr-4": {
+			"xpl\\": "src/"
+		}
+	},
+	"minimum-stability": "dev"
+}

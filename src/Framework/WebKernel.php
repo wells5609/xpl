@@ -10,7 +10,6 @@ use xpl\Routing\Exception\RouteException;
 class WebKernel implements ContainerAwareInterface {
 	
 	protected $container;
-	protected $match;
 	
 	public function setContainer(Container $container) {
 		$this->container = $container;
@@ -21,7 +20,7 @@ class WebKernel implements ContainerAwareInterface {
 	}
 	
 	public function __invoke(Application\AppInterface $app) {
-			
+		
 		try {
 			
 			$di = $this->getContainer();

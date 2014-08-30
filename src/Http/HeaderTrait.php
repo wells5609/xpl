@@ -73,6 +73,10 @@ trait HeaderTrait {
 		return $this->headers;
 	}
 	
+	public function getHeader($name) {
+		return $this->hasHeader($name) ? $this->headers[$name] : null;
+	}
+	
 	/**
 	 * Sends the headers, handling multiples and string values.
 	 * @return void

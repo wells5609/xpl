@@ -9,61 +9,22 @@ class Response {
 	protected $charset = 'UTF-8';
 	protected $status = 200;
 	protected $body;
-	protected $formatter;
 	protected $send_body = true;
+	protected $request_mimetype;
 	private $sent = false;
 	
 	/**
 	 * Construct response.
 	 */
-	public function __construct(Request $request, Response\Formatter $formatter) {
-		
+	public function __construct(Request $request) {
 		if ($request->is('HEAD')) {
 			$this->send_body = false;
 		}
-		
-		$this->formatter = $formatter;
-		
-		$this->body = new Response\Body();
+		$this->request_mimetype = $request->getMimetype();
 	}
 	
-	public function getFormatter() {
-		return $this->formatter;
-	}
-	
-	public function setDefaultFormat($type) {
-		return $this->formatter->setDefaultType($type);
-	}
-	
-	public function getDefaultFormat() {
-		return $this->formatter->getDefaultType();
-	}
-	
-	/**
-	 * Sets the body content.
-	 * 
-	 * @param mixed $body
-	 * @return $this
-	 */
-	public function setBody($body) {
-		
-		if ($body instanceof Response\BodyInterface) {
-			$this->body = $body;
-		} else {
-			$this->body->set($body);
-		}
-		
-		return $this;
-	}
-	
-	/**
-	 * Returns the body content or object.
-	 * 
-	 * @param boolean $as_object [Optional] Return the object. Default false.
-	 * @return mixed|\xpl\Component\Http\Response\BodyInterface
-	 */
-	public function getBody($as_object = false) {
-		return $as_object ? $this->body : $this->body->get();
+	public function getRequestMimetype() {
+		return isset($this->request_mimetype) ? $this->request_mimetype : null;
 	}
 	
 	/**
@@ -88,25 +49,25 @@ class Response {
 	}
 	
 	/**
-	 * Sets output charset.
+	 * Sets the body content.
 	 * 
-	 * @param string $charset Charset to send w/ content-type.
+	 * @param mixed $body
 	 * @return $this
 	 */
-	public function setCharset($charset) {
-		$this->charset = $charset;
+	public function setBody($body) {
+		$this->body = $body;
 		return $this;
 	}
-
+	
 	/**
-	 * Returns output charset
+	 * Returns the body content.
 	 * 
-	 * @return string Charset
+	 * @return mixed
 	 */
-	public function getCharset() {
-		return $this->charset;
+	public function getBody() {
+		return $this->body;
 	}
-
+	
 	/**
 	 * Sets the HTTP response status code.
 	 * 
@@ -128,6 +89,46 @@ class Response {
 	}
 	
 	/**
+	 * Sets output charset.
+	 * 
+	 * @param string $charset Charset to send w/ content-type.
+	 * @return $this
+	 */
+	public function setCharset($charset) {
+		$this->charset = $charset;
+		return $this;
+	}
+
+	/**
+	 * Returns output charset
+	 * 
+	 * @return string Charset
+	 */
+	public function getCharset() {
+		return $this->charset;
+	}
+
+	/**
+	 * Sets the Content-Type header.
+	 * 
+	 * @param string $mimetype Content-type mime to send.
+	 * @return $this
+	 */
+	public function setContentType($mimetype) {
+		$this->setHeader('Content-Type', $mimetype, true);
+		return $this;
+	}
+	
+	/**
+	 * Returns the Content-Type header set, if any.
+	 * 
+	 * @return string|null
+	 */
+	public function getContentType() {
+		return $this->getHeader('Content-Type');
+	}
+	
+	/**
 	 * Sets the "Access-Control-Allow-Origin" header to the given value.
 	 * 
 	 * Used to allow CORS requests. Set to "*" to allow all hosts.
@@ -136,7 +137,8 @@ class Response {
 	 * @return $this
 	 */
 	public function setAccessControlAllowOrigin($value) {
-		return $this->setHeader('Access-Control-Allow-Origin', $value);
+		$this->setHeader('Access-Control-Allow-Origin', $value);
+		return $this;
 	}
 	
 	/**
@@ -191,7 +193,7 @@ class Response {
 	 * 
 	 * @return void
 	 */
-	public function send() {
+	public function send($exit = true) {
 		
 		if ($this->sent) return;
 		
@@ -206,29 +208,14 @@ class Response {
 		$this->sendHeaders();
 		
 		if ($this->send_body) {
-			$this->sendBody();
+			echo $this->body;
 		}
 		
 		ob_get_level() and ob_end_flush();
 		
 		$this->sent = true;
 		
-		exit;
+		$exit and exit;
 	}
 	
-	protected function sendBody() {
-			
-		if ($this->body instanceof Response\BodyStream) {
-			$body = call_user_func($this->body, $this);
-		} else {
-			// The content type may change depending on the data, so
-			// send the content-type header after building the output.
-			$formatter = $this->getFormatter();
-			$body = $formatter->format($this);
-			Util::sendContentType($formatter->getMimetype(), $this->getCharset());
-		}
-		
-		echo $body;
-	}
-
 }

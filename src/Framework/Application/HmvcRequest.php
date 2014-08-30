@@ -2,7 +2,7 @@
 
 namespace xpl\Framework\Application;
 
-use xpl\Framework\RequestInterface;
+use xpl\Foundation\RequestInterface;
 use xpl\Http\Request as HttpRequest;
 
 class HmvcRequest implements RequestInterface 

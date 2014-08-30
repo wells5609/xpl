@@ -2,9 +2,9 @@
 
 namespace xpl\Framework\Application;
 
-use xpl\Bundle\ProviderInterface;
+use xpl\Foundation\BundleProviderInterface;
 
-class Factory implements ProviderInterface {
+class Factory implements BundleProviderInterface {
 	
 	const DEFAULT_CLASS = 'xpl\\Framework\\Application\\App';
 	
@@ -21,11 +21,11 @@ class Factory implements ProviderInterface {
 	}
 	
 	/**
-	 * Implements \xpl\Component\Bundle\Contract\Provider
+	 * Implements \xpl\Foundation\BundleProviderInterface
 	 * 
 	 * @param string $type Bundle type (must be "app").
 	 * @param string $name Bundle name (app name).
-	 * @return \xpl\Component\Application\App
+	 * @return \xpl\Foundation\Application
 	 */
 	public function provideBundle($type, $name) {
 		

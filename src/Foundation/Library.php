@@ -1,23 +1,23 @@
 <?php
 
-namespace xpl\Bundle;
+namespace xpl\Foundation;
 
-class Library extends Bundle {
+class Library extends AbstractBundle {
 	
 	protected $booted = false;
 	
-	public function __construct($directory = null) {
+	public function __construct($directory) {
 		
-		if (isset($directory)) {
-			$this->dirpath = realpath($directory).DIRECTORY_SEPARATOR;
-		}
+		$this->dirpath = realpath($directory).DIRECTORY_SEPARATOR;
+		
+		$this->name = strtolower(basename($this->dirpath));
 	}
 	
 	public function boot() {
 		
 		if (! $this->booted) {
 			
-			$bootstrap = $this->getDirpath().'bootstrap.php';
+			$bootstrap = $this->dirpath.'bootstrap.php';
 			
 			if (file_exists($bootstrap)) {
 				require $bootstrap;

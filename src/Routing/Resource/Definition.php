@@ -2,7 +2,6 @@
 
 namespace xpl\Routing\Resource;
 
-use xpl\Routing\Parameter\Container;
 use xpl\Routing\Resource;
 
 abstract class Definition {
@@ -28,7 +27,7 @@ abstract class Definition {
 	public function createResource() {
 		
 		$resource = new Resource(
-			new Container($this->getParams()), 
+			$this->getParams(), 
 			$this->getName(), 
 			$this->getPathPrefix(), 
 			$this->getOptions()

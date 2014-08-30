@@ -28,10 +28,6 @@ class Container extends \xpl\Dependency\Container {
 			return new \xpl\Routing\Router();
 		});
 		
-		$this->register('dispatcher', function () {
-			return new \xpl\Routing\Dispatcher();
-		});
-		
 		$this->register('web_kernel', 'xpl\\Framework\\WebKernel');
 		$this->register('events', 'xpl\Event\Manager');
 		$this->register('services', 'xpl\Data\Service\Registry');

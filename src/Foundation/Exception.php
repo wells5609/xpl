@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\Framework;
+namespace xpl\Foundation;
 
 class Exception extends \Exception {
 	

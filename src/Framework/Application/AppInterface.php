@@ -2,9 +2,9 @@
 
 namespace xpl\Framework\Application;
 
-use xpl\Bundle\BundleInterface;
-use xpl\Routing\RouteInterface;
-use xpl\Framework\RequestInterface;
+use xpl\Foundation\BundleInterface;
+use xpl\Foundation\RouteInterface;
+use xpl\Foundation\RequestInterface;
 use xpl\Http\Response;
 
 interface AppInterface extends BundleInterface 
@@ -20,7 +20,7 @@ interface AppInterface extends BundleInterface
 	
 	public function getComponent($key);
 	
-	public function useResources($arg = null);
+	public function getResource();
 	
 	public function onDispatch(RouteInterface $route, RequestInterface $request);
 	

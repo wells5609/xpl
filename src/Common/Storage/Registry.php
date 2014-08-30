@@ -2,14 +2,14 @@
 
 namespace xpl\Common\Storage;
 
-use xpl\Common\Structure\Map;
+use xpl\Common\Structure\BaseMap;
 
 /**
  * Registry is a Map that restricts values to objects.
  * 
  * It also allows objects to be registered and loaded lazily via closures.
  */
-class Registry extends Map {
+class Registry extends BaseMap {
 	
 	/**
 	 * @var array

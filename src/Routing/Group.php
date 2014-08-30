@@ -2,21 +2,22 @@
 
 namespace xpl\Routing;
 
-class Group {
+abstract class Group {
 	
-	protected $paramContainer;
-	protected $pathPrefix;
+	protected $params;
+	protected $prefix;
 	protected $name;
+	protected $controller;
 	protected $routes;
 	protected $options = array(
 		'fallback_to_query_params' => true
 	);
 	
-	public function __construct(Parameter\Container $params, $name, $path_prefix = '/', array $options = null) {
+	public function __construct(array $params, $name, $path_prefix = '/', array $options = null) {
 		
-		$this->paramContainer = $params;
+		$this->params = $params;
 		$this->name = $name;
-		$this->pathPrefix = trim($path_prefix, '/').'/';
+		$this->prefix = trim($path_prefix, '/').'/';
 		$this->routes = array();
 		
 		if (isset($options)) {
@@ -32,13 +33,21 @@ class Group {
 		return isset($this->routes[$route_name]) ? $this->routes[$route_name] : null;
 	}
 	
+	public function setController($object) {
+		$this->controller = $object;
+	}
+	
+	public function getController() {
+		return isset($this->controller) ? $this->controller : null;
+	}
+	
 	public function set(Route $route) {
 		$this->routes[$route->getName()] = $route;
 	}
 	
 	public function add($name, $uri, array $methods, $action, array $options = array()) {
 		
-		$uri = $this->pathPrefix.ltrim($uri, '/');
+		$uri = $this->prefix.ltrim($uri, '/');
 		
 		if (! empty($this->options)) {
 			$options = array_merge($this->options, $options);
@@ -67,16 +76,24 @@ class Group {
 		return isset($this->options[$name]) ? $this->options[$name] : null;
 	}
 	
-	public function getParamRegex($name) {
-		return $this->paramContainer->get($name);
+	public function addOptions(array $options, $overwrite = false) {
+		if ($overwrite) {
+			$this->options = array_merge($this->options, $options);
+		} else {
+			$this->options = array_merge($options, $this->options);
+		}
 	}
 	
-	public function getParamContainer() {
-		return $this->paramContainer;
+	public function getRegex($name) {
+		return isset($this->params[$name]) ? $this->params[$name] : null;
+	}
+	
+	public function getParams() {
+		return $this->params;
 	}
 	
 	public function isPrefixMatch($uri) {
-		return '/' === $this->pathPrefix || 0 === stripos($uri, $this->pathPrefix);
+		return '/' === $this->prefix || 0 === stripos($uri, $this->prefix);
 	}
 	
 }

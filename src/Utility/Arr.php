@@ -488,7 +488,7 @@ class Arr {
 					$array[$key] = is_bool($value) ? $value : (string) $value;
 				
 				} else if (is_numeric($value)) {
-					$array[$key] = (strpos($value, '.') === false) ? (int) $value : (float) $value;
+					$array[$key] = Str::castNum($value);
 			
 				} else if ($value === 'true' || $value === 'false') {
 					$array[$key] = ($value === 'true');

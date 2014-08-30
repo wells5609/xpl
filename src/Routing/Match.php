@@ -2,7 +2,9 @@
 
 namespace xpl\Routing;
 
-use xpl\Framework\RequestInterface;
+use xpl\Foundation\RouteInterface;
+use xpl\Foundation\RequestInterface;
+use xpl\Foundation\BundleInterface;
 
 class Match {
 	
@@ -10,13 +12,13 @@ class Match {
 	protected $requestUri;
 	protected $requestMethod;
 	
-	public function __construct(Route $route, $request_uri, $request_method) {
+	public function __construct(RouteInterface $route, $request_uri, $request_method) {
 		$this->route = $route;
 		$this->requestUri = $request_uri;
 		$this->requestMethod = $request_method;
 	}
 	
-	public function __invoke(RequestInterface $request) {
+	public function __invoke(RequestInterface $request, BundleInterface $app = null) {
 		
 		$controllerClass = $this->route->getGroup()->getController();
 		
@@ -24,6 +26,10 @@ class Match {
 		
 		$controller->setRequest($request);
 		$controller->setRoute($this->route);
+		
+		if (isset($app)) {
+			$controller->setApp($app);
+		}
 		
 		$callback = array($controller, $this->route->getAction());
 		

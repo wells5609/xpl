@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\Routing;
+namespace xpl\Foundation;
 
 interface RouteInterface {
 	

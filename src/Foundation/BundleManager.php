@@ -1,12 +1,8 @@
 <?php
 
-namespace xpl\Bundle;
+namespace xpl\Foundation;
 
-use xpl\Dependency\Container;
-use xpl\Dependency\ContainerAwareInterface;
-use xpl\Foundation\BundleProviderInterface as ProviderInterface;
-
-class Manager implements ContainerAwareInterface 
+class BundleManager
 {	
 	/**
 	 * Bundles of joy.
@@ -15,94 +11,72 @@ class Manager implements ContainerAwareInterface
 	protected $bundles = array();
 	
 	/**
-	 * Callbacks or ProviderInterfaces that provide bundles.
+	 * Callbacks or BundleProviderInterfaces that provide bundles.
 	 * @var array
 	 */
 	protected $providers = array();
 	
 	/**
-	 * Dependency injection container.
-	 * @var \xpl\Dependency\Container
-	 */
-	protected $container;
-	
-	/**
-	 * Sets the DI container.
-	 * 
-	 * @param \xpl\Dependency\Container $di
-	 */
-	public function setContainer(Container $di) {
-		$this->container = $di;
-	}
-	
-	/**
-	 * Returns the DI container.
-	 * 
-	 * @return \xpl\Dependency\Container
-	 */
-	public function getContainer() {
-		return isset($this->container) ? $this->container : null;
-	}
-	
-	/**
 	 * Sets an object or callback that provides a bundle upon request.
 	 * 
 	 * @param string $bundle_name
-	 * @param \xpl\Bundle\ProviderInterface|callable $provider
+	 * @param \xpl\Bundle\BundleProviderInterface|callable $provider
 	 * @return void
 	 */
 	public function provide($bundle_name, $provider) {
 		
-		if (! $provider instanceof ProviderInterface && ! is_callable($provider)) {
-			throw new \InvalidArgumentException("Provider must be instance of ProviderInterface or callable.");
+		if (! $provider instanceof BundleProviderInterface && ! is_callable($provider)) {
+			throw new \InvalidArgumentException("Provider must be instance of BundleProviderInterface or callable.");
 		}
 		
-		$this->providers[$bundle_name] = $provider;
+		$this->providers[strtolower($bundle_name)] = $provider;
 	}
 	
 	/**
 	 * Sets an object or callback that provides bundles of a specific type.
 	 * 
 	 * @param string $bundle_type Type of bundle.
-	 * @param \xpl\Bundle\ProviderInterface|callable $provider
+	 * @param \xpl\Bundle\BundleProviderInterface|callable $provider
 	 * @return void
 	 */
 	public function provideType($bundle_type, $provider) {
 		
-		if (! $provider instanceof ProviderInterface && ! is_callable($provider)) {
-			throw new \InvalidArgumentException("Provider must be instance of ProviderInterface or callable.");
+		if (! $provider instanceof BundleProviderInterface && ! is_callable($provider)) {
+			throw new \InvalidArgumentException("Provider must be instance of BundleProviderInterface or callable.");
 		}
 		
-		$this->providers[$bundle_type] = $provider;
+		$this->providers[strtolower($bundle_type)] = $provider;
 	}
 	
 	/**
 	 * Sets an object or callback that provides multiple bundles.
 	 * 
 	 * @param array $bundles Indexed array of bundle names.
-	 * @param \xpl\Bundle\ProviderInterface|callable $provider
+	 * @param \xpl\Bundle\BundleProviderInterface|callable $provider
 	 * @return void
 	 */
 	public function provideMultiple(array $bundles, $provider) {
 		
-		if (! $provider instanceof ProviderInterface && ! is_callable($provider)) {
-			throw new \InvalidArgumentException("Provider must be instance of ProviderInterface or callable.");
+		if (! $provider instanceof BundleProviderInterface && ! is_callable($provider)) {
+			throw new \InvalidArgumentException("Provider must be instance of BundleProviderInterface or callable.");
 		}
 		
 		foreach($bundles as $bundle) {
-			$this->providers[$bundle] = $provider;
+			$this->providers[strtolower($bundle)] = $provider;
 		}
 	}
 	
 	/**
 	 * Sets a bundle.
 	 * 
-	 * @param \xpl\Bundle\BundleInterface $bundle
+	 * Overwrite this function to do stuff to bundles as they're set (e.g. inject DI).
+	 * 
+	 * @param \xpl\Foundation\BundleInterface $bundle
 	 * @return void
 	 */
 	public function setBundle(BundleInterface $bundle) {
 		
-		$this->bundles[$bundle->getIdentifier()] = $bundle;
+		$this->bundles[strtolower($bundle->getIdentifier())] = $bundle;
 	}
 	
 	/**
@@ -113,41 +87,17 @@ class Manager implements ContainerAwareInterface
 	 */
 	public function getBundle($name) {
 		
-		if (isset($this->bundles[$name]) || $this->provideBundle($name)) {
+		$name = strtolower($name);
+		
+		if (isset($this->bundles[$name])) {
+			return $this->bundles[$name];
+		}
+		
+		if ($this->provideBundle($name)) {
 			return $this->bundles[$name];
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * Boots a bundle.
-	 * 
-	 * @param string $name Bundle name.
-	 * @return boolean True if booted, otherwise false.
-	 */
-	public function boot($name) {
-		
-		if ($bundle = $this->getBundle($name)) {
-			return $this->bootBundle($bundle);
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Checks whether a given bundle exists and has been booted.
-	 * 
-	 * @param string $name Bundle name.
-	 * @return boolean True if exists and booted, otherwise false.
-	 */
-	public function isBooted($name) {
-		
-		if (isset($this->bundles[$name])) {
-			return $this->bundles[$name]->isBooted();
-		}
-		
-		return false;
 	}
 	
 	/**
@@ -162,6 +112,8 @@ class Manager implements ContainerAwareInterface
 	 */
 	public function exists($name) {
 			
+		$name = strtolower($name);
+		
 		if (isset($this->bundles[$name]) || isset($this->providers[$name])) {
 			return true;
 		}
@@ -171,6 +123,38 @@ class Manager implements ContainerAwareInterface
 			list($bundle_type, $bundle_name) = explode('.', $name, 2);
 			
 			return isset($this->providers[$bundle_type]);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Checks whether a given bundle exists and has been booted.
+	 * 
+	 * @param string $name Bundle name.
+	 * @return boolean True if exists and booted, otherwise false.
+	 */
+	public function isBooted($name) {
+		
+		$name = strtolower($name);
+		
+		if (isset($this->bundles[$name])) {
+			return $this->bundles[$name]->isBooted();
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Boots a bundle.
+	 * 
+	 * @param string $name Bundle name.
+	 * @return boolean True if booted, otherwise false.
+	 */
+	public function boot($name) {
+		
+		if ($bundle = $this->getBundle($name)) {
+			return $this->bootBundle($bundle);
 		}
 		
 		return false;
@@ -202,7 +186,7 @@ class Manager implements ContainerAwareInterface
 			return false;
 		}
 		
-		if ($provider instanceof ProviderInterface) {
+		if ($provider instanceof BundleProviderInterface) {
 			$bundle = $provider->provideBundle($bundle_type, $bundle_name);
 		} else {
 			$bundle = call_user_func($provider, $bundle_type, $bundle_name);
@@ -212,11 +196,7 @@ class Manager implements ContainerAwareInterface
 			throw new \UnexpectedValueException("A valid bundle was not provided for '$name'.");
 		}
 		
-		if ($bundle instanceof ContainerAwareInterface) {
-			$bundle->setContainer($this->container);
-		}
-		
-		$this->bundles[$name] = $bundle;
+		$this->setBundle($bundle);
 		
 		return true;
 	}
@@ -230,17 +210,24 @@ class Manager implements ContainerAwareInterface
 	protected function bootBundle(BundleInterface $bundle) {
 		
 		// Boot bundle dependencies
-		$this->loadDependencies($bundle);
+		$this->bootDependencies($bundle);
 		
 		// Shutdown and remove any bundles that this bundle overrides.
 		if ($overrides = $bundle->getOverrides()) {
+			
 			foreach($overrides as $name) {
-				isset($this->bundles[$name]) and $this->bundles[$name]->shutdown();
-				unset($this->bundles[$name]);
+			
+				$name = strtolower($name);
+				
+				if (isset($this->bundles[$name])) {
+						
+					$this->bundles[$name]->shutdown();
+					
+					unset($this->bundles[$name]);
+				}
 			}
 		}
 		
-		// Boot the bundle
 		$bundle->boot();
 		
 		return true;
@@ -249,28 +236,28 @@ class Manager implements ContainerAwareInterface
 	/**
 	 * Loads a bundle's dependencies.
 	 * 
-	 * @param \xpl\Bundle\BundleInterface $bundle
+	 * @param \xpl\Foundation\BundleInterface $bundle
 	 * 
-	 * @throws \xpl\Bundle\Exception\DependencyException if missing dependency bundles.
+	 * @throws \xpl\Foundation\Exception\BundleDependency if missing dependency bundles.
 	 */
-	protected function loadDependencies(BundleInterface $bundle) {
+	protected function bootDependencies(BundleInterface $bundle) {
 		
-		if (! $deps = $bundle->getDependencies()) {
+		if (! $depends = $bundle->getDependencies()) {
 			return;
 		}
 		
 		$missing = array();
 		
-		foreach($deps as $depend) {
+		foreach($depends as $dependency) {
 			try {
 				
-				$dependency = $this->getBundle($depend);
+				$dependOn = $this->getBundle($dependency);
 				
-				if (! $dependency || ! $this->bootBundle($dependency)) {
-					$missing[] = $depend;
+				if (! $dependOn || ! $this->bootBundle($dependOn)) {
+					$missing[] = $dependency;
 				}
 				
-			} catch (Exception\DependencyException $e) {
+			} catch (Exception\BundleDependency $e) {
 				
 				// catch dependency exceptions while recursing
 				$missing = array_merge($missing, $e->getMissing());
@@ -285,7 +272,7 @@ class Manager implements ContainerAwareInterface
 				implode(', ', $missing)
 			);
 			
-			$exception = new Exception\DependencyException($message, 793);
+			$exception = new Exception\BundleDependency($message, 793);
 			$exception->setMissing($missing);
 			
 			throw $exception;

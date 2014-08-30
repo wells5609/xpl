@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\Bundle;
+namespace xpl\Foundation;
 
 use xpl\Common\Storage\Config;
 use xpl\Common\Storage\Registry;
@@ -8,7 +8,7 @@ use xpl\Common\Storage\Registry;
 /**
  * Application is a bundle representing an application.
  */
-class Application extends Bundle 
+class Application extends AbstractBundle 
 {
 	
 	/**

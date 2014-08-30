@@ -2,7 +2,7 @@
 
 namespace xpl\Common\Storage;
 
-use xpl\Common\Structure\Map;
+use xpl\Common\Structure\BaseMap;
 use xpl\Utility\Arr;
 
 /**
@@ -11,7 +11,7 @@ use xpl\Utility\Arr;
  * e.g. "some.item.key" corresponds to:
  * 	'some' => array('item' => array('key' => {VALUE}));
  */
-class Container extends Map {
+class Container extends BaseMap {
 	
 	public function get($key) {
 		return Arr::get($this->_data, $key);

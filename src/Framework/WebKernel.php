@@ -24,8 +24,20 @@ class WebKernel implements ContainerAwareInterface {
 			
 		try {
 			
-			if ($this->match($app)) {
-				return $this->dispatch($app);
+			$di = $this->getContainer();
+			
+			$router = $di['router'];
+			$request = $di['request'];
+			
+			$router->add($app->getResource());
+			
+			if ($router($request->getMethod(), $request->getFullUri())) {
+				
+				$match = $router->getMatch();
+				
+				$di['events']->trigger('dispatch', $app, $request, $match);
+				
+				return $match($request, $app);
 			}
 		
 		} catch (MethodNotAllowed $e) {
@@ -38,30 +50,6 @@ class WebKernel implements ContainerAwareInterface {
 		}
 			
 		return null;
-	}
-	
-	public function match(Application\AppInterface $app) {
-		
-		$di = $this->getContainer();
-		
-		$router = $di['router'];
-		$request = $di['request'];
-		
-		$router->add($app->getResource());
-		
-		return $router($request->getMethod(), $request->getFullUri());
-	}
-	
-	public function dispatch(Application\AppInterface $app) {
-		
-		$di = $this->getContainer();
-		
-		$match = $di['router']->getMatch();
-		$request = $di['request'];
-		
-		$di['events']->trigger('http.dispatch', $app, $request, $match);
-		
-		return $di['dispatcher']->__invoke($app, $request, $match);
 	}
 	
 }

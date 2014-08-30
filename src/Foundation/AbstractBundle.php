@@ -1,8 +1,8 @@
 <?php
 
-namespace xpl\Bundle;
+namespace xpl\Foundation;
 
-abstract class Bundle implements BundleInterface {
+abstract class AbstractBundle implements BundleInterface {
 	
 	protected $name;
 	protected $namespace;
@@ -29,10 +29,14 @@ abstract class Bundle implements BundleInterface {
 		if (null === $this->name) {
 			
 			$class = strtolower(get_class($this));
-	
-			$name = ($pos = strrpos($class, '\\') === false) ? $class : substr($class, $pos+1);
 			
-			$this->name = str_replace('bundle', '', $name);
+			if (false !== $pos = strrpos($class, '\\')) {
+				$name = substr($class, $pos+1);
+			} else {
+				$name = $class;
+			}
+			
+			$this->name = str_replace(array('bundle', $this->getType()), '', $name);
 		}
 		
 		return $this->name;

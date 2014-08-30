@@ -3,14 +3,14 @@
 namespace xpl\Framework\Application;
 
 use xpl\Common\Storage\Registry;
-use xpl\Framework\RequestInterface;
-use xpl\Routing\RouteInterface;
+use xpl\Foundation\RequestInterface;
+use xpl\Foundation\RouteInterface;
 use xpl\Routing\Resource;
 use xpl\Routing\Router;
 use xpl\Http\Response;
 use RuntimeException;
 
-class App extends \xpl\Bundle\Application implements AppInterface {
+class App extends \xpl\Foundation\Application implements AppInterface {
 	
 	/**
 	 * @var string
@@ -66,20 +66,6 @@ class App extends \xpl\Bundle\Application implements AppInterface {
 		$__FILE__ = $this->getPath('config').'views.php';
 		
 		file_exists($__FILE__) and include $__FILE__;
-	}
-	
-	/**
-	 * @return $this|boolean
-	 */
-	public function useResources($newval = null) {
-		
-		if (! isset($newval)) {
-			return $this->config->get('use_resources');
-		}
-		
-		$this->config->set('use_resources', (bool)$newval);
-		
-		return $this;
 	}
 	
 	/**
@@ -205,7 +191,6 @@ class App extends \xpl\Bundle\Application implements AppInterface {
 	 * Called at end of `__construct()`
 	 */
 	protected function onInit() {
-		
 		$this->loadComponents();
 	}
 	

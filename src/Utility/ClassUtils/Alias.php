@@ -28,17 +28,22 @@ class Alias
 	/**
 	 * Add a class alias.
 	 * 
-	 * Same format as class_alias()
+	 * Same format as class_alias().
+	 * 
+	 * Will register the aliaser with SPL first time called.
 	 * 
 	 * @param string $original Original, fully resolved class.
 	 * @param string $alias Alias to assign to class.
 	 */
 	public static function add($original, $alias = null) {
+		
 		if (isset($alias)) {
 			static::$aliases[$alias] = $original;
 		} else {
 			static::addArray((array)$original);
 		}
+		
+		static::$registered OR static::register();
 	}
 	
 	/**

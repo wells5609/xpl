@@ -2,7 +2,7 @@
 
 namespace xpl\Http;
 
-use xpl\Framework\RequestInterface;
+use xpl\Foundation\RequestInterface;
 use xpl\Session\SessionInterface;
 
 class Request implements RequestInterface

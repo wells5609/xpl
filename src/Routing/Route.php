@@ -2,7 +2,7 @@
 
 namespace xpl\Routing;
 
-class Route implements RouteInterface {
+class Route implements \xpl\Foundation\RouteInterface {
 	
 	protected $name;
 	protected $uri;
@@ -87,6 +87,8 @@ class Route implements RouteInterface {
 	
 	public function isSatisfied(&$missing = null) {
 		
+		isset($this->compiledUri) or $this->compile();
+		
 		if (empty($this->params)) {
 			return true;
 		}
@@ -104,6 +106,10 @@ class Route implements RouteInterface {
 	public function isSatisfiedBy(array $values, &$missing = null) {
 		
 		isset($this->compiledUri) or $this->compile();
+		
+		if (empty($this->params)) {
+			return true;
+		}
 		
 		foreach($this->params as $param => $null) {
 			if (! isset($values[$param])) {
@@ -140,9 +146,7 @@ class Route implements RouteInterface {
 	}
 	
 	public function getCompiledUri() {
-		if (! isset($this->compiledUri)) {
-			$this->compile();
-		}
+		isset($this->compiledUri) or $this->compile();
 		return $this->compiledUri;
 	}
 	
@@ -152,15 +156,15 @@ class Route implements RouteInterface {
 			return $this->uri;
 		}
 		
-		$path = array();
+		$path = '';
 		
 		foreach(explode('/', $this->uri) as $segment) {
 			if ('{' !== $segment[0]) {
-				$path[] = $segment;
+				$path .= '/'.$segment;
 			}
 		}
 		
-		return implode('/', $path);
+		return ltrim($path, '/');
 	}
 	
 	protected function compile() {
@@ -172,7 +176,7 @@ class Route implements RouteInterface {
 			
 			foreach($vars[1] as $i => $varname) {
 				
-				if (! $regex = $this->group->getParamRegex($varname)) {
+				if (! $regex = $this->group->getRegex($varname)) {
 					throw new \InvalidArgumentException("Unknown route parameter: '$varname'.");
 				}
 				

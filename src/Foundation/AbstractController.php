@@ -1,14 +1,12 @@
 <?php
 
-namespace xpl\Routing;
+namespace xpl\Foundation;
 
-use xpl\Framework\RequestInterface;
-use xpl\Framework\ControllerInterface;
-
-abstract class Controller implements ControllerInterface {
+abstract class AbstractController implements ControllerInterface {
 	
 	protected $request;
 	protected $route;
+	protected $app;
 	
 	public function setRequest(RequestInterface $request) {
 		$this->request = $request;
@@ -16,6 +14,10 @@ abstract class Controller implements ControllerInterface {
 	
 	public function setRoute(RouteInterface $route) {
 		$this->route = $route;
+	}
+	
+	public function setApp(BundleInterface $app) {
+		$this->app = $app;
 	}
 	
 }

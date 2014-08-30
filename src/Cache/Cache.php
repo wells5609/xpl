@@ -2,12 +2,11 @@
 
 namespace xpl\Cache;
 
-use xpl\Common\Singleton;
 use xpl\Cache\Driver\CacheDriverInterface;
 
 class Cache
 {
-	use Singleton;
+	use \xpl\Common\Singleton;
 	
 	/**
 	 * Default TTL (2 days)

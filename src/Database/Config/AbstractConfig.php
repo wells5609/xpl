@@ -2,7 +2,7 @@
 
 namespace xpl\Database\Config;
 
-abstract class AbstractConfig extends \PropertyAwareObject {
+abstract class AbstractConfig extends \xpl\Common\PropertyAwareObject {
 	
 	public function __construct(array $args = null) {
 		if (isset($args)) {

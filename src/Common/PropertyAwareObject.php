@@ -10,13 +10,7 @@ abstract class PropertyAwareObject extends Object {
 			throw new \InvalidArgumentException("Attempting to set invalid property: '$key'.");
 		}
 		
-		$mutator = 'set'.ucfirst(strtolower($key));
-		
-		if (is_callable(array($this, $mutator))) {
-			return $this->$mutator($value);
-		} else {
-			$this->$key = $value;
-		}
+		$this->$key = $value;
 		
 		return $this;
 	}

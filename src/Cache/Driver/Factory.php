@@ -34,6 +34,7 @@ class Factory {
 		
 		if (empty($driver_class)) {
 			$driver_class = static::detect();
+		
 		} else if (is_array($driver_class)) {
 			$driver_class = static::detect($driver_class);
 		}

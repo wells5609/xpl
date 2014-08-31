@@ -1,10 +1,10 @@
 <?php
 
-namespace xpl\Framework\Api;
+namespace xpl\Web\Api\Response;
 
-use xpl\Framework\Web\Response\TypeInterface;
+use xpl\Web\Response\TypeInterface;
 
-class ResponseType implements TypeInterface {
+class Type implements TypeInterface {
 	
 	protected $accept = array(
 		'application/json' => 'Json', 
@@ -38,7 +38,7 @@ class ResponseType implements TypeInterface {
 		}
 		
 		$classname = $this->accept[$this->mimetype];
-		$type_class = 'xpl\\Framework\\Web\\Response\\'.$classname;
+		$type_class = 'xpl\\Web\\Response\\'.$classname;
 		
 		$type = new $type_class();
 		

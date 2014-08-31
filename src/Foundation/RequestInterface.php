@@ -11,6 +11,8 @@ interface RequestInterface extends \xpl\Common\Arrayable {
 	
 	public function getUri();
 	
+	public function getFullUri();
+	
 	public function getQuery();
 	
 	public function getHeaders();

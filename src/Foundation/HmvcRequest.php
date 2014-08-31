@@ -1,8 +1,7 @@
 <?php
 
-namespace xpl\Framework\Application;
+namespace xpl\Foundation;
 
-use xpl\Foundation\RequestInterface;
 use xpl\Http\Request as HttpRequest;
 
 class HmvcRequest implements RequestInterface 

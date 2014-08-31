@@ -1,25 +1,25 @@
 <?php
 
-namespace xpl\Http\Response\Strategy;
+namespace xpl\Web\Response;
 
-use xpl\Http\Response\FormatStrategyInterface;
-
-class Jsonp implements FormatStrategyInterface {
+class Jsonp implements TypeInterface {
 	
 	protected $mimetype = 'application/json';
 	
-	public function format(\xpl\Http\Response $response) {
+	public function getName() {
+		return 'jsonp';
+	}
+	
+	public function format($body) {
 		
-		if (empty($_REQUEST['callback'])) {
+		if (empty($_GET['callback'])) {
 			$json = new Json();
-			return $json->format($response);
+			return $json->format($body);
 		}
 		
-		$callback = esc_ascii($_REQUEST['callback']);
+		$callback = filter_var($_GET['callback'], FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH|FILTER_FLAG_STRIP_BACKTICK);
 		
 		$this->mimetype = 'text/javascript';
-		
-		$body = $response->getBody();
 		
 		if (is_object($body) && ! $body instanceof \JsonSerializable) {
 			$body = method_exists($body, 'toArray') ? $body->toArray() : (array)$body;

@@ -2,18 +2,10 @@
 
 namespace xpl\Database\Config;
 
-abstract class AbstractConfig extends \xpl\Common\PropertyAwareObject {
+abstract class AbstractConfig extends \xpl\Common\Object {
 	
-	public function __construct(array $args = null) {
-		if (isset($args)) {
-			$this->configure($args);
-		}
-	}
-	
-	public function configure(array $args) {
-		foreach($args as $key => $val) {
-			$this->set($key, $val);
-		}
+	public function __construct(array $args) {
+		$this->import($args);
 	}
 	
 }

@@ -3,14 +3,11 @@
 namespace xpl\Framework\Application;
 
 use xpl\Common\Storage\Registry;
-use xpl\Foundation\RequestInterface;
-use xpl\Foundation\RouteInterface;
 use xpl\Routing\Resource;
 use xpl\Routing\Router;
-use xpl\Http\Response;
-use RuntimeException;
+use xpl\Web\Response;
 
-class App extends \xpl\Foundation\Application implements AppInterface {
+class App extends \xpl\Web\Application implements AppInterface {
 	
 	/**
 	 * @var string
@@ -35,7 +32,7 @@ class App extends \xpl\Foundation\Application implements AppInterface {
 		$this->config->setParent($this);
 		$this->config->setPath('config', 'config/');
 		
-		$vars = import($this->config->getPath('config').'config.php');
+		$vars = include($this->config->getPath('config').'config.php');
 		
 		if (! empty($vars['app'])) {
 			$this->config->import($vars['app']);
@@ -55,9 +52,6 @@ class App extends \xpl\Foundation\Application implements AppInterface {
 		$this->onInit();
 	}
 	
-	public function onDispatch(RouteInterface $route, RequestInterface $request) {
-	}
-	
 	public function onRespond(Response $response) {
 	}
 	
@@ -66,30 +60,6 @@ class App extends \xpl\Foundation\Application implements AppInterface {
 		$__FILE__ = $this->getPath('config').'views.php';
 		
 		file_exists($__FILE__) and include $__FILE__;
-	}
-	
-	/**
-	 * @return \xpl\Routing\Resource
-	 */
-	public function getResource() {
-		
-		if ($this->registry->has('resource')) {
-			return $this->registry->get('resource');
-		}
-		
-		$class = $this->getNamespace().'\\Resource';
-		
-		if (! class_exists($class, true)) {
-			throw new \InvalidArgumentException("Resource definition class does not exist: '$class'.");
-		}
-		
-		$definition = new $class();
-		
-		$resource = $definition->createResource();
-		
-		$this->registry->set('resource', $resource);
-		
-		return $resource;
 	}
 	
 	/**
@@ -198,7 +168,6 @@ class App extends \xpl\Foundation\Application implements AppInterface {
 	 * Sets up initial application components in object registry.
 	 */
 	protected function loadComponents() {
-		
 	}
 	
 	/**
@@ -215,7 +184,7 @@ class App extends \xpl\Foundation\Application implements AppInterface {
 	protected function autoloadRegister($dir, $psr4 = false) {
 		
 		if (! $namespace = $this->getNamespace()) {
-			throw new RuntimeException("Must set app namespace to register autoloader.");
+			throw new \RuntimeException("Must set app namespace to register autoloader.");
 		}
 		
 		$func = 'add'.($psr4 ? 'Psr4' : '');

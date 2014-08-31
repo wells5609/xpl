@@ -8,6 +8,21 @@ namespace xpl\Utility {
 
 namespace {
 
+if (! function_exists('uri_template')) :
+		
+	/**
+	 * Builds a URI from a registered URI template.
+	 * 
+	 * @param string $name URI template name.
+	 * @param array $args Associative array of template values.
+	 * @return string
+	 */
+	function uri_template($name, array $args) {
+		\xpl\Utility\Uri\Manager::build($name, $args);
+	}
+	
+endif;
+
 /** ============================
 	Class Utilities
 ============================= */

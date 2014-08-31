@@ -1,11 +1,11 @@
 <?php
 
-namespace xpl\Framework\Api;
+namespace xpl\Web\Api\Response;
 
 use xpl\Common\Arrayable;
 use xpl\Utility\Arr;
 
-class ResponseStructure implements Arrayable, \IteratorAggregate, \JsonSerializable {
+class Structure implements Arrayable, \IteratorAggregate, \JsonSerializable {
 	
 	protected $nodes;
 	

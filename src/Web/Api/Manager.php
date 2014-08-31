@@ -1,16 +1,13 @@
 <?php
 
-namespace xpl\Framework\Api;
+namespace xpl\Web\Api;
 
 use xpl\Common\Storage\Config;
-use xpl\Dependency\ContainerAwareInterface;
-use xpl\Dependency\Container;
 
-class Manager implements ContainerAwareInterface {
+class Manager {
 	
 	protected $config;
 	protected $structure;
-	protected $container;
 	
 	public function __construct() {
 		$this->config = new Config();
@@ -19,14 +16,6 @@ class Manager implements ContainerAwareInterface {
 	
 	public function configure(array $settings) {
 		$this->config->import($settings);
-	}
-	
-	public function setContainer(Container $di) {
-		$this->container = $di;
-	}
-	
-	public function getContainer() {
-		return isset($this->container) ? $this->container : null;
 	}
 	
 	public function config($item = null, $value = null) {
@@ -49,9 +38,9 @@ class Manager implements ContainerAwareInterface {
 	public function setStructure($struct = null) {
 		
 		if (empty($struct) || is_array($struct)) {
-			$struct = new ResponseStructure($struct);
+			$struct = new Response\Structure($struct);
 		
-		} else if (! $struct instanceof ResponseStructure) {
+		} else if (! $struct instanceof Response\Structure) {
 			throw new \InvalidArgumentException("API structure must be array or ResponseStructure, given: ".gettype($struct));
 		}
 		

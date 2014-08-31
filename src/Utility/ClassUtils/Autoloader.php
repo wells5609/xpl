@@ -87,7 +87,7 @@ class Autoloader
 	 * @return void
 	 */
 	protected function __construct($namespace) {
-		$this->namespace = ltrim($namespace, '\\_');
+		$this->namespace = trim($namespace, '\\_');
 		$this->namespaceStrlen = strlen($this->namespace);
 		$this->mode = static::PSR_0;
 	}

@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\Framework\Web\Response;
+namespace xpl\Web\Response;
 
 class Json implements TypeInterface {
 	

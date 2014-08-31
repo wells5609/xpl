@@ -7,25 +7,29 @@ class Container extends \xpl\Dependency\Container {
 	public function __construct() {
 		
 		$this->register('request', function ($di) {
-			$request = \xpl\Http\Request::createFromGlobals();
+			$request = \xpl\Web\Request::createFromGlobals();
 			$request->setSession($di['session']);
 			return $request;
 		});
 		
 		$this->register('response', function ($di) {
-			return new \xpl\Framework\Web\Response($di['request']);
+			return new \xpl\Web\Response($di['request']);
 		});
 		
-		$this->register('dbal', function ($di) {
-			return new \xpl\Database\ConnectionPool($di['env']->getPath('env'));
+		$this->register('dispatcher', function () {
+			return new \xpl\Web\Dispatcher();
+		});
+		
+		$this->register('api', function () {
+			return new \xpl\Web\Api\Manager();
 		});
 		
 		$this->register('router', function () {
 			return new \xpl\Routing\Router();
 		});
 		
-		$this->register('api', function () {
-			return new \xpl\Framework\Api\Manager();
+		$this->register('dbal', function ($di) {
+			return new \xpl\Database\ConnectionPool($di['env']->getPath('env'));
 		});
 		
 		$this->register('web_kernel', 'xpl\Framework\WebKernel');

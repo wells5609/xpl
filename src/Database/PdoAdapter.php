@@ -12,12 +12,12 @@ class PdoAdapter implements AdapterInterface {
 	const EXCEPTION_CODE = 417;
 	
 	/**
-	 * @var xpl\Component\Database\Config\Database
+	 * @var \xpl\Database\Config\Database
 	 */
 	protected $config;
 	
 	/**
-	 * @var \xpl\Component\Database\Connection
+	 * @var \xpl\Database\Connection
 	 */
 	protected $connection;
 	

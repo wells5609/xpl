@@ -20,11 +20,6 @@ class Response {
 		if ($request->is('HEAD')) {
 			$this->send_body = false;
 		}
-		$this->request_mimetype = $request->getMimetype();
-	}
-	
-	public function getRequestMimetype() {
-		return isset($this->request_mimetype) ? $this->request_mimetype : null;
 	}
 	
 	/**

@@ -1,16 +1,24 @@
 <?php
 
-namespace xpl\Framework\Web;
+namespace xpl\Web;
 
-use xpl\Http\Response as HttpResponse;
-use xpl\Http\Request as HttpRequest;
-use xpl\Framework\Web\Response\TypeInterface as ResponseType;
-
-class Response extends HttpResponse {
+class Response extends \xpl\Http\Response {
 	
 	protected $type;
 	
-	public function setType(ResponseType $type) {
+	/**
+	 * Construct response.
+	 */
+	public function __construct(Request $request) {
+		parent::__construct($request);
+		$this->request_mimetype = $request->getMimetype();
+	}
+	
+	public function getRequestMimetype() {
+		return isset($this->request_mimetype) ? $this->request_mimetype : null;
+	}
+	
+	public function setType(Response\TypeInterface $type) {
 		$this->type = $type;
 		return $this;
 	}

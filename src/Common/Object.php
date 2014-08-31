@@ -10,6 +10,10 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 		parent::__construct($data);
 	}
 	
+	public function offsetGet($key) {
+		return parent::offsetExists($key) ? parent::offsetGet($key) : null;
+	}
+	
 	public function set($key, $value) {
 		$this->offsetSet($key, $value);
 		return $this;
@@ -34,6 +38,14 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 	
 	public function contains($value) {
 		return in_array($value, $this->toArray(), true);
+	}
+	
+	public function keys() {
+		return array_keys($this->toArray());
+	}
+	
+	public function values() {
+		return array_values($this->toArray());
 	}
 	
 	/**

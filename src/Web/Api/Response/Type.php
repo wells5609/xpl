@@ -2,6 +2,7 @@
 
 namespace xpl\Web\Api\Response;
 
+use xpl\Web\Api\Manager;
 use xpl\Web\Response\TypeInterface;
 
 class Type implements TypeInterface {
@@ -13,9 +14,12 @@ class Type implements TypeInterface {
 		'application/xml' => 'Xml',
 	);
 
+	protected $api;
 	protected $mimetype;
 	
-	public function __construct($mimetype = null) {
+	public function __construct(Manager $api_manager, $mimetype = null) {
+			
+		$this->api = $api_manager;
 		
 		if (isset($mimetype) && isset($this->accept[$mimetype])) {
 			$this->mimetype = $mimetype;
@@ -29,12 +33,7 @@ class Type implements TypeInterface {
 	public function format($body) {
 		
 		if (! isset($this->mimetype)) {
-		
-			$mime = di()->resolve('request')->getMimetype();
-			
-			if (! $mime || ! isset($this->accepted[$mime])) {
-				$this->mimetype = 'application/json';
-			}
+			$this->mimetype = 'application/json';
 		}
 		
 		$classname = $this->accept[$this->mimetype];
@@ -56,36 +55,30 @@ class Type implements TypeInterface {
 	
 	protected function buildStructure($body) {
 		
-		$api = di()->offsetGet('api');
-		
-		if (! $api->hasStructure()) {
-			$api->setStructure();
+		if (! $this->api->hasStructure()) {
+			$this->api->setStructure();
 		}
 		
-		$structure = $api->getStructure();
+		$structure = $this->api->getStructure();
 		
-		$errors = \Error::getMessages('ApiErrorException');
-		
-		if ($errors) {
+		if ($this->api->hasErrors()) {
 			$structure->setStatus(0);
 			$structure->setMessage('An error occurred.');
-			$structure->setErrors($errors);
+			$structure->setErrors($this->api->getErrorOutput());
 		} else {
 			$structure->setStatus(1);
 			$structure->setMessage('Success');
 			$structure->setContent($body);
 		}
 		
-		$diagnostics = array(
+		$structure->setDiagnostics(array(
 			'Memory' => array(
 				'Usage' => memory_usage(3).' MB',
 				'RealUsage' => memory_usage(3, true).' MB',
 				'PeakUsage' => number_format(memory_get_peak_usage()/1024/1024, 3).' MB',
 			),
 			'TimeElapsed' => (time_elapsed(5)*1000).' ms'
-		);
-		
-		$structure->setDiagnostics($diagnostics);
+		));
 		
 		return $structure;
 	}

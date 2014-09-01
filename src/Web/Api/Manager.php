@@ -8,10 +8,12 @@ class Manager {
 	
 	protected $config;
 	protected $structure;
+	protected $errors;
 	
 	public function __construct() {
 		$this->config = new Config();
 		$this->config->setParent($this);
+		$this->errors = array();
 	}
 	
 	public function configure(array $settings) {
@@ -29,10 +31,6 @@ class Manager {
 		}
 		
 		$this->config->set($item, $value);
-	}
-	
-	public function cfg($item = null, $value = null) {
-		return $this->config($item, $value);
 	}
 	
 	public function setStructure($struct = null) {
@@ -53,6 +51,26 @@ class Manager {
 	
 	public function getStructure() {
 		return $this->structure;
+	}
+	
+	public function reportError(Exception $exception) {
+		$this->errors[] = $exception;
+	}
+	
+	public function hasErrors() {
+		return ! empty($this->errors);
+	}
+	
+	public function getErrors() {
+		return $this->errors;
+	}
+	
+	public function getErrorOutput() {
+		$errors = array();
+		foreach($this->errors as $e) {
+			$errors[$e->getCode()] = $e->getMessage();
+		}
+		return $errors;
 	}
 	
 }

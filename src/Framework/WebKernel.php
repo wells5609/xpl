@@ -4,7 +4,6 @@ namespace xpl\Framework;
 
 use xpl\Dependency\ContainerAwareInterface;
 use xpl\Dependency\Container;
-use xpl\Web\Dispatcher;
 
 class WebKernel implements ContainerAwareInterface {
 	
@@ -22,7 +21,14 @@ class WebKernel implements ContainerAwareInterface {
 		
 		$di = $this->getContainer();
 		
-		return $di['dispatcher']->__invoke($di['router'], $di['request'], $app, $di['events']);
+		try {
+			
+			return $di['dispatcher']->__invoke($di['router'], $di['request'], $app, $di['events']);
+		
+		} catch (\xpl\Web\Api\Exception $e) {
+			
+			$di['api']->reportError($e);
+		}
 	}
 	
 }

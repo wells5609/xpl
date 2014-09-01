@@ -2,9 +2,9 @@
 
 namespace xpl\Web;
 
-use xpl\Routing\Router;
 use xpl\Foundation\RequestInterface;
 use xpl\Event\Manager as Events;
+use xpl\Routing\Router;
 use xpl\Routing\Exception\MethodNotAllowed;
 use xpl\Routing\Exception\RouteException;
 use xpl\Http\Exception\MethodNotAllowed as HTTP_405;

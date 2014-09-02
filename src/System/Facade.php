@@ -2,7 +2,7 @@
 
 namespace xpl\System;
 
-use \xpl\Dependency\Container;
+use xpl\Dependency\DI;
 
 /**
  * Static class that holds the global DI container.
@@ -12,19 +12,19 @@ use \xpl\Dependency\Container;
 class Facade {
 	
 	/**
-	 * @var \xpl\Dependency\Container
+	 * @var \xpl\Dependency\DI
 	 */
 	protected static $instance;
 	
 	/**
-	 * @param \xpl\Dependency\Container
+	 * @param \xpl\Dependency\DI
 	 */
-	public static function setInstance(Container $instance) {
+	public static function setInstance(DI $instance) {
 		static::$instance = $instance;
 	}
 	
 	/**
-	 * @return \xpl\Dependency\Container
+	 * @return \xpl\Dependency\DI
 	 */
 	public static function getInstance() {
 		return static::$instance;

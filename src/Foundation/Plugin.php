@@ -2,7 +2,7 @@
 
 namespace xpl\Foundation;
 
-abstract class Plugin extends AbstractBundle {
+abstract class Plugin extends AbstractDiAwareBundle {
 	
 	final public function getType() {
 		return 'plugin';

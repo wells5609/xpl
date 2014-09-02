@@ -2,7 +2,7 @@
 
 namespace xpl\Routing\Exception;
 
-class MethodNotAllowed extends RouteException {
+class MethodNotAllowed extends \xpl\Routing\Exception {
 	
 	protected $allowed = array();
 	

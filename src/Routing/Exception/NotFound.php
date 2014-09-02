@@ -2,4 +2,4 @@
 
 namespace xpl\Routing\Exception;
 
-class NotFound extends RouteException {}
+class NotFound extends \xpl\Routing\Exception {}

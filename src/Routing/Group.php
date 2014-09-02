@@ -29,11 +29,12 @@ abstract class Group {
 		return $this->name;
 	}
 	
-	public function get($route_name) {
-		return isset($this->routes[$route_name]) ? $this->routes[$route_name] : null;
-	}
-	
 	public function setController($object) {
+		
+		if (! is_object($object)) {
+			throw new \InvalidArgumentException("Controller must be object, given: ".gettype($object));
+		}
+		
 		$this->controller = $object;
 	}
 	
@@ -56,6 +57,10 @@ abstract class Group {
 		$this->set(new Route($this, $name, $uri, $methods, $action, $options));
 	}
 
+	public function get($route_name) {
+		return isset($this->routes[$route_name]) ? $this->routes[$route_name] : null;
+	}
+	
 	public function getRoutes() {
 		return $this->routes;
 	}

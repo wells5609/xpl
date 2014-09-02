@@ -2,7 +2,7 @@
 
 namespace xpl\Routing;
 
-class Resource extends Group {
+class Resource extends Group implements \Serializable {
 	
 	/**
 	 * Controller classname.
@@ -34,6 +34,17 @@ class Resource extends Group {
 	
 	public function buildUrl($path) {
 		return $this->baseUrl.ltrim($path, '/');
+	}
+	
+	public function serialize() {
+		$vars = get_object_vars($this);
+		return serialize($vars);
+	}
+	
+	public function unserialize($serial) {
+		foreach(unserialize($serial) as $key => $value) {
+			$this->$key = $value;
+		}
 	}
 	
 }

@@ -2,7 +2,7 @@
 
 namespace xpl\Routing\Exception;
 
-class MissingParameter extends RouteException {
+class MissingParameter extends \xpl\Routing\Exception {
 	
 	protected $missing = array();
 	

@@ -2,14 +2,14 @@
 
 namespace xpl\System;
 
-use xpl\Dependency\ContainerAwareInterface;
-use xpl\Dependency\Container;
+use xpl\Dependency\DiAwareInterface;
+use xpl\Dependency\DI;
 
-class Manifest implements ContainerAwareInterface 
+class Manifest implements DiAwareInterface 
 {
 	
 	protected $file;
-	protected $container;
+	protected $di;
 	
 	public function __construct($file) {
 		
@@ -20,18 +20,18 @@ class Manifest implements ContainerAwareInterface
 		$this->file = $file;
 	}
 	
-	public function setContainer(Container $container) {
-		$this->container = $container;
-		$this->init($container);
+	public function setDI(DI $di) {
+		$this->di = $di;
+		$this->init($di);
 	}
 	
-	public function getContainer() {
-		return isset($this->container) ? $this->container : null;
+	public function getDI() {
+		return isset($this->di) ? $this->di : null;
 	}
 	
-	protected function init(Container $di) {
+	protected function init(DI $di) {
 		
-		$manifest = import($this->file);
+		$manifest = include $this->file;
 		
 		$env = $di['env'];
 		

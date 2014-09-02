@@ -8,7 +8,7 @@ class HmvcRequest implements RequestInterface
 {
 	
 	protected $httpRequest;
-	protected $method;
+	protected $method = 'GET';
 	protected $uri;
 	protected $query;
 	protected $mimetype;

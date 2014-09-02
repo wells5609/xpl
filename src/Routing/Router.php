@@ -78,7 +78,7 @@ class Router {
 					
 					// Throw exception if HTTP method is not allowed
 					if (! $route->hasMethod($method)) {
-						$exception = new Exception\MethodNotAllowed();
+						$exception = new Exception\MethodNotAllowed("The '$method' HTTP method is not allowed.");
 						$exception->setAllowedValues($route->getMethods());
 						throw $exception;
 					}
@@ -98,6 +98,10 @@ class Router {
 	}
 	
 	protected function matchRoute(Route $route, $uri, $http_method, array $query = array()) {
+		
+		if ($route instanceof REST\Route && ! $route->hasMethod($http_method)) {
+			return false;
+		}
 		
 		// Match route with path vars
 		if ($this->matchUri($route, $route->getCompiledUri(), $uri, $http_method)) {

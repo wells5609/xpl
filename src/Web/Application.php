@@ -5,6 +5,7 @@ namespace xpl\Web;
 use xpl\Foundation\Application as BaseApp;
 use xpl\Foundation\RoutableInterface;
 use xpl\Foundation\RouteInterface;
+use xpl\Foundation\RequestInterface;
 use xpl\Foundation\ControllerInterface;
 
 class Application extends BaseApp implements RoutableInterface {
@@ -34,7 +35,7 @@ class Application extends BaseApp implements RoutableInterface {
 		throw new \RuntimeException("Resource definition class does not exist: '$class'.");
 	}
 	
-	public function onRoute(RouteInterface $route, Request $request, ControllerInterface $controller) {
+	public function onRoute(RouteInterface $route, RequestInterface $request, ControllerInterface $controller) {
 	}
 	
 	public function onRespond(Response $response) {

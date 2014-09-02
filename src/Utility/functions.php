@@ -18,7 +18,7 @@ if (! function_exists('uri_template')) :
 	 * @return string
 	 */
 	function uri_template($name, array $args) {
-		\xpl\Utility\Uri\Manager::build($name, $args);
+		return \xpl\Utility\Uri\Manager::build($name, $args);
 	}
 	
 endif;

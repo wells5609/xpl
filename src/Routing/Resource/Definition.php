@@ -3,6 +3,7 @@
 namespace xpl\Routing\Resource;
 
 use xpl\Routing\Resource;
+use xpl\Cache\Cache;
 
 abstract class Definition {
 	
@@ -24,7 +25,11 @@ abstract class Definition {
 		return '/';
 	}
 	
-	public function createResource() {
+	public function createResource(Cache $cache = null) {
+		
+		if (isset($cache) && $resource = $cache->get($this->getName(), 'resources')) {
+			return unserialize($resource);
+		}
 		
 		$resource = new Resource(
 			$this->getParams(), 
@@ -42,7 +47,13 @@ abstract class Definition {
 			$resource->add($name, $uri, $methods, $action);
 		}
 		
-		$resource->setController($this->getControllerClass());
+		$controllerClass = $this->getControllerClass();
+		
+		$resource->setController(new $controllerClass);
+		
+		if (isset($cache)) {
+			$cache->set($this->getName(), serialize($resource), 'resources');
+		}
 		
 		return $resource;
 	}

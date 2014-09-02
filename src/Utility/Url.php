@@ -2,17 +2,13 @@
 
 namespace xpl\Utility;
 
-use xpl\Http\Request;
-
 class Url {
 	
 	protected $current_url;
-	protected $request;
 	protected $schemas = array();
 	
-	public function __construct(Request $request) {
-		$this->request = $request;
-		$this->current_url = $this->to($request->getUri(), $request->getQuery());
+	public function __construct($request_uri, $request_query = null) {
+		$this->current_url = $this->to($request_uri, $request_query);
 	}
 	
 	/**

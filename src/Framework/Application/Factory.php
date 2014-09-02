@@ -82,7 +82,7 @@ class Factory implements BundleProviderInterface {
 		if ($this->allowOwnClass && is_readable($path.'Application.php')) {
 			
 			// Use a custom class from Application.php
-			import($path.'Application.php');
+			include $path.'Application.php';
 			
 			$appClass = ucfirst($name).'Application';
 			

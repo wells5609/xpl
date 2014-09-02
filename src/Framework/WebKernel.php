@@ -2,24 +2,24 @@
 
 namespace xpl\Framework;
 
-use xpl\Dependency\ContainerAwareInterface;
-use xpl\Dependency\Container;
+use xpl\Dependency\DiAwareInterface;
+use xpl\Dependency\DI;
 
-class WebKernel implements ContainerAwareInterface {
+class WebKernel implements DiAwareInterface {
 	
-	protected $container;
+	protected $di;
 	
-	public function setContainer(Container $container) {
-		$this->container = $container;
+	public function setDI(DI $di) {
+		$this->di = $di;
 	}
 	
-	public function getContainer() {
-		return isset($this->container) ? $this->container : null;
+	public function getDI() {
+		return isset($this->di) ? $this->di : null;
 	}
 	
 	public function __invoke(Application\AppInterface $app) {
 		
-		$di = $this->getContainer();
+		$di = $this->getDI();
 		
 		try {
 			

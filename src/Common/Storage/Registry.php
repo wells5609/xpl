@@ -76,7 +76,7 @@ class Registry extends BaseMap {
 	}
 	
 	/**
-	 * Registers a closure which loads an item when invoked.
+	 * Registers a Closure that returns the item when invoked.
 	 * 
 	 * @param string $key Item key.
 	 * @param \Closure $callback Closure that returns the item.
@@ -88,6 +88,43 @@ class Registry extends BaseMap {
 		$this->registered[$key] = $callback;
 		
 		return $this;
+	}
+	
+	/**
+	 * Removes an item by key, and optionally by class (in addition).
+	 * 
+	 * @param string $key Item key.
+	 * @param string $class [Optional] Only remove the given class.
+	 * 
+	 * @return $this
+	 */
+	public function remove($key, $class = null) {
+			
+		if (isset($this->_data[$key])) {
+			
+			if (empty($class) || $this->_data[$key] instanceof $class) {
+				unset($this->_data[$key]);
+			}
+		
+		} else if (isset($this->registered[$key])) {
+			
+			if (empty($class) || $class === $this->registered[$key]) {
+				unset($this->registered[$key]);
+			}
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * Checks whether an key can be resolved to an object or registered closure.
+	 * 
+	 * @param string $key Item key.
+	 * 
+	 * @return boolean True if the item can be resolved to an object.
+	 */
+	public function exists($key) {
+		return isset($this->_data[$key]) || isset($this->registered[$key]);
 	}
 	
 }

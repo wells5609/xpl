@@ -13,11 +13,11 @@ abstract class AbstractProvider implements ProviderInterface {
 	abstract public function fetchAll(array $conditions = array());
 	
 	public function getEntityClass() {
-		return 'Object';
+		return 'xpl\Common\Object';
 	}
 	
 	public function getCollectionClass() {
-		return 'Collection';
+		return 'xpl\Common\Storage\Collection';
 	}
 	
 	public function setAdapter(AdapterInterface $adapter) {
@@ -41,7 +41,7 @@ abstract class AbstractProvider implements ProviderInterface {
 	 * Maps a stored entity to an object.
 	 * 
 	 * @param array $data Entity data.
-	 * @return \xpl\Component\Data\Model\Model Instance of data model.
+	 * @return \xpl\Common\Object Instance of data model.
 	 */
 	public function createEntity(array $data) {
 		
@@ -54,13 +54,15 @@ abstract class AbstractProvider implements ProviderInterface {
 	 * Maps multiple stored entities to an object containing Entities.
 	 * 
 	 * @param array $data Entity data.
-	 * @return \xpl\Component\Data\Model\Model Instance of data model.
+	 * @return \xpl\Common\Storage\Collection Instance of data model.
 	 */
 	public function createCollection(array $objects) {
 			
 		$class = $this->getCollectionClass();
 		
-		return new $class(array_map(array($this, 'createEntity'), $objects));
+		$data = array_map(array($this, 'createEntity'), $objects);
+		
+		return new $class($data);
 	}
 	
 }

@@ -2,10 +2,13 @@
 
 namespace xpl\WebServices;
 
-class Response {
+abstract class Response {
 	
 	protected $raw_data;
 	protected $decoded_data;
+	protected $results;
+	
+	abstract public function getResults();
 	
 	public function __construct($data) {
 		if (is_string($data)) {
@@ -31,12 +34,19 @@ class Response {
 		return $this;
 	}
 	
-	public function serialPhpDecode() {
+	public function serializedDecode() {
 		if (! isset($this->raw_data)) {
 			throw new \RuntimeException("Data already decoded.");
 		}
 		$this->decoded_data = unserialize($this->raw_data);
 		return $this;
+	}
+	
+	public function csvDecode($has_headers = true) {
+		if (! isset($this->raw_data)) {
+			throw new \RuntimeException("Data already decoded.");
+		}
+		$this->decoded_data = array_to_object(csv2array($this->raw_data, $has_headers));
 	}
 	
 	public function getDecoded() {

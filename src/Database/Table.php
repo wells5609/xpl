@@ -12,7 +12,7 @@ class Table {
 	protected $table_name;
 	
 	/**
-	 * @var \xpl\Component\Data\AdapterInterface
+	 * @var \xpl\Data\AdapterInterface
 	 */
 	protected $adapter;
 	
@@ -25,9 +25,9 @@ class Table {
 		return $this->adapter;
 	}
 	
-	public function fetch(array $conditions = array()) {
+	public function fetch(array $conditions = array(), $bool_operator = 'AND') {
 		
-		$this->getAdapter()->select($this->table_name, $conditions);
+		$this->getAdapter()->select($this->table_name, $conditions, $bool_operator);
 
 		if (! $row = $this->getAdapter()->fetch()) {
 			return null;
@@ -36,15 +36,22 @@ class Table {
 		return $row;
 	}
 	
-	public function fetchAll(array $conditions = array()) {
+	public function fetchAll(array $conditions = array(), $bool_operator = 'AND') {
 			
-		$this->getAdapter()->select($this->table_name, $conditions);
+		$this->getAdapter()->select($this->table_name, $conditions, $bool_operator);
+		
+		return $this->getAdapter()->fetchAll();
+	}
+	
+	public function fetchAllLike(array $conditions = array(), $bool_operator = 'AND') {
+		
+		$this->getAdapter()->selectLike($this->table_name, $conditions, $bool_operator);
 		
 		return $this->getAdapter()->fetchAll();
 	}
 	
 	public function insert(array $data) {
-			return $this->getAdapter()->insert($this->table_name, $data);
+		return $this->getAdapter()->insert($this->table_name, $data);
 	}
 	
 	public function update(array $data, array $conditions = array()) {

@@ -62,37 +62,36 @@ class Server {
 		return static::isSslEnabled() ? 'https' : 'http';
 	}
 	
-	protected static function setDomainInfo() {
-	
-		if (! isset($_SERVER['HTTP_HOST'])) {
-			throw new \RuntimeException("Cannot get domain info: HTTP host name not available.");
+	protected static function setDomainInfo($HTTP_HOST = null) {
+		
+		$domain = $subdomain = $tld = null;
+		
+		if (empty($HTTP_HOST)) {
+			if (! isset($_SERVER['HTTP_HOST'])) {
+				throw new \RuntimeException("Cannot get domain info: HTTP host not available.");
+			}
+			$HTTP_HOST = $_SERVER['HTTP_HOST'];
 		}
 		
-		$host = $_SERVER['HTTP_HOST'];
-		
-		if (false === strpos($host, '.')) {
-		
-			static::$domain_info = array(
-				'domain' => $host,
-				'subdomain' => null,
-				'tld' => null,
-			);
+		if (false === strpos($HTTP_HOST, '.')) {
+			$domain = $HTTP_HOST;
 		
 		} else {
 			
-			$parts = explode('.', $host);
-			
+			$parts = explode('.', $HTTP_HOST);
 			$tld = array_pop($parts);
 			$domain = array_pop($parts);
 			
-			$subdomain = empty($parts) ? null : count($parts) === 1 ? array_pop($parts) : implode('.', $parts);
-			
-			static::$domain_info = array(
-				'domain' => $domain,
-				'subdomain' => $subdomain,
-				'tld' => $tld,
-			);
+			if (! empty($parts)) {
+				$subdomain = count($parts) === 1 ? array_pop($parts) : implode('.', $parts);
+			}
 		}
+	
+		static::$domain_info = array(
+			'domain' => $domain,
+			'subdomain' => $subdomain,
+			'tld' => $tld,
+		);
 	}
 	
 }

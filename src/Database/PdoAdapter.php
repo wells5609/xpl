@@ -42,7 +42,7 @@ class PdoAdapter implements AdapterInterface {
 	protected $tables;
 	
 	/**
-	 * @param \xpl\Component\Database\Config\Database
+	 * @param \xpl\Database\Config\Database
 	 */
 	public function __construct(Config\Database $config) {
 		$this->config = $config;
@@ -197,7 +197,25 @@ class PdoAdapter implements AdapterInterface {
 		
 		return $this;
 	}
+	
+	public function selectLike($table, array $bind = array(), $boolOperator = "AND") {
+		
+		if ($bind) {
+			$where = array();
+			foreach($bind as $col => $value) {
+				unset($bind[$col]);
+				$bind[":".$col] = $value;
+				$where[] = $col." LIKE :".$col;
+			}
+		}
 
+		$sql = "SELECT * FROM ".$table.(($bind) ? " WHERE ".implode(" ".$boolOperator." ", $where) : " ");
+		
+		$this->prepare($sql)->execute($bind);
+		
+		return $this;
+	}
+	
 	/**
 	 * @return int
 	 */
@@ -270,14 +288,15 @@ class PdoAdapter implements AdapterInterface {
 	 * Returns a table "gateway" instance for the given DB table.
 	 * 
 	 * @param string $name DB table name.
-	 * @return \xpl\Component\Database\Table
+	 * @return \xpl\Database\Table
+	 * @throws \RuntimeException if a nonexistant table is requested.
 	 */
 	public function table($name) {
 		
 		if (! isset($this->tables[$name])) {
 			
-			if (! $this->isTable($name)) {
-				throw new \InvalidArgumentException("Invalid database table: '$name'.");
+			if ($this->getConnection()->getDriverName() !== 'sqlite' && ! $this->isTable($name)) {
+				throw new \RuntimeException("Invalid database table: '$name'.");
 			}
 			
 			$this->tables[$name] = new Table($name, $this);

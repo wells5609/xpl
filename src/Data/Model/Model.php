@@ -2,8 +2,6 @@
 
 namespace xpl\Data\Model;
 
-use xpl\Common\Object;
-
-class Model extends Object implements ModelInterface {
+class Model extends \xpl\Common\Object implements ModelInterface {
 	
 }

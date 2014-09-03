@@ -2,12 +2,14 @@
 
 namespace xpl\Data\Service;
 
+use xpl\Data\Service\ServiceInterface as Service;
+
 class Registry {
 	
 	protected $services = array();
 	protected $registered = array();
 	
-	public function set($svc, ServiceInterface $service) {
+	public function set($svc, Service $service) {
 		$this->services[$svc] = $service;
 		return $this;
 	}
@@ -16,10 +18,6 @@ class Registry {
 		
 		if (! is_string($class)) {
 			throw new \InvalidArgumentException("Class for service '$svc' must be string, given: ".gettype($class));
-		}
-		
-		if (! is_subclass_of($class, __NAMESPACE__.'\\ServiceInterface')) {
-			throw new \LogicException(sprintf('Class must implement "%s".', __NAMESPACE__.'\\ServiceInterface'));
 		}
 		
 		$this->registered[$svc] = $class;

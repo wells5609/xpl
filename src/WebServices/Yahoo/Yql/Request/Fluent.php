@@ -31,19 +31,6 @@ class Fluent
 	}
 
 	/**
-	 * Builds query and gets the response.
-	 * 
-	 * @param callable $callback Callback that performs the HTTP request.
-	 * @return \xpl\WebServices\Yahoo\Yql\Request
-	 */
-	public function run($callback) {
-		
-		$this->request->setQuery($this);
-		
-		return $this->request->execute($callback);
-	}
-
-	/**
 	 * Adds a statement to YQL query.
 	 * 
 	 * @param string $type Statement type, lowercase.

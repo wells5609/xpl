@@ -6,7 +6,7 @@ use xpl\Common\Structure\MapInterface;
 
 class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 	
-	public function __construct($data = null) {
+	public function __construct($data = array()) {
 		parent::__construct($data);
 	}
 	

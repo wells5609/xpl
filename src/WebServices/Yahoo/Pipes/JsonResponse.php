@@ -2,13 +2,12 @@
 
 namespace xpl\WebServices\Yahoo\Pipes;
 
-class Response extends \xpl\WebServices\Response {
+class JsonResponse extends \xpl\WebServices\JsonResponse 
+{
 	
-	public function getResults() {
+	public function __construct($data) {
 		
-		if (isset($this->results)) {
-			return $this->results;
-		}
+		parent::__construct($data);
 		
 		if (isset($this->decoded_data->value->items)) {
 			
@@ -34,8 +33,15 @@ class Response extends \xpl\WebServices\Response {
 				$items = array_shift($items);
 			}
 			
-			return $this->results = array_to_object($items, true);
+			$this->results = array_to_object($items, true);
 		}
+	}
+	
+	public function getResults() {
+		if (isset($this->results)) {
+			return $this->results;
+		}
+		return null;
 	}
 	
 }

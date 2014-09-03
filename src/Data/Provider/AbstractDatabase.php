@@ -26,18 +26,27 @@ abstract class AbstractDatabase extends AbstractReadWrite {
 		$this->table = $adapter->table($this->getTableName());
 	}
 	
-	public function fetchOne(array $args) {
+	public function fetchOne(array $conditions, $bool_operator = 'AND') {
 			
-		if ($data = $this->table->fetch($args)) {
+		if ($data = $this->table->fetch($conditions, $bool_operator)) {
 			return $this->createEntity((array)$data);
 		}
 		
 		return null;
 	}
 	
-	public function fetchAll(array $args = array()) {
+	public function fetchAll(array $conditions = array(), $bool_operator = 'AND') {
 		
-		if ($data = $this->table->fetchAll($args)) {
+		if ($data = $this->table->fetchAll($conditions, $bool_operator)) {
+			return $this->createCollection((array)$data);
+		}
+		
+		return null;
+	}
+	
+	public function fetchAllLike(array $conditions = array(), $bool_operator = 'AND') {
+		
+		if ($data = $this->table->fetchAllLike($conditions, $bool_operator)) {
 			return $this->createCollection((array)$data);
 		}
 		

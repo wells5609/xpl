@@ -8,12 +8,16 @@ abstract class AbstractService implements ServiceInterface {
 	
 	abstract public function isReadOnly();
 	
-	public function getOne(array $conditions = array()) {
-		return $this->getProvider()->fetchOne($conditions);
+	public function getOne(array $conditions = array(), $bool_operator = 'AND') {
+		return $this->getProvider()->fetchOne($conditions, $bool_operator);
 	}
 	
-	public function getAll(array $conditions = array()) {
-		return $this->getProvider()->fetchAll($conditions);
+	public function getAll(array $conditions = array(), $bool_operator = 'AND') {
+		return $this->getProvider()->fetchAll($conditions, $bool_operator);
+	}
+	
+	public function getAllLike(array $conditions = array(), $bool_operator = 'AND') {
+		return $this->getProvider()->fetchAllLike($conditions, $bool_operator);
 	}
 	
 }

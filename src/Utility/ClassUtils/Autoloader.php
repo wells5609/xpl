@@ -272,7 +272,7 @@ class Autoloader
 	 * @throws RuntimeException if no path is set.
 	 * @return $this
 	 */
-	public function register() {
+	public function register($prepend = false) {
 
 		if (! isset($this->path)) {
 			throw new \RuntimeException("Cannot register autoloader - no path set.");
@@ -280,7 +280,7 @@ class Autoloader
 
 		$func = 'load'.($this->isPsr4() ? 'Psr4' : 'Psr0');
 		
-		spl_autoload_register(array($this, $func));
+		spl_autoload_register(array($this, $func), true, $prepend);
 
 		$this->registered = true;
 

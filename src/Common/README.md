@@ -38,4 +38,3 @@ The `Storage` namespace includes various extensions of structures (mostly map-ba
  * Class `Config` - Extends `Container`. Allows setting of a "parent" object (presumed to be the one being configured).
  * Class `Bin` - Extends `Structure\BaseMap`, implements `Structure\StackInterface`. Adds some extra methods like `clear()`, `attach()`, and `detach()`. 
  * Class `Collection` - Extends `Bin`, implements `Sortable`. Adds a bunch of array-like methods: `map()`, `slice()`, `intersect()`, `diff()`, `keyDiff()`, and more.
- 

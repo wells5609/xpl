@@ -21,7 +21,7 @@ class ConnectionPool {
 	public function setIniPath($path) {
 		
 		if (! $realpath = realpath($path)) {
-			throw new \FilesystemException("Invalid filepath: '$path'.");
+			throw new \RuntimeException("Invalid filepath: '$path'.");
 		}
 		
 		if (is_dir($realpath)) {
@@ -71,9 +71,7 @@ class ConnectionPool {
 			$this->fileScanned = 1;
 			
 			foreach($settings as $database => $vars) {
-				
 				$vars['name'] = $database;
-				
 				$this->configure($vars);
 			}
 		}	
@@ -82,9 +80,19 @@ class ConnectionPool {
 	}
 	
 	/**
-	 * Configure a database connection from an array.
+	 * Checks whether a given database has been configured.
 	 * 
-	 * @param string|array $config Path to .ini file with db settings, or an array.
+	 * @param string $dbname Database name.
+	 * @return boolean
+	 */
+	public function isConfigured($dbname) {
+		return isset($this->configurations[$dbname]);
+	}
+	
+	/**
+	 * Configure a database connection from an associative array.
+	 * 
+	 * @param array $config Associative array of DB settings.
 	 */
 	public function configure(array $config) {
 		

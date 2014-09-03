@@ -6,9 +6,9 @@
 
 namespace xpl\WebServices\Yahoo\Yql;
 
-use xpl\WebServices\InvokableRequestInterface;
+use xpl\WebServices\RequestInterface;
 
-class Request implements InvokableRequestInterface
+class Request implements RequestInterface
 {
 
 	private $baseUrl = 'http://query.yahooapis.com/v1/public/yql';
@@ -29,32 +29,21 @@ class Request implements InvokableRequestInterface
 		isset($query) and $this->setQuery($query);
 	}
 	
-	/**
-	 * Builds the URL, executes the callback, and creates the response.
-	 * 
-	 * @param callable $callback Callback that acts as the HTTP request client. Passed the URL.
-	 * @return $this
-	 */
-	public function __invoke($callback) {
-			
-		if (! is_callable($callback)) {
-			throw new \InvalidArgumentException("Execution callback must be callable.");
+	public function createResponse($data) {
+		if ('xml' === $this->getFormat()) {
+			return $this->response = new XmlResponse($data);
+		} else {
+			return $this->response = new JsonResponse($data);
 		}
-		
-		$this->makeUrl();
-		
-		$this->response = new Response(call_user_func($callback, $this->getUrl()), $this);
-		
-		return $this;
 	}
 	
 	/**
-	 * Executes the query.
+	 * Returns the response object.
 	 * 
-	 * @param callable
+	 * @return \xpl\WebServices\Yahoo\Yql\Response 
 	 */
-	public function execute($callback) {
-		return $this->__invoke($callback);
+	public function getResponse() {
+		return $this->response;
 	}
 	
 	/**
@@ -123,21 +112,24 @@ class Request implements InvokableRequestInterface
 	}
 	
 	/**
-	 * Returns the response object.
-	 * 
-	 * @return \xpl\WebServices\Yahoo\Yql\Response 
-	 */
-	public function getResponse() {
-		return $this->response;
-	}
-	
-	/**
 	 * Returns the response format string, one of "json" or "xml".
 	 * 
 	 * @return string
 	 */
 	public function getFormat() {
 		return $this->format;
+	}
+	
+	/**
+	 * Returns options for the request, passed to client adapter.
+	 * 
+	 * @return array
+	 */
+	public function getOptions() {
+		return array(
+			'method' => 'GET',
+			'format' => $this->getFormat()
+		);
 	}
 	
 	/**

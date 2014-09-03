@@ -48,6 +48,13 @@ class Request implements RequestInterface
 		return $this->format;
 	}
 	
+	public function getOptions() {
+		return array(
+			'method' => 'GET',
+			'format' => $this->getFormat(),
+		);
+	}
+	
 	public function getParams() {
 		return $this->params;
 	}
@@ -68,6 +75,18 @@ class Request implements RequestInterface
 		}
 		
 		return $this->baseUrl.'?'.http_build_query($args, null, '&');
+	}
+	
+	public function createResponse($data) {
+		if ('json' === $this->getFormat()) {
+			return $this->response = new JsonResponse($data);
+		} else {
+			return $this->response = new CsvResponse($data);
+		}
+	}
+	
+	public function getResponse() {
+		return isset($this->response) ? $this->response : null;
 	}
 	
 }

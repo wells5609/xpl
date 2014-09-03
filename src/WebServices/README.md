@@ -10,7 +10,6 @@ Class library to ease working with web services.
 ####Calling a single web service
 
 1. First, set up the web service `Client` with a request adapter:
-
 ```php
 use xpl\WebServices\Client;
 use xpl\WebServices\Client\FopenAdapter;
@@ -20,24 +19,21 @@ $client = new Client(new FopenAdapter); // requires INI fopen_allow_url = 1
 ```
 
 2. Create a new request:
-
 ```php
 $yql_request = new YqlRequest("select name from yahoo.finance.sectors");
 ```
 
 3. Execute the request by invoking the client and passing it the object:
-
+```php
 $yql_response = $client($yql_request);
 ```
 
 4. Fetch the results from the response:
-
 ```php
 $results = $yql_response->getResults();
 
 var_dump( $results );
 ```
-
 This should output:
 ```php
 array (size=9)
@@ -75,7 +71,6 @@ array (size=9)
 You can issue multiple requests simultaneously if your adapter supports it (currently, only `Requests`).
 
 1. First, set up the web service `Client` with a supported request adapter:
-
 ```php
 use xpl\WebServices\Client;
 use xpl\WebServices\Client\RequestsAdapter;
@@ -84,15 +79,16 @@ $client = new Client(new RequestsAdapter); // requires rmccue/requests package
 ```
 
 2. Then, set up an array of requests. Give each a unique key so that it can be identified later.
-
 ```php
 use xpl\WebServices\Yahoo\Yql\Request as YqlRequest;
 use xpl\WebServices\Yahoo\Pipes\Request as PipeRequest;
 use xpl\WebServices\Yahoo\Finance\Request\HistoricalQuote;
 
 $yql_request = new YqlRequest('select name from yahoo.finance.sectors');
-$pipe_request = new PipeRequest('9e88fc312b261410c127954bdd705372');
-$finance_request = new HistoricalQuote('GE');
+
+$pipe_request = new PipeRequest('9e88fc312b261410c127954bdd705372'); // Pipe ID
+
+$finance_request = new HistoricalQuote('GE'); // stock symbol
 $finance_request->setStartDate('2013-12-31');
 
 $requests = array(
@@ -102,14 +98,12 @@ $requests = array(
 );
 ```
 
-3. Pass the array to the client's `multi()` method. This should return an array of responses with the same keys (although, possibly in a different order):
-
+3. Pass the array to the client's `multi()` method. This should return an array of responses with the same keys (although possibly in a different order):
 ```php
 $responses = $client->multi($requests);
 ```
 
 4. The responses can be retrieved from the array using the same key used to identify the request:
-
 ```php
 $yql_response = $responses['yql'];
 $pipe_response = $responses['pipe'];

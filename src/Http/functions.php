@@ -90,7 +90,7 @@ namespace {
 	 * * http_negotiate_language()
 	 */
 	
-	if (! extension_loaded('http') || version_compare(phpversion('http'), 2.0, '<')) :
+	if (! extension_loaded('http') || version_compare(phpversion('http'), "2.0", '<')) :
 	
 	/**
 	 * Returns a valid HTTP date using given timestamp or current time if none given.

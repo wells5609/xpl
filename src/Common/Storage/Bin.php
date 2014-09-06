@@ -2,7 +2,7 @@
 
 namespace xpl\Common\Storage;
 
-use xpl\Common\Structure\BaseMap;
+use xpl\Common\Structure\Map;
 use xpl\Common\Structure\StackInterface;
 
 /**
@@ -10,7 +10,7 @@ use xpl\Common\Structure\StackInterface;
  * 
  * It also has some "array_*" type methods: clear(), shift(), and unshift(). 
  */
-class Bin extends BaseMap implements StackInterface {
+class Bin extends Map implements StackInterface {
 	
 	/**
 	 * Set an item value by key.

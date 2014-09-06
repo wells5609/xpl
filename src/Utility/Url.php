@@ -39,8 +39,8 @@ class Url {
 		
 		$parts = array('host' => $this->getDomain($id));
 		
-		isset($path) AND $parts['path'] = '/'.trim($path, '/');
-		isset($query) AND $parts['query'] = $query;
+		empty($path) OR $parts['path'] = '/'.trim($path, '/');
+		empty($query) OR $parts['query'] = $query;
 		
 		return http_build_url('/', $parts);
 	}

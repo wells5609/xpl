@@ -24,29 +24,6 @@ abstract class AbstractRequest implements \xpl\WebServices\RequestInterface
 		return array_search($param, $this->getParameters(), true);
 	}
 	
-	public function translateParams(array $params) {
-		
-		$parameters = $this->getParameters();
-		
-		$translated = array();
-		
-		foreach($params as $key => $value) {
-			
-			if (! isset($parameters[$key])) {
-				
-				if (! $real_key = array_search($key, $parameters, true)) {
-					continue;
-				}
-				
-				$key = $real_key;
-			}
-			
-			$translated[$key] = $value;
-		}
-		
-		return $translated;
-	}
-	
 	public function buildUrl(array $params = array()) {
 		
 		$url = $this->getBaseUrl().'?';
@@ -58,6 +35,21 @@ abstract class AbstractRequest implements \xpl\WebServices\RequestInterface
 		$url .= $this->appendToUrl();
 		
 		return rtrim($url, '&?');
+	}
+	
+	public function translateParams(array $params) {
+		$parameters = $this->getParameters();
+		$translated = array();
+		foreach($params as $key => $value) {
+			if (! isset($parameters[$key])) {
+				if (! $real_key = array_search($key, $parameters, true)) {
+					continue;
+				}
+				$key = $real_key;
+			}
+			$translated[$key] = $value;
+		}
+		return $translated;
 	}
 	
 	public function setFormat($format) {

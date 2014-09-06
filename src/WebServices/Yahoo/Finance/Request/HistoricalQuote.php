@@ -31,12 +31,12 @@ class HistoricalQuote extends AbstractRequest
 			throw new \InvalidArgumentException("Historical quote does not support multiple symbols.");
 		}
 
-		$this->symbol = $symbol;
+		$this->symbol = str_replace('.', '-', $symbol);
 	}
 	
 	public function setStartDate($date) {
 		
-		if (! $formatted = $this->formatDatePeriod($date)) {
+		if (! $formatted = $this->formatDate($date)) {
 			throw new \InvalidArgumentException("Invalid start date given.");
 		}
 		
@@ -45,7 +45,7 @@ class HistoricalQuote extends AbstractRequest
 	
 	public function setEndDate($date) {
 		
-		if (! $formatted = $this->formatDatePeriod($date)) {
+		if (! $formatted = $this->formatDate($date)) {
 			throw new \InvalidArgumentException("Invalid start date given.");
 		}
 		
@@ -99,7 +99,7 @@ class HistoricalQuote extends AbstractRequest
 		return $this->buildUrl($params);
 	}
 	
-	public function formatDatePeriod($value) {
+	public function formatDate($value) {
 			
 		if ($time = strtotime($value)) {
 			return array(
@@ -114,7 +114,6 @@ class HistoricalQuote extends AbstractRequest
 	}
 
 	public function createResponse($data) {
-		
 		// Passing TRUE to have headers parsed from data
 		return $this->response = new Response($data, true);
 	}

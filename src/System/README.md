@@ -1,12 +1,9 @@
 #xpl\System
 
 ###Dependencies
+ * None
  
- * `xpl\Bundle`
- * `xpl\Common`
- * `xpl\Dependency`
- * `xpl\Utility`
- * `Composer\Autoload\ClassLoader`
+
  
 
 

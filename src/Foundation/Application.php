@@ -8,7 +8,7 @@ use xpl\Common\Storage\Registry;
 /**
  * Application is a bundle representing an application.
  */
-class Application extends AbstractBundle 
+class Application extends AbstractDiAwareBundle
 {
 	
 	/**

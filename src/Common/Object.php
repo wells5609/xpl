@@ -4,48 +4,67 @@ namespace xpl\Common;
 
 use xpl\Common\Structure\MapInterface;
 
-class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
+class Object implements \IteratorAggregate, \JsonSerializable, MapInterface {
 	
-	public function __construct($data = array()) {
-		parent::__construct($data);
-	}
-	
-	public function offsetGet($key) {
-		return parent::offsetExists($key) ? parent::offsetGet($key) : null;
+	public function __construct($data = null) {
+		isset($data) and $this->import($data);
 	}
 	
 	public function set($key, $value) {
-		$this->offsetSet($key, $value);
+		$this->$key = $value;
 		return $this;
 	}
 	
 	public function get($key) {
-		return $this->offsetGet($key);
+		return isset($this->$key) ? $this->$key : null;
 	}
 	
 	public function has($key) {
-		return $this->offsetExists($key);
+		return isset($this->$key);
 	}
 	
 	public function remove($key) {
-		$this->offsetUnset($key);
+		unset($this->$key);
 		return $this;
 	}
 	
+	public function offsetGet($key) {
+		return $this->get($key);
+	}
+	
+	public function offsetSet($key, $value) {
+		$this->set($key, $value);
+	}
+	
+	public function offsetUnset($key) {
+		$this->remove($key);
+	}
+	
+	public function offsetExists($key) {
+		return $this->has($key);
+	}
+	
+	public function getIterator() {
+		return new \ArrayIterator($this->toArray());
+	}
+	
+	public function count() {
+		return count($this);
+	}
+	
 	public function isEmpty() {
-		return 0 == count($this);
+		return 0 == $this->count();
 	}
 	
 	public function contains($value) {
 		return in_array($value, $this->toArray(), true);
 	}
 	
-	public function keys() {
-		return array_keys($this->toArray());
-	}
-	
-	public function values() {
-		return array_values($this->toArray());
+	/**
+	 * Implements \xpl\Common\Arrayable
+	 */
+	public function toArray() {
+		return get_object_vars($this);
 	}
 	
 	/**
@@ -55,11 +74,12 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 		return array_search($value, $this->toArray(), true);
 	}
 	
-	/**
-	 * Implements \xpl\Common\Arrayable
-	 */
-	public function toArray() {
-		return iterator_to_array($this);
+	public function keys() {
+		return array_keys($this->toArray());
+	}
+	
+	public function values() {
+		return array_values($this->toArray());
 	}
 	
 	/**
@@ -72,7 +92,7 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 		}
 		
 		foreach($data as $key => $value) {
-			$this->offsetSet($key, $value);
+			$this->set($key, $value);
 		}
 		
 		return $this;
@@ -83,7 +103,7 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 	 * @return mixed
 	 */
 	public function __get($var) {
-		return $this->offsetGet($var);
+		return $this->get($var);
 	}
 
 	/**
@@ -92,7 +112,7 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 	 * @return void
 	 */
 	public function __set($var, $val) {
-		$this->offsetSet($var, $val);
+		$this->set($var, $val);
 	}
 
 	/**
@@ -100,7 +120,7 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 	 * @return boolean
 	 */
 	public function __isset($var) {
-		return $this->offsetExists($var);
+		return $this->has($var);
 	}
 
 	/**
@@ -108,7 +128,7 @@ class Object extends \ArrayObject implements \JsonSerializable, MapInterface {
 	 * @return void
 	 */
 	public function __unset($var) {
-		$this->offsetUnset($var);
+		$this->unset($var);
 	}
 	
 	/**

@@ -15,15 +15,10 @@ class Dispatcher extends \xpl\Routing\Dispatcher {
 		
 		try {
 			
-			$resource = $routable->getResource();
+			$resource = $this->prepareRouter($router, $routable);
 			
-			if (! $router->has($resource)) {
-				$router->add($resource);
-			}
-			
-			if ($router($request->getMethod(), $request->getFullUri())) {
+			if ($match = $this->routeRequest($router, $request)) {
 				
-				$match = $router->getMatch();
 				$route = $match->getRoute();
 				
 				$controller = $resource->getController();

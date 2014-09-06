@@ -4,21 +4,17 @@ namespace xpl\Routing;
 
 use xpl\Foundation\RequestInterface;
 use xpl\Foundation\RoutableInterface;
+use xpl\Foundation\ControllerInterface;
 use xpl\Event\Manager as Events;
 
 class Dispatcher {
 	
 	public function __invoke(Router $router, RequestInterface $request, RoutableInterface $routable, Events $events = null) {
 	
-		$resource = $routable->getResource();
+		$resource = $this->prepareRouter($router, $routable);
 		
-		if (! $router->has($resource)) {
-			$router->add($resource);
-		}
-		
-		if ($router($request->getMethod(), $request->getFullUri())) {
+		if ($match = $this->routeRequest($router, $request)) {
 			
-			$match = $router->getMatch();
 			$route = $match->getRoute();
 			
 			$controller = $resource->getController();
@@ -28,7 +24,26 @@ class Dispatcher {
 			return $this->call(array($controller, $route->getAction()), $route->getParams());
 		}
 	}
-
+	
+	protected function prepareRouter(Router $router, RoutableInterface $routable) {
+		
+		$resource = $routable->getResource();
+		
+		if (! $router->has($resource)) {
+			$router->add($resource);
+		}
+		
+		return $resource;
+	}
+	
+	protected function routeRequest(Router $router, RequestInterface $request) {
+		
+		if ($router($request->getMethod(), $request->getFullUri())) {
+				
+			return $router->getMatch();
+		}
+	}
+	
 	protected function call($callback, array $params) {
 		switch(count($params)) {
 			case 0:

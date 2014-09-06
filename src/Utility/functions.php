@@ -21,6 +21,19 @@ if (! function_exists('uri_template')) :
 		return \xpl\Utility\Uri\Manager::build($name, $args);
 	}
 	
+	/**
+	 * Creates and registers a new URI template.
+	 * 
+	 * @param string $name Unique template name.
+	 * @param string $uri_template URI template string.
+	 * @return \xpl\Utility\Uri\Template
+	 */
+	function register_uri_template($name, $uri_template) {
+		$object = new \xpl\Utility\Uri\Template($uri_template, $name);
+		\xpl\Utility\Uri\Manager::register($object);
+		return $object;
+	}
+	
 endif;
 
 /** ============================
@@ -102,7 +115,7 @@ if (! function_exists('str_rand')) :
 	 * Generate a random string from one of several of character pools.
 	 *
 	 * @param int $length Length of the returned random string (default 16)
-	 * @param string $charlist Type of characters - @see Phpf\Util\Rand constants.
+	 * @param string $charlist Type of characters {@see \xpl\Utility\Rand constants}
 	 * @return string A random string
 	 */
 	function str_rand($length = 16, $charlist = 'alnum') {
@@ -134,7 +147,7 @@ if (function_exists('hash_format') && ! function_exists('generate_uuid')) :
 	 * 
 	 * 32 characters (a-f and 0-9) in format 8-4-4-4-12.
 	 * 
-	 * @uses hash_format() - found in wells5609/PHP-Util
+	 * @uses hash_format() {@see wells5609/php-util}
 	 * 
 	 * @return string A 32-char length (36 with dashes) UUID (v4).
 	 */

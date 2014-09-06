@@ -91,11 +91,12 @@ class Quote extends AbstractRequest
 		if (is_array($symbol)) {
 			$symbol = implode(',', $symbol);
 			$this->multi_query = true;
+		
 		} else if (false !== strpos($symbol, ',')) {
 			$this->multi_query = true;
 		}
 
-		$this->symbol = $symbol;
+		$this->symbol = str_replace('.', '-', $symbol);
 	}
 	
 	public function getArg($key) {

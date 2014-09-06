@@ -18,7 +18,7 @@ class Type implements TypeInterface {
 	protected $mimetype;
 	
 	public function __construct(Manager $api_manager, $mimetype = null) {
-			
+		
 		$this->api = $api_manager;
 		
 		if (isset($mimetype) && isset($this->accept[$mimetype])) {
@@ -37,9 +37,16 @@ class Type implements TypeInterface {
 		}
 		
 		$classname = $this->accept[$this->mimetype];
+		// @TODO Factory
 		$type_class = 'xpl\\Web\\Response\\'.$classname;
-		
 		$type = new $type_class();
+		
+		if ('Json' === $classname) {
+			$type->setDevParam($this->api->config('json.param.dev') ?: 'dev');
+		
+		} else if ('Jsonp' === $classname) {
+			$type->setCallbackParam($this->api->config('jsonp.param.callback') ?: 'callback');
+		}
 		
 		$body = $type->format($this->buildStructure($body));
 		
@@ -72,12 +79,8 @@ class Type implements TypeInterface {
 		}
 		
 		$structure->setDiagnostics(array(
-			'Memory' => array(
-				'Usage' => memory_usage(3).' MB',
-				'RealUsage' => memory_usage(3, true).' MB',
-				'PeakUsage' => number_format(memory_get_peak_usage()/1024/1024, 3).' MB',
-			),
-			'TimeElapsed' => (time_elapsed(5)*1000).' ms'
+			'MemoryUsage' => '%memory_usage% MB',
+			'TimeElapsed' => '%time_elapsed_ms% ms'
 		));
 		
 		return $structure;

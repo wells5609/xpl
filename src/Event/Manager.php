@@ -12,30 +12,17 @@ class Manager
 	
 	/**
 	 * Sort and execute listeners from low-to-high priority.
-	 * 
 	 * e.g. 1 before 2, 2 before 3, etc.
-	 * 
 	 * @var integer
 	 */
 	const SORT_LOW_HIGH = 0;
 	
 	/**
 	 * Sort and execute listeners from high-to-low priority.
-	 * 
 	 * e.g. 3 before 2, 2 before 1, etc.
-	 * 
 	 * @var integer
 	 */
 	const SORT_HIGH_LOW = 1;
-	
-	/**
-	 * Context information for the event emitter.
-	 * 
-	 * No specific purpose; exists for developer use.
-	 * 
-	 * @var mixed
-	 */
-	protected $context;
 	
 	/**
 	 * Sort order to use for listener priorities. 
@@ -48,9 +35,10 @@ class Manager
 	
 	/**
 	 * The sort function to use.
+	 * 
 	 * @var string
 	 */
-	protected $sortFunc;
+	protected $sort_func;
 	
 	/**
 	 * Associative array of events and their listeners.
@@ -61,31 +49,28 @@ class Manager
 	 * 
 	 * @var array
 	 */
-	protected $listeners = array();
+	protected $listeners;
 	
 	/**
 	 * Completed event objects and their results.
 	 * 
 	 * @var array
 	 */
-	protected $completed = array();
+	protected $completed;
 	
 	/**
 	 * Sets the default sort order (low to high).
 	 * 
 	 * @return void
 	 */
-	public function __construct($context = null) {
-			
-		if (isset($context)) {
-			$this->context = $context;
-		}
-		
+	public function __construct() {
+		$this->listeners = array();
+		$this->completed = array();
 		$this->setSortOrder(static::SORT_LOW_HIGH);
 	}
 
 	/**
-	 * Adds an event listener (real listeners are lazy-loaded).
+	 * Adds an event listener.
 	 *
 	 * @param string $event Event ID.
 	 * @param callable $call Callable to execute on event trigger.
@@ -99,8 +84,8 @@ class Manager
 			$this->listeners[$event] = array();
 		}
 		
-		$this->listeners[$event][] = array($call, $priority);
-
+		$this->listeners[$event][] = new Listener($event, $call, $priority);
+		
 		return $this;
 	}
 	
@@ -122,7 +107,7 @@ class Manager
 		} else if ($event instanceof Event) {
 			$id = $event->id;
 		} else {
-			throw new \InvalidArgumentException('Event must be string or instance of Event - '.gettype($event).' given.');
+			throw new \InvalidArgumentException('Event must be string or instance of Event, given: '.gettype($event));
 		}
 		
 		// no listeners to unset
@@ -136,8 +121,9 @@ class Manager
 		
 		} else {
 			// iterate through listeners and unset matching callback
-			foreach($this->listeners[$id] as $i => $arr) {
-				if ($callback == $arr[0]) {
+			foreach($this->listeners[$id] as $i => $listener) {
+			
+				if ($callback == $listener->callback) {
 					unset($this->listeners[$id][$i]);
 				}
 			}
@@ -160,7 +146,7 @@ class Manager
 			$this->listeners[$event] = array();
 		}
 		
-		$this->listeners[$event]['one'] = array($call, 1);
+		$this->listeners[$event]['one'] = new Listener($event, $call, 1);
 		
 		return $this;
 	}
@@ -253,17 +239,17 @@ class Manager
 	 * 
 	 * @return $this
 	 * 
-	 * @throws OutOfBoundsException if order is not one of the class constants.
+	 * @throws \DomainException if order is not one of the class constants.
 	 */
 	public function setSortOrder($order) {
 
 		if ($order != static::SORT_LOW_HIGH && $order != static::SORT_HIGH_LOW) {
-			throw new \OutOfBoundsException("Invalid sort order.");
+			throw new \DomainException("Invalid sort order.");
 		}
 
 		$this->order = (int)$order;
 		
-		$this->sortFunc = 'sortListeners'.($this->order === static::SORT_LOW_HIGH ? 'Asc' : 'Desc');
+		$this->sort_func = 'sortListeners'.($this->order === static::SORT_LOW_HIGH ? 'Asc' : 'Desc');
 
 		return $this;
 	}
@@ -315,24 +301,13 @@ class Manager
 			return false;
 		}
 		
-		// If a "one" listener exists, call no others
 		if (isset($this->listeners[$event->id]['one'])) {
-			
-			list($callback, $priority) = $this->listeners[$event->id]['one'];
-			
-			// populate array with just the one listener
-			$listeners = array(new Listener($event->id, $callback, $priority));
+			// If a "one" listener exists, call no others
+			$listeners = array($this->listeners[$event->id]['one']);
 		
 		} else {
-			
 			// normal event - get all listeners
 			$listeners = $this->listeners[$event->id];
-			
-			// lazily instantiate all the listeners
-			foreach($listeners as $key => &$value) {
-				
-				$value = new Listener($event->id, $value[0], $value[1]);
-			}
 		}
 		
 		return array($event, $listeners);
@@ -352,16 +327,16 @@ class Manager
 		$return = array();
 
 		// Sort the listeners by priority
-		usort($listeners, array($this, $this->sortFunc));
+		usort($listeners, array($this, $this->sort_func));
 		
 		// Prevent Event to args array
 		array_unshift($args, $event);
 		
-		// Call each listener callback
+		// Call each listener
 		foreach ($listeners as $listener) {
 			
 			// Collect the returned value
-			$return[] = call_user_func_array($listener->callback, $args);
+			$return[] = $listener($args);
 			
 			// End if propagation stopped
 			if ($event->isPropagationStopped()) {

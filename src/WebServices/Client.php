@@ -21,7 +21,7 @@ class Client {
 	
 	public function multi(array $requests) {
 		
-		if (! $this->adapter instanceof Client\MultiRequestAdapterInterface) {
+		if (! $this->supportsMultiple()) {
 			throw new \RuntimeException("Adapter does not support multiple requests.");
 		}
 		
@@ -36,14 +36,14 @@ class Client {
 	public static function detectAdapterClass() {
 		
 		$adapters = array(
+			'Requests' => 'RequestsAdapter',
 			'GuzzleHttp\\Client' => 'GuzzleAdapter',
 			'Buzz\\Browser' => 'BuzzAdapter',
-			'Requests' => 'RequestsAdapter',
 		);
 		
 		foreach($adapters as $class => $client_class) {
 			if (class_exists($class, true)) {
-				return __NAMESPACE__.'\\Client\\'.$qclass;
+				return __NAMESPACE__.'\\Client\\'.$client_class;
 			}
 		}
 		

@@ -20,4 +20,16 @@ abstract class AbstractController implements ControllerInterface {
 		$this->app = $app;
 	}
 	
+	public function getRequest() {
+		return isset($this->request) ? $this->request : null;
+	}
+	
+	public function getRoute() {
+		return isset($this->route) ? $this->route : null;
+	}
+	
+	public function getApp() {
+		return isset($this->app) ? $this->app : null;
+	}
+	
 }

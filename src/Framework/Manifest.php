@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\System;
+namespace xpl\Framework;
 
 use xpl\Dependency\DiAwareInterface;
 use xpl\Dependency\DI;

@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\System;
+namespace xpl\Framework;
 
 use xpl\Dependency\DI;
 
@@ -9,7 +9,7 @@ use xpl\Dependency\DI;
  * 
  * Meant to be aliased with something more friendly...
  */
-class Facade {
+class DiFacade {
 	
 	/**
 	 * @var \xpl\Dependency\DI

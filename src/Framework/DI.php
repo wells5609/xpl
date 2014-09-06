@@ -2,55 +2,67 @@
 
 namespace xpl\Framework;
 
+use xpl\Cache\Cache;
+use xpl\Session\Session;
+use xpl\Web\Request;
+use xpl\Web\Response;
+use xpl\Web\Api\Manager as ApiManager;
+use xpl\Routing\Router;
+use xpl\Database\ConnectionPool;
+use xpl\Data\Service\Registry as ServiceRegistry;
+use xpl\Event\Manager as EventManager;
+use xpl\Utility\Url;
+
 class DI extends \xpl\Dependency\DI {
 	
 	public function __construct() {
 		
-		$this['cache'] = \xpl\Cache\Cache::instance();
+		$this['cache'] = Cache::instance();
 		
-		$this['session'] = \xpl\Session\Session::instance();
+		$this['session'] = Session::instance();
 		
 		$this['bundles'] = function () {
 			return new BundleManager;
 		};
 		
 		$this['request'] = function ($di) {
-			$request = \xpl\Web\Request::createFromGlobals();
+			$request = Request::createFromGlobals();
 			$request->setSession($di['session']);
 			return $request;
 		};
 		
 		$this['response'] = function ($di) {
-			return new \xpl\Web\Response($di['request']);
+			return new Response($di['request']);
 		};
 		
 		$this['dispatcher'] = function () {
-			return new \xpl\Web\Dispatcher();
+			return new Dispatcher();
 		};
 		
 		$this['api'] = function () {
-			return new \xpl\Web\Api\Manager();
+			return new ApiManager();
 		};
 		
 		$this['router'] = function () {
-			return new \xpl\Routing\Router();
+			return new Router();
 		};
 		
 		$this['dbal'] = function ($di) {
-			return new \xpl\Database\ConnectionPool($di['env']->getPath('env'));
-		};
-		
-		$this['url'] = function ($di) {
-			return new \xpl\Utility\Url($di['request']->getUri(), $di['request']->getQuery());
+			return new ConnectionPool($di['env']->getPath('env'));
 		};
 		
 		$this['services'] = function () {
-			return new \xpl\Data\Service\Registry;
+			return new ServiceRegistry;
 		};
 		
 		$this['events'] = function () {
-			return new \xpl\Event\Manager;
+			return new EventManager;
 		};
+		
+		$this['url'] = function ($di) {
+			return new Url($di['request']->getUri(), $di['request']->getQuery());
+		};
+		
 	}
 	
 }

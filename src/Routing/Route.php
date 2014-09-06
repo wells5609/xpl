@@ -4,14 +4,15 @@ namespace xpl\Routing;
 
 class Route implements \xpl\Foundation\RouteInterface {
 	
+	protected $group;
 	protected $name;
 	protected $uri;
-	protected $methods;
+	protected $compiled_uri;
 	protected $action;
-	protected $options;
+	protected $methods;
 	protected $params;
-	protected $group;
-	protected $compiledUri;
+	protected $options;
+	protected $uri_template;
 	
 	public function __construct(Group $group, $name, $uri, array $methods, $action, array $options = array()) {
 		$this->group = $group;
@@ -87,7 +88,7 @@ class Route implements \xpl\Foundation\RouteInterface {
 	
 	public function isSatisfied(&$missing = null) {
 		
-		isset($this->compiledUri) or $this->compile();
+		isset($this->compiled_uri) or $this->compile();
 		
 		if (empty($this->params)) {
 			return true;
@@ -105,7 +106,7 @@ class Route implements \xpl\Foundation\RouteInterface {
 	
 	public function isSatisfiedBy(array $values, &$missing = null) {
 		
-		isset($this->compiledUri) or $this->compile();
+		isset($this->compiled_uri) or $this->compile();
 		
 		if (empty($this->params)) {
 			return true;
@@ -146,8 +147,8 @@ class Route implements \xpl\Foundation\RouteInterface {
 	}
 	
 	public function getCompiledUri() {
-		isset($this->compiledUri) or $this->compile();
-		return $this->compiledUri;
+		isset($this->compiled_uri) or $this->compile();
+		return $this->compiled_uri;
 	}
 	
 	public function getStrippedUri() {
@@ -165,6 +166,29 @@ class Route implements \xpl\Foundation\RouteInterface {
 		}
 		
 		return ltrim($path, '/');
+	}
+	
+	/**
+	 * Returns a URI template for the route, generating if necessary.
+	 * 
+	 * @return \xpl\Utility\Uri\Template
+	 */
+	public function getUriTemplate() {
+		
+		if (! isset($this->uri_template)) {
+			
+			$uri = \xpl\System\Server::getHttpScheme().'://'
+				.\xpl\System\Server::getDomainName().'/'
+				.str_replace(array('{', '?}', '}'), array(':', ''), $this->uri);
+			
+			$this->uri_template = new \xpl\Utility\Uri\Template($uri);
+		}
+		
+		return $this->uri_template;	
+	}
+	
+	public function generateUrl(array $args = array()) {
+		return $this->getUriTemplate()->build($args);
 	}
 	
 	protected function compile() {
@@ -193,7 +217,7 @@ class Route implements \xpl\Foundation\RouteInterface {
 			$uri = str_replace($search, $replace, $uri);
 		}
 		
-		$this->compiledUri = $uri;
+		$this->compiled_uri = $uri;
 	}
 	
 }

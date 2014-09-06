@@ -10,66 +10,77 @@ class Server {
 	const DOMAIN = 1;
 	const TLD = 2;
 	const SUBDOMAIN = 4;
+	const DOMAIN_ALL = 7;
 	
-	protected static $domain_info;
-	protected static $ssl_enabled;
+	protected static $domainInfo;
+	protected static $sslEnabled;
+	protected static $subDomains;
 	
 	public static function getDomainInfo($flags = null) {
 		
-		if (null === static::$domain_info) {
-			static::setDomainInfo();
+		if (null === static::$domainInfo) {
+			static::setHttpHost();
 		}
 		
-		empty($flags) and $flags = static::DOMAIN|static::TLD|static::SUBDOMAIN;
+		empty($flags) and $flags = static::DOMAIN_ALL;
 		
 		$return = array();
 		
 		if ($flags & static::SUBDOMAIN) {
-			$return['subdomain'] = static::$domain_info['subdomain'];
+			$return['subdomain'] = static::$domainInfo['subdomain'];
 		}
 		
 		if ($flags & static::DOMAIN) {
-			$return['domain'] = static::$domain_info['domain'];
+			$return['domain'] = static::$domainInfo['domain'];
 		}
 		
 		if ($flags & static::TLD) {
-			$return['tld'] = static::$domain_info['tld'];
+			$return['tld'] = static::$domainInfo['tld'];
 		}
 		
 		return $return;
+	}
+	
+	public static function isSslEnabled() {
+		
+		if (! isset(static::$sslEnabled)) {
+			
+			if ($https = getenv('HTTPS')) {
+				static::$sslEnabled = ('on' === strtolower($https) || 1 == $https);
+			
+			} else if ('https' === getenv('HTTP_X_FORWARDED_PROTO') || 443 == getenv('SERVER_PORT')) {
+				static::$sslEnabled = true;
+			
+			} else {
+				static::$sslEnabled = false;
+			}
+		}
+		
+		return static::$sslEnabled;
 	}
 	
 	public static function getDomainName($flags = null) {
 		return implode('.', array_filter(static::getDomainInfo($flags)));
 	}
 	
-	public static function isSslEnabled() {
-		
-		if (! isset(static::$ssl_enabled)) {
-			if ($https = getenv('HTTPS')) {
-				static::$ssl_enabled = ('on' === strtolower($https) || 1 == $https);
-			} else if ('https' === getenv('HTTP_X_FORWARDED_PROTO') || 443 == getenv('SERVER_PORT')) {
-				static::$ssl_enabled = true;
-			} else {
-				static::$ssl_enabled = false;
-			}
-		}
-		
-		return static::$ssl_enabled;
+	public static function getSubDomains() {
+		return isset(static::$subDomains) ? static::$subDomains : null;
 	}
 	
 	public static function getHttpScheme() {
 		return static::isSslEnabled() ? 'https' : 'http';
 	}
 	
-	protected static function setDomainInfo($HTTP_HOST = null) {
+	public static function setHttpHost($HTTP_HOST = null) {
 		
 		$domain = $subdomain = $tld = null;
 		
 		if (empty($HTTP_HOST)) {
+			
 			if (! isset($_SERVER['HTTP_HOST'])) {
 				throw new \RuntimeException("Cannot get domain info: HTTP host not available.");
 			}
+			
 			$HTTP_HOST = $_SERVER['HTTP_HOST'];
 		}
 		
@@ -83,11 +94,14 @@ class Server {
 			$domain = array_pop($parts);
 			
 			if (! empty($parts)) {
+				
+				static::$subDomains = $parts;
+				
 				$subdomain = count($parts) === 1 ? array_pop($parts) : implode('.', $parts);
 			}
 		}
 	
-		static::$domain_info = array(
+		static::$domainInfo = array(
 			'domain' => $domain,
 			'subdomain' => $subdomain,
 			'tld' => $tld,

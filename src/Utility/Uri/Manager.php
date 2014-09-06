@@ -7,11 +7,17 @@ class Manager {
 	protected static $templates = array();
 	
 	public static function register(Template $uri_template) {
-		static::$templates[$uri_template->name()] = $uri_template;
+		
+		if (! $name = $uri_template->getName()) {
+			throw new \RuntimeException("Registered URI templates must have a name.");
+		}
+		
+		static::$templates[$name] = $uri_template;
 	}
 	
-	public static function unregister($uri_template_name) {
-		unset(static::$templates[$uri_template_name]);
+	public static function unregister($name) {
+		
+		unset(static::$templates[$name]);
 	}
 	
 	public static function build($name, array $args) {
@@ -20,9 +26,7 @@ class Manager {
 			return static::$templates[$name]->build($args);
 		}
 		
-		$tmpl = new Template($name);
-		
-		return $tmpl->build($args);
+		throw new \RuntimeException("No URI template named: '$name'.");
 	}
 	
 }

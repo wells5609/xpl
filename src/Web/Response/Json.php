@@ -4,6 +4,8 @@ namespace xpl\Web\Response;
 
 class Json implements TypeInterface {
 	
+	protected $dev_param = 'dev';
+	
 	public function getName() {
 		return 'json';
 	}
@@ -19,7 +21,7 @@ class Json implements TypeInterface {
 		
 		$flags = JSON_NUMERIC_CHECK|JSON_FORCE_OBJECT;
 		
-		if (isset($_GET['dev'])) {
+		if (isset($_GET[$this->getDevParam()])) {
 			$flags |= JSON_PRETTY_PRINT;
 		}
 		
@@ -28,6 +30,14 @@ class Json implements TypeInterface {
 	
 	public function getMimetype() {
 		return 'application/json';
+	}
+	
+	public function setDevParam($val) {
+		$this->dev_param = $val;
+	}
+	
+	public function getDevParam() {
+		return $this->dev_param;
 	}
 	
 }

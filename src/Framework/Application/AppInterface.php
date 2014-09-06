@@ -4,7 +4,7 @@ namespace xpl\Framework\Application;
 
 use xpl\Foundation\BundleInterface;
 
-interface AppInterface extends BundleInterface 
+interface AppInterface extends BundleInterface
 {
 	
 	public function setPath($key, $value);

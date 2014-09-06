@@ -2,24 +2,21 @@
 
 namespace xpl\Framework;
 
+use xpl\System\Server;
+
 class Env extends \xpl\Common\Storage\Container {
 	
-	protected $paths;
 	protected $type;
+	protected $paths;
 	
-	public function __construct($type = null, $root_path = null) {
+	public function __construct($type, $root_path) {
 		$this->paths = array();
-		isset($type) and $this->setType($type);
-		isset($root_path) and $this->setRootPath($root_path);
-	}
-	
-	public function setType($type) {
 		$this->type = $type;
-		return $this;
+		$this->setRootPath($root_path);
 	}
 	
 	public function getType() {
-		return isset($this->type) ? $this->type : null;
+		return $this->type;
 	}
 	
 	public function is($type) {
@@ -27,35 +24,40 @@ class Env extends \xpl\Common\Storage\Container {
 	}
 	
 	public function setRootPath($path) {
-		if (! $this->setPath('root', $path)) {
+		
+		if (! $realpath = realpath($path)) {
 			throw new \InvalidArgumentException("Invalid root path given: '$path'.");
 		}
-		return $this;
-	}
-	
-	public function setVars(array $settings) {
-		$this->import($settings);
+		
+		$this->paths['root'] = $realpath.DIRECTORY_SEPARATOR;
+		
 		return $this;
 	}
 	
 	public function setPaths(array $paths) {
+		
 		foreach($paths as $name => $path) {
 			$this->setPath($name, $path);
 		}
+		
 		return $this;
 	}
 	
 	public function setPath($name, $path) {
+		
 		if ($realpath = realpath($path)) {
 			$this->paths[$name] = $realpath.DIRECTORY_SEPARATOR;
 		}
+		
 		return $this;
 	}
 	
 	public function getPath($name = null) {
+		
 		if (null === $name) {
 			return $this->paths['root'];
 		}
+		
 		return isset($this->paths[$name]) ? $this->paths[$name] : null;
 	}
 	
@@ -67,10 +69,11 @@ class Env extends \xpl\Common\Storage\Container {
 		
 		if ($domain = getenv('DOMAIN')) {
 			$this->set('domain', $domain);
-			return $domain;
+		} else {
+			$domain = Server::getDomainName(Server::DOMAIN|Server::TLD);
 		}
 		
-		return null;
+		return $domain;
 	}
 	
 	public function getSubdomain() {
@@ -81,10 +84,20 @@ class Env extends \xpl\Common\Storage\Container {
 		
 		if ($subdomain = getenv('SUBDOMAIN')) {
 			$this->set('subdomain', $subdomain);
-			return $subdomain;
+		} else {
+			$subdomain = Server::getDomainName(Server::SUBDOMAIN) ?: 'main';
 		}
 		
-		return 'main';
+		return $subdomain;
+	}
+	
+	public function setVars(array $settings) {
+		$this->import($settings);
+		return $this;
+	}
+	
+	public function getVars() {
+		return $this->toArray();
 	}
 	
 }

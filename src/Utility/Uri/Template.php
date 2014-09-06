@@ -18,24 +18,17 @@ class Template {
 			}
 		}
 		
-		isset($name) and $this->name($name);
+		if (isset($name)) {
+			$this->setName($name);
+		}
 	}
 	
-	public function name($name = null) {
-		
-		if (! isset($name)) {
-			return $this->name;
-		}
-	
-		if (isset($this->name)) {
-			Manager::unregister($this->name);
-		}
-		
+	public function setName($name) {
 		$this->name = $name;
-		
-		Manager::register($this);
-		
-		return $this;
+	}
+	
+	public function getName() {
+		return isset($this->name) ? $this->name : null;
 	}
 	
 	public function build(array $args) {

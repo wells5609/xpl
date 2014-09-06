@@ -4,31 +4,44 @@ namespace xpl\WebServices;
 
 class Manager
 {
+	/**
+	 * @var \xpl\WebServices\Client\RequestAdapterInterface
+	 */
+	protected static $adapter;
 	
 	/**
-	 * @var \xpl\WebServices\Client
+	 * Sets the request client adapter.
+	 * 
+	 * @param \xpl\WebServices\Client\RequestAdapterInterface $adapter
+	 * 
+	 * @return void
 	 */
-	protected $client;
+	public static function setAdapter(Client\RequestAdapterInterface $adapter) {
+		static::$adapter = $adapter;
+	}
 	
 	/**
-	 * @param \xpl\WebServices\Client
+	 * Returns the request client adapter, if set.
+	 * 
+	 * @return \xpl\WebServices\Client\RequestAdapterInterface
 	 */
-	public function setClient(Client $client) {
-		$this->client = $client;
+	public static function getAdapter() {
+		return isset(static::$adapter) ? static::$adapter : null;
 	}
 	
 	/**
 	 * @return boolean
 	 */
-	public function hasClient() {
-		return isset($this->client);
+	public static function hasAdapter() {
+		return isset(static::$adapter);
 	}
 	
 	/**
 	 * @return \xpl\WebServices\Client
 	 */
-	public function getClient() {
-		return isset($this->client) ? $this->client : null;
+	public static function getClient() {
+		if (isset(static::$adapter)) {
+			return new Client(static::$adapter);
+		}
 	}
-	
 }

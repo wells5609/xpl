@@ -111,8 +111,10 @@ class ConnectionPool {
 			throw new \RuntimeException("Already configured database '{$vars['name']}'.");
 		}
 		
-		if (false !== stripos($vars['host'], '{$sqlite_path}') && function_exists('sqlite_file')) {
-			$vars['host'] = sqlite_file(str_ireplace('{$sqlite_path}', '', $vars['host']));
+		if ('sqlite' === $vars['driver']) {
+			if (false !== stripos($vars['host'], '{$sqlite_path}') && function_exists('sqlite_file')) {
+				$vars['host'] = sqlite_file(str_ireplace('{$sqlite_path}', '', $vars['host']));
+			}
 		}
 		
 		$this->configurations[$vars['name']] = new Config\Database($vars);

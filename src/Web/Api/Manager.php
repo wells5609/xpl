@@ -4,14 +4,15 @@ namespace xpl\Web\Api;
 
 use xpl\Common\Storage\Config;
 
-class Manager {
+class Manager 
+{
 	
 	protected $config;
 	protected $structure;
 	protected $errors;
 	
-	public function __construct() {
-		$this->config = new Config();
+	public function __construct(Config $config = null) {
+		$this->config = $config ?: new Config();
 		$this->config->setParent($this);
 		$this->errors = array();
 	}

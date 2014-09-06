@@ -3,20 +3,38 @@
 namespace xpl\Framework\Application;
 
 use xpl\Foundation\BundleProviderInterface;
+use xpl\Dependency\DiAwareInterface;
+use xpl\Framework\DiAwareTrait;
 
-class Factory implements BundleProviderInterface {
+class Factory implements BundleProviderInterface, DiAwareInterface
+{
+	use DiAwareTrait;
 	
 	const DEFAULT_CLASS = 'xpl\\Framework\\Application\\App';
 	
 	protected $path;
 	protected $class;
-	protected $lastClass;
-	protected $allowOwnClass = true;
+	protected $allow_own_class = true;
 	protected $apps;
 	
+	/**
+	 * Constructor.
+	 * 
+	 * @param string $apps_path Filesystem path to applications directory.
+	 * @param string $class [Optional] Default application class.
+	 */
 	public function __construct($apps_path, $class = self::DEFAULT_CLASS) {
-		$this->setPath($apps_path);
-		$this->setClass($class);
+		
+		if (! $realpath = realpath($apps_path)) {
+			throw new \RuntimeException("Apps directory does not exist: '$apps_path'.");
+		}
+		
+		if (! $this->isValidClass($class)) {
+			throw new \RuntimeException("App class '$class' must implement ".static::DEFAULT_CLASS);
+		}
+		
+		$this->path = $realpath.DIRECTORY_SEPARATOR;
+		$this->class = $class;
 		$this->apps = array();
 	}
 	
@@ -33,39 +51,6 @@ class Factory implements BundleProviderInterface {
 			throw new \LogicException("App factory only creates apps, requested: '$type'.");
 		}
 		
-		return $this->create($name);
-	}
-	
-	public function setAllowOwnClass($value) {
-		$this->allowOwnClass = (bool) $value;
-	}
-	
-	public function setPath($path) {
-		
-		if (! $realpath = realpath($path)) {
-			throw new \RuntimeException("Directory does not exist: '$path'.");
-		}
-		
-		$this->path = $realpath.DIRECTORY_SEPARATOR;
-	}
-	
-	public function setClass($class) {
-		
-		if ($class !== static::DEFAULT_CLASS && ! is_subclass_of($class, static::DEFAULT_CLASS)) {
-			throw new \InvalidArgumentException("App class '$class' must implement ".static::DEFAULT_CLASS);
-		}
-		
-		isset($this->class) and $this->lastClass = $this->class;
-		
-		$this->class = $class;
-	}
-	
-	public function resetClass() {
-		isset($this->lastClass) and $this->setClass($this->lastClass);
-	}
-	
-	public function create($name) {
-		
 		if (isset($this->apps[$name])) {
 			throw new \LogicException("Application '$name' already exists.");
 		}
@@ -79,28 +64,38 @@ class Factory implements BundleProviderInterface {
 		
 		$config = new Config($name, $path);
 		
-		if ($this->allowOwnClass && is_readable($path.'Application.php')) {
+		if ($this->allow_own_class && is_readable($path.'Application.php')) {
 			
 			// Use a custom class from Application.php
 			include $path.'Application.php';
 			
-			$appClass = ucfirst($name).'Application';
+			$app_class = ucfirst($name).'Application';
 			
-			if (class_exists($appClass, false) && is_subclass_of($appClass, static::DEFAULT_CLASS)) {
-				$class = $appClass;
+			if (class_exists($app_class, false) && $this->isValidClass($app_class)) {
+				$class = $app_class;
 			}
 		}
 		
-		return $this->apps[$name] = new $class($config);
+		$this->apps[$name] = $class;
+		
+		return new $class($config);
+	}
+	
+	public function setAllowOwnClass($value) {
+		$this->allow_own_class = (bool) $value;
+	}
+	
+	public function isValidClass($class) {
+		return $class === static::DEFAULT_CLASS || is_subclass_of($class, static::DEFAULT_CLASS);
 	}
 	
 	public function get($name) {
 		
 		if (isset($this->apps[$name])) {
-			return $this->apps[$name];
+			return $this->di('bundles')->getBundle('app.'.$name);
 		}
 		
-		return $this->create($name);
+		return null;
 	}
 	
 	public function exists($name) {

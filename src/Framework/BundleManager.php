@@ -7,7 +7,8 @@ use xpl\Foundation\BundleInterface;
 use xpl\Dependency\DiAwareInterface;
 use xpl\Dependency\DI;
 
-class BundleManager extends BaseBundleManager implements DiAwareInterface {
+class BundleManager extends BaseBundleManager implements DiAwareInterface 
+{
 	
 	/**
 	 * Dependency injection container.

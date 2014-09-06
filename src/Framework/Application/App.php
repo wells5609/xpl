@@ -158,19 +158,6 @@ class App extends \xpl\Web\Application implements AppInterface {
 	}
 	
 	/**
-	 * Called at end of `__construct()`
-	 */
-	protected function onInit() {
-		$this->loadComponents();
-	}
-	
-	/**
-	 * Sets up initial application components in object registry.
-	 */
-	protected function loadComponents() {
-	}
-	
-	/**
 	 * Adds autoloading of the app's namespace from the directory/(ies) given.
 	 * 
 	 * The application's namespace MUST be set prior to calling, otherwise
@@ -189,7 +176,7 @@ class App extends \xpl\Web\Application implements AppInterface {
 		
 		$func = 'add'.($psr4 ? 'Psr4' : '');
 		
-		composer()->$func($namespace.'\\', $dir);
+		$this->getDI()->offsetGet('composer')->$func($namespace.'\\', $dir);
 	}
 	
 }

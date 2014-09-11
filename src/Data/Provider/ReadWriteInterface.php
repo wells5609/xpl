@@ -2,7 +2,7 @@
 
 namespace xpl\Data\Provider;
 
-interface ReadWriteInterface extends ProviderInterface {
+interface ReadWriteInterface extends \xpl\Data\ProviderInterface {
 	
 	public function insert(array $data);
 	

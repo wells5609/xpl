@@ -2,142 +2,184 @@
 
 namespace xpl\Routing;
 
-class Router {	
-	
-	protected $groups;
-	protected $tried;
+/**
+ * Router maps a request method and URI to a route.
+ */
+class Router
+{
+	protected $resources;
 	protected $match;
 	
-	public function __construct() {
-		$this->groups = array();
-		$this->tried = array();
+	/**
+	 * Adds a resource to the router.
+	 * 
+	 * @param \xpl\Routing\Resource $resource
+	 */
+	public function add(Resource $resource) {
+		$this->resources[$resource->getName()] = $resource;
 	}
 	
-	public function add(Group $group) {
-		$this->groups[$group->getName()] = $group;
+	/**
+	 * Gets an added resource by name.
+	 * 
+	 * @param string $resource
+	 * @return \xpl\Routing\Resource|null
+	 */
+	public function get($resource) {
+		return isset($this->resources[$resource]) ? $this->resources[$resource] : null;
 	}
 	
-	public function has($group) {
-		
-		if (is_string($group)) {
-			return isset($this->groups[$group]);
-		}
-		
-		return in_array($group, $this->groups, true);
+	/**
+	 * Returns an array of all added resources.
+	 * 
+	 * @return array
+	 */
+	public function getAll() {
+		return $this->resources;
 	}
 	
-	public function get($group) {
-		return isset($this->groups[$group]) ? $this->groups[$group] : null;
-	}
-	
-	public function remove($group) {
+	/**
+	 * Checks whether the router has the given resource.
+	 * 
+	 * Resource can be given by name or as an object.
+	 * 
+	 * @param string|\xpl\Routing\Resource $resource
+	 * 
+	 * @return boolean
+	 */
+	public function has($resource) {
 		
-		if (is_string($group)) {
-			
-			if ($the_group = $this->get($group)) {
-				unset($this->groups[$group]);
-				return $the_group;
-			}
-		
-		} else if ($key = array_search($group, $this->groups, true)) {
-			$the_group = $this->groups[$key];
-			unset($this->groups[$key]);
-			return $the_group;
-		}
-		
-		return null;
-	}
-	
-	public function getMatch() {
-		return isset($this->match) ? $this->match : null;
-	}
-	
-	public function __invoke($method, $uri) {
-		
-		$query = array();
-		
-		if (false !== $pos = strpos($uri, '?')) {
-			$qstr = substr($uri, $pos+1);
-			$uri = substr($uri, 0, $pos);
-			parse_str($qstr, $query);
-		}
-		
-		$uri = ltrim($uri, '/');
-	
-		foreach($this->groups as $group) {
-			
-			// Skip obvious non-matches
-			if (! $group->isPrefixMatch($uri)) {
-				continue;
-			}
-			
-			// Match the routes in the group
-			foreach($group->getRoutes() as $route) {
-				
-				if ($this->matchRoute($route, $uri, $method, $query)) {
-					
-					// Throw exception if HTTP method is not allowed
-					if (! $route->hasMethod($method)) {
-						$exception = new Exception\MethodNotAllowed("The '$method' HTTP method is not allowed.");
-						$exception->setAllowedValues($route->getMethods());
-						throw $exception;
-					}
-					
-					// Create a new match instance
-					$this->match = new Match($route, $uri, $method);
-					
-					return true;
-				}
-				
-				// track tried routes
-				$this->tried[] = $group->getName().':'.$route->getName();
-			}
-		}
-		
-		throw new Exception\NotFound("Could not find matching route for '$uri'");
-	}
-	
-	protected function matchRoute(Route $route, $uri, $http_method, array $query = array()) {
-		
-		if ($route instanceof REST\Route && ! $route->hasMethod($http_method)) {
-			return false;
-		}
-		
-		// Match route with path vars
-		if ($this->matchUri($route, $route->getCompiledUri(), $uri, $http_method)) {
+		if (isset($this->resources[$resource])) {
 			return true;
 		}
 		
-		if ($route->getOption('fallback_to_query_params')) {
-			
-			// Match route using query params
-			if ($this->matchUri($route, $route->getStrippedUri(), $uri, $http_method)) {
-				
-				// Check if the query params satisfy the route
-				if ($route->isSatisfiedBy($query, $missing)) {
-					
-					$route->setParamsFrom($query);
-					
-					if ($route->isSatisfied($missing)) {
-						return true;
-					}
-				}
-				
-				throw new Exception\MissingParameter("Missing route parameter: '$missing'.");
+		if (isset($this->resources)) {
+			return in_array($resource, $this->resources, true);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Removes a resource from the router.
+	 * 
+	 * Resource can be given by name or as an object.
+	 * 
+	 * @param string|\xpl\Routing\Resource $resource
+	 */
+	public function remove($resource) {
+		
+		if (isset($this->resources[$resource])) {
+			unset($this->resources[$resource]);
+		
+		} else if ($key = array_search($resource, $this->resources, true)) {
+			unset($this->resources[$key]);
+		}
+	}
+	
+	/**
+	 * Matches the given method and URI to a resource route.
+	 * 
+	 * @param string $method Request HTTP method.
+	 * @param string $uri Request URI.
+	 * 
+	 * @return boolean True if a match was found, otherwise false.
+	 */
+	public function __invoke($method, $uri) {
+		
+		foreach($this->resources as $name => $resource) {
+		
+			if ($this->matchResource($resource, $method, $uri)) {
+				return true;
 			}
 		}
 		
 		return false;
 	}
 	
-	protected function matchUri(Route $route, $route_uri, $uri, $http_method) {
+	/** Alias of __invoke() */
+	public function match($method, $uri) {
+		return $this($method, $uri);
+	}
+	
+	/**
+	 * Returns the matched route, if any.
+	 * 
+	 * @return \xpl\Routing\Route|null
+	 */
+	public function getMatchedRoute() {
 		
-		if (preg_match('#^/?'.$route_uri.'/?$#i', $uri, $params)) {
+		if (empty($this->match)) {
+			return null;
+		}
+		
+		return $this->resources[$this->match['resource']]->getRoute($this->match['route']);
+	}
+	
+	/**
+	 * Returns the resource containing the matched route, if any.
+	 * 
+	 * @return \xpl\Routing\Resource|null
+	 */
+	public function getMatchedResource() {
+		
+		if (empty($this->match)) {
+			return null;
+		}
+		
+		return $this->resources[$this->match['resource']];
+	}
+	
+	/**
+	 * Attempts to match a resource's routes to a request method and URI.
+	 * 
+	 * @param \xpl\Routing\Resource $resource
+	 * @param string $method
+	 * @param string $uri
+	 * 
+	 * @return boolean True if a match was found, otherwise false.
+	 */
+	protected function matchResource(Resource $resource, $method, $uri) {
+		
+		foreach($resource->getRoutes() as $route) {
+		
+			if ($this->matchRoute($route, $method, $uri)) {
+		
+				$this->match = array(
+					'resource' => $resource->getName(), 
+					'route' => $route->getID()
+				);
+		
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Attempts to match a route to a request method and URI.
+	 * 
+	 * If matched, sets the route's parameters from the regex matches.
+	 * 
+	 * @param \xpl\Routing\Route $route
+	 * @param string $method
+	 * @param string $uri
+	 * 
+	 * @return boolean True if the route matched, otherwise false.
+	 */
+	protected function matchRoute(Route $route, $method, $uri) {
+		
+		if ($route->getMethod() !== $method) {
+			return false;
+		}
+		
+		if (preg_match('#^/?'.$route->getCompiledUri().'/?$#i', $uri, $params)) {
 			
 			unset($params[0]);
 			
 			if (! empty($params)) {
-				$route->setParamValues($params);
+				$route->setParams($params);
 			}
 			
 			return true;

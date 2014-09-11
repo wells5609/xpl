@@ -2,6 +2,8 @@
 
 namespace xpl\Data\Service;
 
+use xpl\Data\ServiceInterface;
+
 abstract class AbstractService implements ServiceInterface {
 	
 	abstract public function getProvider();

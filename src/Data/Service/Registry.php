@@ -2,7 +2,7 @@
 
 namespace xpl\Data\Service;
 
-use xpl\Data\Service\ServiceInterface as Service;
+use xpl\Data\ServiceInterface as Service;
 
 class Registry {
 	
@@ -15,6 +15,10 @@ class Registry {
 	}
 	
 	public function register($svc, $class) {
+		
+		if ($class instanceof Service) {
+			return $this->set($svc, $class);
+		}
 		
 		if (! is_string($class)) {
 			throw new \InvalidArgumentException("Class for service '$svc' must be string, given: ".gettype($class));

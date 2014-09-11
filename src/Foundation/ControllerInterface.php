@@ -2,6 +2,8 @@
 
 namespace xpl\Foundation;
 
+use xpl\Routing\RouteInterface;
+
 interface ControllerInterface {
 	
 	public function setRequest(RequestInterface $request);

@@ -13,8 +13,8 @@ class Template {
 		$this->template = trim($template, '/');
 		
 		foreach(explode('/', $this->template) as $part) {
-			if (0 === strpos($part, ':')) {
-				$this->vars[] = ltrim($part, ':');
+			if (0 === strpos($part, '{')) {
+				$this->vars[] = rtrim(ltrim($part, '{'), '}');
 			}
 		}
 		
@@ -38,7 +38,7 @@ class Template {
 		foreach($this->vars as $var) {
 			
 			if (isset($args[$var])) {
-				$srch = ':'.$var;
+				$srch = '{'.$var.'}';
 				$repl = $args[$var];
 			
 			} else if ('?' === substr($var, -1)) {
@@ -46,10 +46,10 @@ class Template {
 				$var = rtrim($var, '?');
 				
 				if (isset($args[$var])) {
-					$srch = ':'.$var.'?';
+					$srch = '{'.$var.'?}';
 					$repl = $args[$var];
 				} else {
-					$srch = '/:'.$var.'?';
+					$srch = '/{'.$var.'?}';
 					$repl = '';
 				}
 			

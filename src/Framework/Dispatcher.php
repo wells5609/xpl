@@ -4,10 +4,10 @@ namespace xpl\Framework;
 
 use xpl\Dependency\DiAwareInterface;
 use xpl\Dependency\DI;
-use xpl\Foundation\RequestInterface as Request;
-use xpl\Foundation\RoutableInterface as Routable;
 use xpl\Event\Manager as Events;
+use xpl\Foundation\RequestInterface as Request;
 use xpl\Routing\Router;
+use xpl\Routing\RoutableInterface as Routable;
 use xpl\Routing\Exception\MethodNotAllowed;
 use xpl\Routing\Exception\NotFound;
 use xpl\Http\Exception\MethodNotAllowed as HTTP405;
@@ -41,11 +41,10 @@ class Dispatcher extends \xpl\Web\Dispatcher implements DiAwareInterface
 			
 			$resource = $this->prepareRouter($router, $routable);
 			
-			if ($match = $this->routeRequest($router, $request)) {
+			if ($route = $this->routeRequest($router, $request)) {
 				
-				$route = $match->getRoute();
-				
-				$controller = $resource->getController();
+				$controller = $resource->getOption('controller');
+				$controller = is_object($controller) ? $controller : new $controller;
 				$controller->setRequest($request);
 				$controller->setRoute($route);
 				
@@ -65,6 +64,9 @@ class Dispatcher extends \xpl\Web\Dispatcher implements DiAwareInterface
 				}
 				
 				return $this->call(array($controller, $route->getAction()), $route->getParams());
+			
+			} else {
+				throw new HTTP404('Page not found.', 404);
 			}
 		
 		} catch (MethodNotAllowed $e) {

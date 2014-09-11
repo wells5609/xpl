@@ -1,10 +1,11 @@
 <?php
 
-namespace xpl\Data\Service;
+namespace xpl\Data\Remote\Service;
 
+use xpl\Data\Remote\ServiceInterface;
 use xpl\Data\Remote\NullFormatter;
 
-abstract class AbstractRemoteService implements RemoteServiceInterface
+abstract class AbstractService implements ServiceInterface
 {
 	
 	/**

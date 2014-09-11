@@ -20,6 +20,8 @@ class Html implements TypeInterface {
 			return (string) $body;
 		}
 		
+		xpl_log("Response format error: ".__CLASS__.' in '.__FILE__);
+		
 		throw new \InvalidArgumentException("HTML response body must be string(able), given: ".gettype($body));
 	}
 	

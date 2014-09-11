@@ -2,65 +2,52 @@
 
 namespace xpl\Framework;
 
-use xpl\Cache\Cache;
-use xpl\Session\Session;
-use xpl\Web\Request;
-use xpl\Web\Response;
-use xpl\Web\Api\Manager as ApiManager;
-use xpl\Routing\Router;
-use xpl\Database\ConnectionPool;
-use xpl\Data\Service\Registry as ServiceRegistry;
-use xpl\Event\Manager as EventManager;
-use xpl\Utility\Url;
-
 class DI extends \xpl\Dependency\DI {
 	
 	public function __construct() {
 		
-		$this['cache'] = Cache::instance();
+		$this['cache'] = \xpl\Cache\Cache::instance();
 		
-		$this['session'] = Session::instance();
+		$this['session'] = \xpl\Session\Session::instance();
 		
-		$this['bundles'] = function () {
-			return new BundleManager;
-		};
+		$this['bundles'] = new BundleManager();
+		
+		$this['events'] = new \xpl\Event\Manager();
+		
+		$this['router'] = new \xpl\Routing\Router();
+		
+		$this['dispatcher'] = new Dispatcher();
+		
+		$this['kernel'] = new Kernel($this);
 		
 		$this['request'] = function ($di) {
-			$request = Request::createFromGlobals();
+			$request = \xpl\Web\Request::createFromGlobals();
 			$request->setSession($di['session']);
 			return $request;
 		};
 		
 		$this['response'] = function ($di) {
-			return new Response($di['request']);
-		};
-		
-		$this['dispatcher'] = function () {
-			return new Dispatcher();
-		};
-		
-		$this['api'] = function () {
-			return new ApiManager();
-		};
-		
-		$this['router'] = function () {
-			return new Router();
+			return new \xpl\Web\Response($di['request']);
 		};
 		
 		$this['dbal'] = function ($di) {
-			return new ConnectionPool($di['env']->getPath('env'));
+			return new \xpl\Database\ConnectionPool($di['env']->getPath('env'));
 		};
 		
 		$this['services'] = function () {
-			return new ServiceRegistry;
+			return new \xpl\Data\Service\Registry;
 		};
 		
-		$this['events'] = function () {
-			return new EventManager;
+		$this['api'] = function () {
+			return new \xpl\Web\Api\Manager;
+		};
+		
+		$this['resource.factory'] = function () {
+			return new \xpl\Routing\Resource\Factory;
 		};
 		
 		$this['url'] = function ($di) {
-			return new Url($di['request']->getUri(), $di['request']->getQuery());
+			return new \xpl\Utility\Url($di['request']->getUri(), $di['request']->getQuery());
 		};
 		
 	}

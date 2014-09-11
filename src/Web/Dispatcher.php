@@ -3,8 +3,8 @@
 namespace xpl\Web;
 
 use xpl\Routing\Router;
+use xpl\Routing\RoutableInterface;
 use xpl\Foundation\RequestInterface;
-use xpl\Foundation\RoutableInterface;
 use xpl\Event\Manager as Events;
 use xpl\Http\Exception\MethodNotAllowed as HTTP_405;
 use xpl\Http\Exception\NotFound as HTTP_404;
@@ -17,11 +17,12 @@ class Dispatcher extends \xpl\Routing\Dispatcher {
 			
 			$resource = $this->prepareRouter($router, $routable);
 			
-			if ($match = $this->routeRequest($router, $request)) {
+			if ($route = $this->routeRequest($router, $request)) {
 				
-				$route = $match->getRoute();
+				$controller = $resource->getOption('controller');
 				
-				$controller = $resource->getController();
+				is_object($controller) or $controller = new $controller();
+				
 				$controller->setRequest($request);
 				$controller->setRoute($route);
 				

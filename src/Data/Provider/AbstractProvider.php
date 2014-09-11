@@ -3,6 +3,7 @@
 namespace xpl\Data\Provider;
 
 use xpl\Data\AdapterInterface;
+use xpl\Data\ProviderInterface;
 
 abstract class AbstractProvider implements ProviderInterface {
 	

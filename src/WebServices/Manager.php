@@ -9,6 +9,12 @@ class Manager
 	 */
 	protected static $adapter;
 	
+	protected static $adapter_class;
+	
+	public static function setAdapterClass($class) {
+		static::$adapter_class = $class;
+	}
+	
 	/**
 	 * Sets the request client adapter.
 	 * 
@@ -26,22 +32,31 @@ class Manager
 	 * @return \xpl\WebServices\Client\RequestAdapterInterface
 	 */
 	public static function getAdapter() {
-		return isset(static::$adapter) ? static::$adapter : null;
+		
+		if (isset(static::$adapter)) {
+			return static::$adapter;
+		}
+		
+		if (isset(static::$adapter_class)) {
+			$class = static::$adapter_class;
+			static::setAdapter(new $class);
+			return static::$adapter;
+		}
 	}
 	
 	/**
 	 * @return boolean
 	 */
 	public static function hasAdapter() {
-		return isset(static::$adapter);
+		return isset(static::$adapter) || isset(static::$adapter_class);
 	}
 	
 	/**
 	 * @return \xpl\WebServices\Client
 	 */
 	public static function getClient() {
-		if (isset(static::$adapter)) {
-			return new Client(static::$adapter);
+		if ($adapter = static::getAdapter()) {
+			return new Client($adapter);
 		}
 	}
 }

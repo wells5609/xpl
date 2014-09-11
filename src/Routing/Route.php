@@ -2,222 +2,267 @@
 
 namespace xpl\Routing;
 
-class Route implements \xpl\Foundation\RouteInterface {
+/**
+ * Route represents a potential request destination/action.
+ */
+class Route implements RouteInterface
+{
 	
-	protected $group;
+	/**
+	 * @var string
+	 */
 	protected $name;
+	
+	/**
+	 * @var string
+	 */
 	protected $uri;
-	protected $compiled_uri;
+	
+	/**
+	 * @var string
+	 */
+	protected $method;
+	
+	/**
+	 * @var string
+	 */
 	protected $action;
-	protected $methods;
+	
+	/**
+	 * @var string
+	 */
+	protected $compiled_uri;
+	
+	/**
+	 * @var array
+	 */
+	protected $tokens;
+	
+	/**
+	 * @var array
+	 */
 	protected $params;
-	protected $options;
-	protected $uri_template;
 	
-	public function __construct(Group $group, $name, $uri, array $methods, $action, array $options = array()) {
-		$this->group = $group;
+	/**
+	 * Constructor.
+	 * 
+	 * @param string $name Route name (does not need to be unique).
+	 * @param string $method HTTP method allowed.
+	 * @param string $uri Route URI path (unparsed).
+	 * @param string $action [Optional] Route action. Default is to prepend the lowercased method
+	 * to the route's name with the first letter uppercased: e.g. "GET" + "myroute" => "getMyroute"
+	 */
+	public function __construct($name, $method, $uri, $action = null) {
+		
 		$this->name = $name;
+		$this->method = strtoupper($method);
 		$this->uri = trim($uri, '/');
-		$this->methods = $methods;
-		$this->action = $action;
-		$this->options = $options;
 		$this->params = array();
+		
+		if (empty($action)) {
+			$action = strtolower($this->method).ucfirst($this->name);
+		}
+		
+		$this->action = $action;
 	}
 	
-	public function getGroup() {
-		return $this->group;
+	/**
+	 * Method used for identifying a route by string.
+	 * 
+	 * Default implementation uses "$this->action", since some routes can 
+	 * potentially have the same name (e.g. if their HTTP methods differ).
+	 * 
+	 * @return string
+	 */
+	public function getID() {
+		return $this->action;
 	}
 	
+	/**
+	 * Returns the route's name.
+	 * 
+	 * @return string
+	 */
 	public function getName() {
 		return $this->name;
 	}
 	
+	/**
+	 * Returns the route's HTTP method.
+	 * 
+	 * @return string
+	 */
+	public function getMethod() {
+		return $this->method;
+	}
+	
+	/**
+	 * Returns the URI (raw, including params like "{param}").
+	 * 
+	 * @return string
+	 */
 	public function getUri() {
 		return $this->uri;
 	}
 	
-	public function getMethods() {
-		return $this->methods;
-	}
-	
-	public function hasMethod($method) {
-		return in_array($method, $this->methods, true);
-	}
-	
-	public function setAction($action) {
-		$this->action = $action;
-	}
-	
+	/**
+	 * Returns the route action.
+	 * 
+	 * @return string
+	 */
 	public function getAction() {
 		return $this->action;
 	}
 	
+	/**
+	 * Sets the compiled route URI.
+	 * 
+	 * Called from Compiler.
+	 * 
+	 * @param string $uri Compiled URI.
+	 */
+	public function setCompiledUri($uri) {
+		$this->compiled_uri = $uri;
+	}
+	
+	/**
+	 * Returns the compiled URI, if set.
+	 * 
+	 * @return string|null
+	 */
+	public function getCompiledUri() {
+		return isset($this->compiled_uri) ? $this->compiled_uri : null;
+	}
+	
+	/**
+	 * Checks whether the route URI has been compiled.
+	 * 
+	 * @return boolean
+	 */
+	public function isCompiled() {
+		return isset($this->compiled_uri);
+	}
+	
+	/**
+	 * Sets the route's URI tokens.
+	 * 
+	 * @param array $tokens
+	 */
+	public function setTokens(array $tokens = array()) {
+		$this->tokens = $tokens;
+	}
+	
+	/**
+	 * Returns the route's tokens.
+	 * 
+	 * @return array
+	 */
+	public function getTokens() {
+		return $this->tokens;
+	}
+	
+	/**
+	 * Checks whether the route uses a given token.
+	 * 
+	 * @param string $name
+	 */
+	public function hasToken($name) {
+		return isset($this->tokens[$name]);
+	}
+	
+	/**
+	 * Sets the parameters matched from the route tokens.
+	 * 
+	 * Parameters are the route's tokens filled with values.
+	 * 
+	 * @param array $params
+	 */
+	public function setParams(array $params = array()) {
+		if (count($params) === count($this->tokens)) {
+			$this->params = array_combine($this->tokens, $params);
+		}
+	}
+	
+	/**
+	 * Checks whether the route has a given parameter set.
+	 * 
+	 * @param string $token
+	 */
+	public function hasParam($token) {
+		return isset($this->params[$token]);
+	}
+	
+	/**
+	 * Returns the route's parameters.
+	 * 
+	 * @return array
+	 */
 	public function getParams() {
 		return $this->params;
 	}
 	
-	public function hasParam($name) {
-		return array_key_exists($name, $this->params);
-	}
-	
-	public function setParamValues(array $params) {
-		if (count($params) === count($this->params)) {
-			$this->params = array_combine(array_keys($this->params), $params);
-		}
-	}
-	
-	public function setParamValue($name, $value) {
-		$this->params[$name] = $value;
-	}
-	
-	public function hasParamValue($name) {
-		return isset($this->params[$name]);
-	}
-	
-	public function getParamValue($name) {
-		return isset($this->params[$name]) ? $this->params[$name] : null;
-	}
-	
-	public function setParamsFrom(array $values) {
-		foreach($values as $key => $value) {
-			if (array_key_exists($key, $this->params) && ! isset($this->params[$key])) {
-				$this->params[$key] = $value;
-			}
-		}
-	}
-	
-	public function isSatisfied(&$missing = null) {
-		
-		isset($this->compiled_uri) or $this->compile();
-		
-		if (empty($this->params)) {
-			return true;
-		}
-		
-		foreach($this->params as $key => $value) {
-			if (null === $value) {
-				$missing = $value;
-				return false;
-			}
-		}
-		
-		return true;
-	}
-	
-	public function isSatisfiedBy(array $values, &$missing = null) {
-		
-		isset($this->compiled_uri) or $this->compile();
-		
-		if (empty($this->params)) {
-			return true;
-		}
-		
-		foreach($this->params as $param => $null) {
-			if (! isset($values[$param])) {
-				$missing = $param;
-				return false;
-			}
-		}
-		
-		return true;
-	}
-	
-	public function setOptions(array $options) {
-		$this->options = $options;
-	}
-	
-	public function getOptions() {
-		return $this->options;
-	}
-	
-	public function setOption($name, $value) {
-		$this->options[$name] = $value;
-	}
-	
-	public function getOption($name) {
-		return isset($this->options[$name]) ? $this->options[$name] : null;
-	}
-	
-	public function addOptions(array $options, $overwrite = false) {
-		if ($overwrite) {
-			$this->options = array_merge($this->options, $options);
-		} else {
-			$this->options = array_merge($options, $this->options);
-		}
-	}
-	
-	public function getCompiledUri() {
-		isset($this->compiled_uri) or $this->compile();
-		return $this->compiled_uri;
-	}
-	
-	public function getStrippedUri() {
-		
-		if (false === strpos($this->uri, '{')) {
-			return $this->uri;
-		}
-		
-		$path = '';
-		
-		foreach(explode('/', $this->uri) as $segment) {
-			if ('{' !== $segment[0]) {
-				$path .= '/'.$segment;
-			}
-		}
-		
-		return ltrim($path, '/');
+	/**
+	 * Returns a parameter value by token name.
+	 * 
+	 * @param string $token Token name.
+	 * @return string Parameter value, if set, otherwise null.
+	 */
+	public function getParam($token) {
+		return isset($this->params[$token]) ? $this->params[$token] : null;
 	}
 	
 	/**
-	 * Returns a URI template for the route, generating if necessary.
+	 * Prepends a string to the route's URI.
 	 * 
-	 * @return \xpl\Utility\Uri\Template
+	 * Called by Resource.
+	 * 
+	 * @param string $uri_prefix
 	 */
-	public function getUriTemplate() {
+	public function prefixUri($uri_prefix) {
 		
-		if (! isset($this->uri_template)) {
-			
-			$uri = \xpl\System\Server::getHttpScheme().'://'
-				.\xpl\System\Server::getDomainName().'/'
-				.str_replace(array('{', '?}', '}'), array(':', ''), $this->uri);
-			
-			$this->uri_template = new \xpl\Utility\Uri\Template($uri);
+		$this->uri = rtrim($uri_prefix, '/').'/'.$this->uri;
+		
+		if (isset($this->compiled_uri)) {
+			$this->compiled_uri = $uri_prefix.'/'.$this->compiled_uri;
+		}
+	}
+	
+	/**
+	 * Checks whether the route's tokens have been satisfied.
+	 * 
+	 * @return boolean
+	 */
+	public function isSatisfied() {
+		
+		if (empty($this->tokens)) {
+			return true;
 		}
 		
-		return $this->uri_template;	
-	}
-	
-	public function generateUrl(array $args = array()) {
-		return $this->getUriTemplate()->build($args);
-	}
-	
-	protected function compile() {
-		
-		$uri = $this->uri;
-		$search = $replace = array();
-		
-		if (preg_match_all('#\{(\w+)\}(\?)?#', $uri, $vars)) {
-			
-			foreach($vars[1] as $i => $varname) {
-				
-				if (! $regex = $this->group->getRegex($varname)) {
-					throw new \InvalidArgumentException("Unknown route parameter: '$varname'.");
-				}
-				
-				if (! empty($vars[2][$i])) {
-					$regex .= '?';
-				}
-				
-				$search[] = $vars[0][$i];
-				$replace[] = '('.$regex.')';
-				
-				$this->params[$varname] = null;
+		foreach($this->tokens as $token) {
+			if (! isset($this->params[$token])) {
+				return false;
 			}
-			
-			$uri = str_replace($search, $replace, $uri);
 		}
 		
-		$this->compiled_uri = $uri;
+		return true;
+	}
+	
+	/**
+	 * Implements \Serializable
+	 */
+	public function serialize() {
+		// don't store the parameters if this is the matched route
+		$this->params = array();
+		return serialize(get_object_vars($this));
+	}
+	
+	/**
+	 * Implements \Serializable
+	 */
+	public function unserialize($serial) {
+		foreach(unserialize($serial) as $key => $value) {
+			$this->$key = $value;
+		}
 	}
 	
 }

@@ -2,8 +2,10 @@
 
 namespace xpl\Routing\Resource;
 
-use xpl\Routing\Resource;
 use xpl\Cache\Cache;
+use xpl\Routing\Resource;
+use xpl\Routing\Route;
+use xpl\Routing\Route\Tokens;
 
 abstract class Definition {
 	
@@ -11,51 +13,60 @@ abstract class Definition {
 	
 	abstract public function getControllerClass();
 	
-	abstract protected function getRoutes();
+	abstract public function getRoutes();
 	
-	protected function getParams() {
+	public function getDomain() {
+		return null;
+	}
+	
+	public function getParams() {
 		return array();
 	}
 	
-	protected function getOptions() {
+	public function getOptions() {
 		return array();
 	}
 	
-	protected function getPathPrefix() {
+	public function getPathPrefix() {
 		return '/';
 	}
 	
-	public function createResource(Cache $cache = null) {
+	public function create() {
 		
-		if (isset($cache) && $resource = $cache->get($this->getName(), 'resources')) {
-			return unserialize($resource);
+		$resource = new Resource($this->getName(), $this->getPathPrefix());
+		
+		$resource->setTokens($tokens = new Tokens());
+		
+		foreach($this->getParams() as $token => $regex) {
+			$tokens->add($token, $regex);
 		}
-		
-		$resource = new Resource(
-			$this->getParams(), 
-			$this->getName(), 
-			$this->getPathPrefix(), 
-			$this->getOptions()
-		);
 		
 		foreach($this->getRoutes() as $name => $arr) {
 			
 			$uri = $arr[0];
-			$methods = isset($arr[1]) ? (array) $arr[1] : array('GET','HEAD','POST');
-			$action = isset($arr[2]) ? $arr[2] : $name;
+			$method = isset($arr[1]) ? $arr[1] : 'GET';
+			$action = isset($arr[2]) ? $arr[2] : null;
 			
-			$resource->add($name, $uri, $methods, $action);
+			$resource->addRoute(new Route($name, $method, $uri, $action));
 		}
 		
-		$controllerClass = $this->getControllerClass();
+		$resource->setOption('controller', $this->getControllerClass());
 		
-		$resource->setController(new $controllerClass);
-		
-		if (isset($cache)) {
-			$cache->set($this->getName(), serialize($resource), 'resources');
+		if ($domain = $this->getDomain()) {
+			$resource->setOption('domain', $domain);
 		}
 		
 		return $resource;
+	}
+	
+	public function getCached(Cache $cache) {
+		if ($resource = $cache->get('route_resource_'.$this->getName())) {
+			return unserialize($resource);
+		}
+	}
+	
+	public function cache(Cache $cache, Resource $resource) {
+		$cache->set('route_resource_'.$this->getName(), serialize($resource));
 	}
 	
 }

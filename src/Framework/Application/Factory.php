@@ -56,24 +56,69 @@ class Factory implements BundleProviderInterface, DiAwareInterface
 		}
 		
 		$path = $this->path.$name.'/';
-		$class = $this->class;
+		$configFile = $path.'config/config.php';
 		
 		if (! is_dir($path)) {
 			throw new \RuntimeException("Invalid application directory for '$name': '$path'.");
 		}
 		
-		$config = new Config($name, $path);
+		if (! is_readable($configFile)) {
+			throw new \RuntimeException('Missing "config/config.php" for app: "'.$name.'".');
+		}
 		
-		if ($this->allow_own_class && is_readable($path.'Application.php')) {
+		// Set up config
+		$config = new Config($name, $path);
+		$config->setPath('config', $path.'config/');
+		
+		$vars = include $configFile;
+		
+		foreach($vars as $key => $value) {
+			if ('paths' === $key || 'dirs' === $key) {
+				foreach($value as $dirname => $dirpath) {
+					$config->setPath($dirname, $dirpath);
+				}
+			} else {
+				$config->set($key, $value);
+			}
+		}
+		
+		$class = $this->class;
+		$appClassFile = $config->get('class_file') ?: $path.'Application.php';
+		
+		// Use a custom App class?
+		if ($this->allow_own_class && is_readable($appClassFile)) {
 			
-			// Use a custom class from Application.php
-			include $path.'Application.php';
+			include $appClassFile;
 			
-			$app_class = ucfirst($name).'Application';
+			if ($namespace = $config->get('namespace')) {
+				$app_class = $namespace.'\\Application';
+			} else {
+				$app_class = ucfirst($name).'Application';
+			}
 			
 			if (class_exists($app_class, false) && $this->isValidClass($app_class)) {
 				$class = $app_class;
 			}
+		}
+		
+		// Set up autoloading
+		if ($autoload = $config->get('autoload') && $namespace = $config->get('namespace')) {
+			
+			$dir = $config->get('autoload_dir') ?: 'classes';
+			
+			if ($autoload_path = $config->getPath($dir)) {
+				
+				if ('psr-4' == $autoload) {
+					$this->getDI()->offsetGet('composer')->addPsr4($namespace.'\\', $autoload_path);
+				} else {
+					$this->getDI()->offsetGet('composer')->add($namespace.'\\', $autoload_path);
+				}
+			}
+		}
+		
+		if (empty($this->apps)) {
+			// 1st app is primary
+			$config->set('is_primary', true);
 		}
 		
 		$this->apps[$name] = $class;

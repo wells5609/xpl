@@ -2,6 +2,8 @@
 
 namespace xpl\Foundation;
 
+use xpl\Routing\RouteInterface;
+
 abstract class AbstractController implements ControllerInterface {
 	
 	protected $request;

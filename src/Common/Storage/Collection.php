@@ -119,7 +119,9 @@ class Collection extends Bin implements Sortable
 	 * @return \xpl\Common\Storage\Collection
 	 */
 	public function keyFilter($func) {
+		
 		$filtered = array_filter($this->keys(), $func);
+		
 		return new static(array_intersect_key($this->_data, array_flip($filtered)));
 	}
 	
@@ -130,6 +132,7 @@ class Collection extends Bin implements Sortable
 	 * @return \xpl\Common\Storage\Collection
 	 */
 	public function keyMap($func) {
+		
 		return new static(array_combine(array_map($func, $this->keys()), $this->values()));
 	}
 	

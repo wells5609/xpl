@@ -2,42 +2,32 @@
 
 namespace xpl\Web;
 
+use xpl\Routing\RoutableInterface;
+use xpl\Routing\RouteInterface;
 use xpl\Foundation\Application as BaseApp;
-use xpl\Foundation\RoutableInterface;
-use xpl\Foundation\RouteInterface;
 use xpl\Foundation\RequestInterface;
 use xpl\Foundation\ControllerInterface;
 
-class Application extends BaseApp implements RoutableInterface {
+abstract class Application extends BaseApp implements RoutableInterface {
 	
 	/**
 	 * Returns the route resource for routing.
 	 * 
 	 * @return \xpl\Routing\Resource
 	 */
-	public function getResource($name = null) {
-		
-		$key = 'resource'.(isset($name) ? ".{$name}" : '');
-		
-		if (isset($this->registry[$key])) {
-			return $this->registry[$key];
-		}
-		
-		$class = $this->getNamespace().'\\Resource'.(isset($name) ? '\\'.ucfirst($name) : '');
-		
-		if (class_exists($class, true)) {
-			
-			$definition = new $class();
-			
-			return $this->registry[$key] = $definition->createResource();
-		}
-		
-		throw new \RuntimeException("Resource definition class does not exist: '$class'.");
-	}
+	abstract public function getResource($name = null);
 	
+	
+	/**
+	 * Called when one of the application's route is matched by the router.
+	 */
 	public function onRoute(RouteInterface $route, RequestInterface $request, ControllerInterface $controller) {
 	}
 	
+	
+	/**
+	 * Called before response is sent when the application is the primary app (i.e. the target of the web request).
+	 */
 	public function onRespond(Response $response) {
 	}
 	

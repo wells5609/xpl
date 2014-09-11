@@ -2,7 +2,7 @@
 
 namespace xpl\Data\Service;
 
-interface ReadWriteInterface extends ServiceInterface {
+interface ReadWriteInterface extends \xpl\Data\ServiceInterface {
 	
 	/**
 	 * Creates a new record in storage.

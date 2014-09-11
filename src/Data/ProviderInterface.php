@@ -1,8 +1,6 @@
 <?php
 
-namespace xpl\Data\Provider;
-
-use xpl\Data\AdapterInterface;
+namespace xpl\Data;
 
 interface ProviderInterface {
 	

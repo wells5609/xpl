@@ -10,52 +10,16 @@ use xpl\Web\Response;
 class App extends \xpl\Web\Application implements AppInterface {
 	
 	/**
-	 * @var string
+	 * Called before response is sent when this is the primary app.
 	 */
-	protected static $primary;
+	public function onRespond(Response $response) {
+		
+	}
 	
 	/**
-	 * Constructor takes a config instance.
-	 * 
-	 * @param \xpl\Common\Storage\Config $config
-	 * @param \xpl\Common\Storage\Registry $registry [Optional]
+	 * Called when views are loaded.
 	 */
-	public function __construct(Config $config, Registry $registry = null) {
-		
-		if (! is_readable($config->getPath().'config/config.php')) {
-			throw new \RuntimeException('Missing config.php for app: "'.$config->get('name').'".');
-		}
-		
-		$this->config = $config;
-		$this->registry = $registry ?: new Registry;
-		
-		$this->config->setParent($this);
-		$this->config->setPath('config', 'config/');
-		
-		$vars = include($this->config->getPath('config').'config.php');
-		
-		if (! empty($vars['app'])) {
-			$this->config->import($vars['app']);
-		}
-		
-		if (! empty($vars['paths'])) {
-			foreach($vars['paths'] as $name => $path) {
-				$this->config->setPath($name, $path);
-			}
-		}
-		
-		if (! isset(static::$primary)) {
-			static::$primary = $this->config->get('name');
-			$this->config->set('is_primary', true);
-		}
-		
-		$this->onInit();
-	}
-	
-	public function onRespond(Response $response) {
-	}
-	
-	public function initViews(\View\Manager $views) {
+	public function initViews(\Cms\Cms $cms) {
 		
 		$__FILE__ = $this->getPath('config').'views.php';
 		
@@ -140,10 +104,7 @@ class App extends \xpl\Web\Application implements AppInterface {
 		return $this->registry->get($name);
 	}
 	
-	/**
-	 * Alias of getName()
-	 * @return string
-	 */
+	/** Alias of getName() */
 	public function getId() {
 		return $this->getName();
 	}
@@ -158,25 +119,41 @@ class App extends \xpl\Web\Application implements AppInterface {
 	}
 	
 	/**
-	 * Adds autoloading of the app's namespace from the directory/(ies) given.
-	 * 
-	 * The application's namespace MUST be set prior to calling, otherwise
-	 * a RuntimeException is thrown.
-	 * 
-	 * @param string $dir Directory path.
-	 * @param boolean $psr4 [Optional] Whether to load using PSR-4. Default false.
-	 * 
-	 * @throws \RuntimeException if app namespace is not set.
+	 * Implementing \xpl\Web\Application
 	 */
-	protected function autoloadRegister($dir, $psr4 = false) {
+	public function getResource($name = null) {
 		
-		if (! $namespace = $this->getNamespace()) {
-			throw new \RuntimeException("Must set app namespace to register autoloader.");
+		$key = 'resource'.(isset($name) ? ".{$name}" : '');
+		
+		if (isset($this->registry[$key])) {
+			return $this->registry[$key];
 		}
 		
-		$func = 'add'.($psr4 ? 'Psr4' : '');
+		// resource definition class
+		$class = $this->getNamespace().'\\Resource'.(isset($name) ? '\\'.ucfirst($name) : '');
 		
-		$this->getDI()->offsetGet('composer')->$func($namespace.'\\', $dir);
+		if (class_exists($class, true)) {
+			
+			$definition = new $class();
+			
+			$cache = $this->getDI()->offsetGet('cache');
+			$factory = $this->getDI()->offsetGet('resource.factory');
+			
+			// try to get from cache first
+			if ($resource = $factory->fromCache($cache, $definition->getName())) {
+				return $this->registry[$key] = $resource;
+			}
+			
+			// create from definition
+			if ($resource = $factory->fromDefinition($definition)) {
+				
+				$factory->cache($cache, $resource);
+				
+				return $this->registry[$key] = $resource;
+			}
+		}
+		
+		throw new \RuntimeException("Resource definition class does not exist: '$class'.");
 	}
 	
 }

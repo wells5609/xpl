@@ -177,7 +177,7 @@ class Response {
 		}
 		
 		if ($send) {
-			$this->send();
+			$this->send(true);
 		}
 		
 		return $this;
@@ -188,7 +188,7 @@ class Response {
 	 * 
 	 * @return void
 	 */
-	public function send($exit = true) {
+	public function send($exit = false) {
 		
 		if ($this->sent) return;
 		
@@ -206,7 +206,7 @@ class Response {
 			echo $this->body;
 		}
 		
-		ob_get_level() and ob_end_flush();
+		ob_get_level() and ob_flush();
 		
 		$this->sent = true;
 		

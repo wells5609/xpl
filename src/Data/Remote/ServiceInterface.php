@@ -1,8 +1,8 @@
 <?php
 
-namespace xpl\Data\Service;
+namespace xpl\Data\Remote;
 
-interface RemoteServiceInterface extends ServiceInterface 
+interface ServiceInterface extends \xpl\Data\ServiceInterface 
 {
 	
 	/**

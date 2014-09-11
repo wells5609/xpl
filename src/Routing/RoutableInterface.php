@@ -1,6 +1,9 @@
 <?php
 
-namespace xpl\Foundation;
+namespace xpl\Routing;
+
+use xpl\Foundation\RequestInterface;
+use xpl\Foundation\ControllerInterface;
 
 interface RoutableInterface {
 	

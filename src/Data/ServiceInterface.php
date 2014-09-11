@@ -1,20 +1,20 @@
 <?php
 
-namespace xpl\Data\Service;
+namespace xpl\Data;
 
 interface ServiceInterface {
 	
 	/**
 	 * Returns the datasource provider.
 	 * 
-	 * @return \xpl\Data\Provider\ProviderInterface
+	 * @return \xpl\Data\ProviderInterface
 	 */
 	public function getProvider();
 	
 	/**
 	 * Returns a single record as a model.
 	 * 
-	 * @return \xpl\Data\Model\ModelInterface
+	 * @return \xpl\Data\ModelInterface
 	 */
 	public function getOne(array $conditions = array());
 	

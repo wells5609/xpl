@@ -46,11 +46,21 @@ class Composite
 	 * @return \xpl\Common\Object
 	 */
 	public function getOneFrom($service, array $conditions = array()) {
-		return $this->get($service)->getOne($conditions);
+			
+		if ($svc = $this->get($service)) {
+			return $svc->getOne($conditions);
+		}
+		
+		throw new \RuntimeException("Invalid service requested: '$service'");
 	}
 	
 	public function getAllFrom($service, array $conditions = array()) {
-		return $this->get($service)->getAll($conditions);
+		
+		if ($svc = $this->get($service)) {
+			return $svc->getAll($conditions);
+		}
+		
+		throw new \RuntimeException("Invalid service requested: '$service'");
 	}
 	
 }

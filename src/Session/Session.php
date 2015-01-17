@@ -4,7 +4,8 @@ namespace xpl\Session;
 
 use xpl\Common\Singleton;
 
-class Session implements SessionInterface {
+class Session implements SessionInterface 
+{
 	
 	use Singleton;
 	

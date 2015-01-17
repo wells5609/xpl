@@ -2,7 +2,7 @@
 
 namespace xpl\Data\Provider;
 
-class AbstractValidatedDatabase extends AbstractDatabase 
+abstract class AbstractValidatedDatabase extends AbstractDatabase 
 {
 	
 	abstract public function isField($field);
@@ -49,7 +49,7 @@ class AbstractValidatedDatabase extends AbstractDatabase
 						$clean[$key] = $this->getDefault($key);
 						
 					} else if ($this->isRequired($key)) {
-						throw new \InvalidArgumentException("Missing required field: '$key'.");
+						throw new \xpl\Data\Exception("Missing required field: '$key'.");
 					}
 				
 				} else {

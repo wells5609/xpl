@@ -20,7 +20,6 @@ class DI implements \ArrayAccess, \Countable {
 	 * 
 	 * @param string $key Dependency key.
 	 * @param mixed $object
-	 * @return $this
 	 */
 	public function offsetSet($key, $object) {
 		
@@ -28,13 +27,7 @@ class DI implements \ArrayAccess, \Countable {
 	
 		if ($object instanceof Closure) {
 			$this->registered[$key] = $object;
-		
 		} else {
-			
-			if ($object instanceof DiAwareInterface) {
-				$object->setDI($this);
-			}
-			
 			$this->values[$key] = $object;
 		}
 	}
@@ -52,26 +45,14 @@ class DI implements \ArrayAccess, \Countable {
 		}
 		
 		if (isset($this->registered[$key])) {
-			
-			$object = call_user_func($this->registered[$key], $this);
-			
-			if ($object instanceof DiAwareInterface) {
-				$object->setDI($this);
-			}
-			
-			return $this->values[$key] = $object;
+			return $this->values[$key] = call_user_func($this->registered[$key], $this);
 		}
 		
 		if (isset($this->factories[$key])) {
-			
-			$result = call_user_func($this->factories[$key], $this);
-			
-			if ($result instanceof DiAwareInterface) {
-				$result->setDI($this);
-			}
-			
-			return $result;
+			return call_user_func($this->factories[$key], $this);
 		}
+		
+		return null;
 	}
 	
 	public function offsetExists($key) {
@@ -80,7 +61,7 @@ class DI implements \ArrayAccess, \Countable {
 	
 	public function offsetUnset($key) {
 		if (isset($this->keys[$key])) {
-			unset($this->registered[$key], $this->values[$key], $this->keys[$key]);
+			unset($this->registered[$key], $this->values[$key], $this->factories[$key], $this->keys[$key]);
 		}
 	}
 	
@@ -110,10 +91,6 @@ class DI implements \ArrayAccess, \Countable {
 		$this[$key] = $new_object;
 	}
 	
-	public function register($key, $newval) {
-		$this->offsetSet($key, $newval);
-	}
-	
 	public function get($key) {
 		return $this->offsetGet($key);
 	}
@@ -128,6 +105,10 @@ class DI implements \ArrayAccess, \Countable {
 	
 	public function resolve($key) {
 		return $this->offsetGet($key);
+	}
+	
+	public function register($key, $newval) {
+		$this->offsetSet($key, $newval);
 	}
 	
 	public function count() {

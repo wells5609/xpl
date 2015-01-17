@@ -1,8 +1,9 @@
 <?php
 
-namespace xpl\Foundation;
+namespace xpl\Bundle;
 
-interface BundleInterface {
+interface BundleInterface 
+{
 	
 	/**
 	 * Boots the bundle.

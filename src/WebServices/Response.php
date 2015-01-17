@@ -46,7 +46,7 @@ abstract class Response {
 		if (! isset($this->raw_data)) {
 			throw new \RuntimeException("Data already decoded.");
 		}
-		$this->decoded_data = array_to_object(csv2array($this->raw_data, $has_headers));
+		$this->decoded_data = csv_decode($this->raw_data, false, $has_headers);
 	}
 	
 	public function getDecoded() {
@@ -69,10 +69,10 @@ abstract class Response {
 	public function __toString() {
 		
 		if (isset($this->raw_data)) {
-			return (string) $this->raw_data;
+			return (string)$this->raw_data;
 		
 		} else if (isset($this->decoded_data) && method_exists($this->decoded_data, '__toString')) {
-			return (string) $this->decoded_data;
+			return (string)$this->decoded_data;
 		}
 		
 		return '';

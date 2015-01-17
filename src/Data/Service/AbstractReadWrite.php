@@ -10,4 +10,8 @@ abstract class AbstractReadWrite extends AbstractService implements ReadWriteInt
 		return false;
 	}
 	
+	protected function sanitizeField($field, $value) {
+		return filter_var($string, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_BACKTICK);
+	}
+	
 }

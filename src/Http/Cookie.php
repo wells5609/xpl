@@ -38,7 +38,7 @@ class Cookie extends \xpl\Common\Object {
 	}
 	
 	public function send() {
-		return setcookie($this->name, $this->value, $this->expire, $this->path, $this->domain, $this->secure, $this->httponly);
+		return setcookie($this->name, $this->value, (int)$this->expire, $this->path, $this->domain, $this->secure, $this->httponly);
 	}
 	
 	public function delete() {

@@ -3,8 +3,10 @@
 namespace xpl\Foundation;
 
 use xpl\Routing\RouteInterface;
+use xpl\Bundle\BundleInterface;
 
-interface ControllerInterface {
+interface ControllerInterface 
+{
 	
 	public function setRequest(RequestInterface $request);
 	

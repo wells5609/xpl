@@ -166,29 +166,27 @@ class Response {
 	 * @param boolean $send Whether to send the redirect response immediately. Default true.
 	 * @return $this
 	 */
-	public function redirect($url, $status = 0, $send = true) {
-			
+	public function redirect($url, $status = 0) {
+		
 		$this->setHeader('Location', $url, true);
 		
 		$this->send_body = false;
 		
-		if (0 !== $status && 300 < $status && 400 > $status) {
+		if ($status && ((300 < $status && 400 > $status) || 201 == $status)) {
 			$this->setStatus($status);
 		}
 		
-		if ($send) {
-			$this->send(true);
-		}
+		$this->send();
 		
-		return $this;
+		exit();
 	}
 	
 	/**
-	 * Sends the response headers and body, then exits.
+	 * Sends the response headers and body.
 	 * 
 	 * @return void
 	 */
-	public function send($exit = false) {
+	public function send() {
 		
 		if ($this->sent) return;
 		
@@ -209,8 +207,6 @@ class Response {
 		ob_get_level() and ob_flush();
 		
 		$this->sent = true;
-		
-		$exit and exit;
 	}
 	
 }

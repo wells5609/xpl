@@ -5,7 +5,8 @@ namespace xpl\Foundation;
 /**
  * Contract for a request (both HTTP and HMVC).
  */
-interface RequestInterface extends \xpl\Common\Arrayable {
+interface RequestInterface extends \xpl\Common\Arrayable 
+{
 	
 	public function getMethod();
 	

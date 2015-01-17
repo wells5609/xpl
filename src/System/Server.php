@@ -97,7 +97,7 @@ class Server {
 				
 				static::$subDomains = $parts;
 				
-				$subdomain = count($parts) === 1 ? array_pop($parts) : implode('.', $parts);
+				$subdomain = count($parts) === 1 ? reset($parts) : implode('.', $parts);
 			}
 		}
 	

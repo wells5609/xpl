@@ -1,11 +1,11 @@
 <?php
 
-namespace xpl\Web\Api\Response;
+namespace xpl\Api\Response;
 
-use xpl\Web\Api\Manager;
-use xpl\Web\Response\TypeInterface;
+use xpl\Api\Manager;
 
-class Type implements TypeInterface {
+class Type implements \xpl\Web\Response\TypeInterface 
+{
 	
 	protected $accept = array(
 		'application/json' => 'Json', 
@@ -17,9 +17,9 @@ class Type implements TypeInterface {
 	protected $api;
 	protected $mimetype;
 	
-	public function __construct(Manager $api_manager, $mimetype = null) {
+	public function __construct(Manager $api, $mimetype = null) {
 		
-		$this->api = $api_manager;
+		$this->api = $api;
 		
 		if (isset($mimetype) && isset($this->accept[$mimetype])) {
 			$this->mimetype = $mimetype;

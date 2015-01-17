@@ -12,7 +12,7 @@ class Native implements SessionDriverInterface {
 	 */
 	public function __construct(array $cookie_params = array()) {
 		
-		ini_set('session.use_cookies', 1);
+		ini_set('session.use_only_cookies', 1);
 		
 		$params = array_replace(array(
 			'lifetime' => 86400*7,

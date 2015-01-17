@@ -2,6 +2,8 @@
 
 namespace xpl\Routing;
 
+use xpl\Foundation\RequestInterface;
+
 /**
  * A resource encapsulates a group of routes that share a common mount point (possibly just "/").
  */
@@ -14,6 +16,7 @@ class Resource implements \Serializable
 	protected $tokens;
 	protected $compiler;
 	protected $generator;
+	protected $controller;
 	
 	/**
 	 * Constructor.
@@ -106,6 +109,29 @@ class Resource implements \Serializable
 		}
 		
 		return $this->generator;
+	}
+	
+	public function getController(RequestInterface $request, RouteInterface $route) {
+		
+		if (isset($this->controller)) {
+			return $this->controller;
+		}
+		
+		$controller = $this->getOption('controller');
+		
+		if (is_string($controller)) {
+			
+			if (! class_exists($controller)) {
+				throw new \RuntimeException("Invalid controller class: '{$controller}'.");
+			}
+			
+			$controller = new $controller();
+		}
+		
+		$controller->setRequest($request);
+		$controller->setRoute($route);
+		
+		return $this->controller = $controller;
 	}
 	
 	/**

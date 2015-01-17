@@ -2,6 +2,6 @@
 
 namespace xpl\Dependency;
 
-class Exception extends \xpl\Component\Foundation\Exception {
+class Exception extends \xpl\Foundation\Exception {
 	
 }

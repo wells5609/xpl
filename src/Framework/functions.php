@@ -4,7 +4,6 @@
  * 
  * Framework functions
  */
-
 namespace xpl\Framework {
 	class functions {
 		// dummy class
@@ -26,13 +25,17 @@ define('XDEBUG_ENABLED', extension_loaded('xdebug') && xdebug_is_enabled());
  * @return string Time elapsed, possibly in milliseconds.
  */
 function xpl_time_index($decimals = 4, $milliseconds = false) {
+	
 	if (XDEBUG_ENABLED) {
 		$time = xdebug_time_index();
+	
 	} else if (isset($_SERVER['REQUEST_TIME_FLOAT'])) {
 		$time = microtime(true) - $_SERVER['REQUEST_TIME_FLOAT'];
+	
 	} else {
 		return 'n/a';
 	}
+	
 	return number_format(($milliseconds ? $time*1000 : $time), $decimals);
 }
 
@@ -44,11 +47,13 @@ function xpl_time_index($decimals = 4, $milliseconds = false) {
  * @return string MiB of memory consumed by the script.
  */
 function xpl_memory_usage($decimals = 4, $peak = false) {
+		
 	if (XDEBUG_ENABLED) {
 		$usage = $peak ? xdebug_peak_memory_usage() : xdebug_memory_usage();
 	} else {
 		$usage = $peak ? memory_get_peak_usage() : memory_get_usage();
 	}
+	
 	return number_format($usage/1024/1024, $decimals);
 }
 
@@ -59,12 +64,20 @@ function xpl_memory_usage($decimals = 4, $peak = false) {
  * @return string HTML string of request stats output.
  */
 function xpl_request_stats($fixed_position = true) {
+	
 	$s = $fixed_position
-		? '<span style="font-family:Arial;font-size:12px;color:white;background:black;position:fixed;bottom:0;left:0;padding:2px 5px 0">'
-		: '<span class="text-sm text-muted">';
+		? '<span style="font-family:Arial;font-size:12px;color:#fff;background:#000;position:fixed;bottom:0;left:0;padding:2px 5px 0">'
+		: '<span class="text-sm">';
+	
 	$s .= '<b>'.xpl_time_index(4, true).'<small> ms</small> '.xpl_memory_usage(3).'<small>MB</small>';
-	function_exists('db_get_query_count') and $s .= ' '.db_get_query_count().' <small>DB queries</small>';
-	return $s .= '</b></span>';
+	
+	if (function_exists('db_get_query_count')) {
+		$s .= ' '.db_get_query_count().' <small>DB queries</small>';
+	}
+	
+	$s .= '</b></span>';
+	
+	return $s;
 }
 
 /**
@@ -77,15 +90,25 @@ function xpl_request_stats($fixed_position = true) {
  *	@return float
  */
 function xpl_timer($action = 'start', $start_time = null) {
+	
 	static $time;
+	
 	$now = microtime(true);
+	
 	if ('start' === $action) {
 		$time = $now;
+	
 	} else if ('stop' === $action) {
-		empty($start_time) and $start_time = $time;
+		
+		if (empty($start_time)) {
+			$start_time = $time;
+		}
+		
 		unset($time);
+		
 		return $now - $start_time;
 	}
+	
 	return $now;
 }
 
@@ -96,7 +119,7 @@ function xpl_timer($action = 'start', $start_time = null) {
  * @param string $function [Optional]
  */
 function xpl_log($message, $function = null) {
-	\xpl\Framework\SimpleLog::log($message, $function);
+	xpl\Framework\SimpleLog::log($message, $function);
 }
 
 /**
@@ -104,19 +127,25 @@ function xpl_log($message, $function = null) {
  * 
  * @param string $log_file
  */
-function xpl_framework_log_init($log_file) {
-	\xpl\Framework\SimpleLog::setFile($log_file);
+function xpl_log_file($file = null) {
+	
+	if (! isset($file)) {
+		return xpl\Framework\SimpleLog::getFile();
+	}
+	
+	xpl\Framework\SimpleLog::setFile($file);
 }
 
 /**
  * Initializes the framework's static facades.
  * 
  * @param \xpl\Framework\DI $di
- * @param array $facades [Optional] Associative array of class/alias pairs.
  */
-function xpl_framework_facades_init(\xpl\Framework\DI $di, array $facades = null) {
-	\xpl\Framework\StaticFacade::setDI($di);
-	require 'facades.php';
+function xpl_facades_init(xpl\Framework\DI $di) {
+	
+	xpl\Framework\StaticFacade::setDI($di);
+	
+	require_once 'facades/facades.php';
 }
 
 } // namespace

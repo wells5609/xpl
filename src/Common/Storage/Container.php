@@ -19,7 +19,6 @@ class Container extends BaseMap {
 	
 	public function set($key, $value) {
 		Arr::set($this->_data, $key, $value);
-		return $this;
 	}
 	
 	public function has($key) {
@@ -28,7 +27,6 @@ class Container extends BaseMap {
 	
 	public function remove($key) {
 		Arr::remove($this->_data, $key);
-		return $this;
 	}
 	
 }

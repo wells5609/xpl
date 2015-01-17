@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\Web\Api;
+namespace xpl\Api;
 
 use xpl\Common\Storage\Config;
 
@@ -67,10 +67,13 @@ class Manager
 	}
 	
 	public function getErrorOutput() {
+		
 		$errors = array();
+		
 		foreach($this->errors as $e) {
 			$errors[$e->getCode()] = $e->getMessage();
 		}
+		
 		return $errors;
 	}
 	

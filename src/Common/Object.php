@@ -4,7 +4,7 @@ namespace xpl\Common;
 
 use xpl\Common\Structure\MapInterface;
 
-class Object implements \IteratorAggregate, \JsonSerializable, MapInterface {
+class Object implements \IteratorAggregate, \Serializable, \JsonSerializable, MapInterface {
 	
 	public function __construct($data = null) {
 		isset($data) and $this->import($data);
@@ -49,7 +49,7 @@ class Object implements \IteratorAggregate, \JsonSerializable, MapInterface {
 	}
 	
 	public function count() {
-		return count($this);
+		return count($this->toArray());
 	}
 	
 	public function isEmpty() {
@@ -62,6 +62,8 @@ class Object implements \IteratorAggregate, \JsonSerializable, MapInterface {
 	
 	/**
 	 * Implements \xpl\Common\Arrayable
+	 * 
+	 * @return array
 	 */
 	public function toArray() {
 		return get_object_vars($this);
@@ -69,15 +71,27 @@ class Object implements \IteratorAggregate, \JsonSerializable, MapInterface {
 	
 	/**
 	 * Implements xpl\Common\Structure\MapInterface
+	 * 
+	 * @return mixed
 	 */
 	public function indexOf($value) {
 		return array_search($value, $this->toArray(), true);
 	}
 	
+	/**
+	 * Returns an indexed array of object property names.
+	 * 
+	 * @return array
+	 */
 	public function keys() {
 		return array_keys($this->toArray());
 	}
 	
+	/**
+	 * Returns an indexed array of object property values.
+	 * 
+	 * @return array
+	 */
 	public function values() {
 		return array_values($this->toArray());
 	}

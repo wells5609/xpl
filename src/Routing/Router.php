@@ -49,15 +49,11 @@ class Router
 	 */
 	public function has($resource) {
 		
-		if (isset($this->resources[$resource])) {
-			return true;
+		if ($resource instanceof Resource) {
+			return empty($this->resources) ? false : in_array($resource, $this->resources, true);
 		}
 		
-		if (isset($this->resources)) {
-			return in_array($resource, $this->resources, true);
-		}
-		
-		return false;
+		return isset($this->resources[$resource]);
 	}
 	
 	/**
@@ -86,6 +82,9 @@ class Router
 	 * @return boolean True if a match was found, otherwise false.
 	 */
 	public function __invoke($method, $uri) {
+		
+		$method = strtoupper($method);
+		$uri = trim($uri, '/');
 		
 		foreach($this->resources as $name => $resource) {
 		
@@ -170,19 +169,18 @@ class Router
 	 */
 	protected function matchRoute(Route $route, $method, $uri) {
 		
-		if ($route->getMethod() !== $method) {
-			return false;
-		}
+		if ($route->getMethod() === $method) {
 		
-		if (preg_match('#^/?'.$route->getCompiledUri().'/?$#i', $uri, $params)) {
-			
-			unset($params[0]);
-			
-			if (! empty($params)) {
-				$route->setParams($params);
+			if (preg_match('#^/?'.$route->getCompiledUri().'/?$#i', $uri, $params)) {
+				
+				unset($params[0]);
+				
+				if (! empty($params)) {
+					$route->setParams($params);
+				}
+				
+				return true;
 			}
-			
-			return true;
 		}
 		
 		return false;

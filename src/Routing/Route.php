@@ -3,7 +3,7 @@
 namespace xpl\Routing;
 
 /**
- * Route represents a potential request destination/action.
+ * Route represents a request destination/action.
  */
 class Route implements RouteInterface
 {

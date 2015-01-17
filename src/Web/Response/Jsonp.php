@@ -26,7 +26,7 @@ class Jsonp implements TypeInterface {
 		$this->mimetype = 'text/javascript';
 		
 		if (is_object($body) && ! $body instanceof \JsonSerializable) {
-			$body = method_exists($body, 'toArray') ? $body->toArray() : (array)$body;
+			$body = method_exists($body, 'toArray') ? $body->toArray() : get_object_vars($body);
 		
 		} else if (is_scalar($body)) {
 			$body = array('content' => $body);

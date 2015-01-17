@@ -77,7 +77,7 @@ class BaseMap extends Base implements MapInterface {
 			return get_object_vars($data);
 		}
 	
-		return (array) $data;
+		return (array)$data;
 	}
 	
 }

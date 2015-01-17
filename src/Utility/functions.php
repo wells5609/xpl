@@ -7,6 +7,14 @@ namespace xpl\Utility {
 }
 
 namespace {
+	
+if (! function_exists('convert_units')) :
+	
+	function convert_units($quantity, $unit, $to_unit) {
+		return \xpl\Utility\Conversion\Unit::convert($quantity, $unit, $to_unit);
+	}
+	
+endif;
 
 if (! function_exists('uri_template')) :
 		

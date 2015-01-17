@@ -10,7 +10,7 @@ use xpl\Common\Structure\StackInterface;
  * 
  * It also has some "array_*" type methods: clear(), shift(), and unshift(). 
  */
-class Bin extends Map implements StackInterface {
+class Bin extends Map implements StackInterface, \Serializable {
 	
 	/**
 	 * Set an item value by key.
@@ -93,11 +93,29 @@ class Bin extends Map implements StackInterface {
 	}
 
 	/**
-	 *@param string|int $var Element key/index.
+	 * @param string|int $var Element key/index.
 	 * @return void
 	 */
 	public function __unset($var) {
 		$this->remove($var);
+	}
+	
+	/**
+	 * Serializes the object.
+	 * 
+	 * @return string Serialized object data.
+	 */
+	public function serialize() {
+		return serialize($this->toArray());
+	}
+	
+	/**
+	 * Unserializes the object.
+	 * 
+	 * @param string $serial Serialized object data.
+	 */
+	public function unserialize($serial) {
+		$this->import(unserialize($serial));
 	}
 	
 }

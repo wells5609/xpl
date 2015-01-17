@@ -2,10 +2,22 @@
 
 namespace xpl\Framework;
 
-class SimpleLog {
+class SimpleLog 
+{	
+	protected $file;
+	protected $messages = array();
 	
-	protected static $log_file;
-	protected static $messages = array();
+	protected static $instance;
+	
+	/**
+	 * @return \xpl\Framework\SimpleLog
+	 */
+	public static function instance() {
+		if (! isset(static::$instance)) {
+			static::$instance = new static();
+		}
+		return static::$instance;
+	}
 	
 	/**
 	 * Sets the log file.
@@ -13,14 +25,16 @@ class SimpleLog {
 	 * @param string $file
 	 */
 	public static function setFile($file) {
-		
-		if (file_exists($file) && ! is_writable($file)) {
-			throw new \InvalidArgumentException("Given unwritable log file: '$file'.");
-		}
-		
-		static::$log_file = $file;
-		
-		register_shutdown_function(__CLASS__.'::write');
+		static::instance()->setLogFile($file);
+	}
+	
+	/**
+	 * Returns the log file.
+	 * 
+	 * @return string
+	 */
+	public static function getFile() {
+		return static::instance()->getLogFile();
 	}
 	
 	/**
@@ -29,36 +43,48 @@ class SimpleLog {
 	 * @param string $message
 	 * @param string $func [Optional]
 	 */
-	public static function log($message, $func = null) {
-			
-		$msg = udate('Y-m-d g:i:s.u a').' "'.$message.'"';
-
-		$trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-		$caller = array_pop($trace);
-		
-		$msg .= "\tFile: ".$caller['file'].' on line '.$caller['line'];
-		
-		if ($func) {
-			$msg .= "\tFunction: {$func}";
-		}
-
-		static::$messages[] = $msg;
+	public static function log($message, $extra = null) {
+		static::instance()->logMessage($message, $extra);
 	}
 	
-	/**
-	 * Writes the log messages on shutdown.
-	 */
-	public static function write() {
+	public function setLogFile($file) {
 		
-		if (! empty(static::$messages)) {
+		// Check if writable only if file exists, since it will be created if not.
+		if (file_exists($file) && ! is_writable($file)) {
+			throw new \InvalidArgumentException("Given unwritable log file: '$file'.");
+		}
+		
+		$this->file = $file;
+		
+		register_shutdown_function(array($this, 'write'));
+	}
+	
+	public function getLogFile() {
+		return isset($this->file) ? $this->file : null;
+	}
+	
+	public function logMessage($message, $extra = null) {
+			
+		$msg = date('Y-m-d g:i:s a').' "'.$message.'"';
+
+		if ($extra) {
+			$msg .= "\t{$extra}";
+		}
+
+		$this->messages[] = $msg;
+	}
+	
+	public function write() {
+		
+		if (! empty($this->messages) && isset($this->file)) {
 		
 			$string = '';
 		
-			foreach(static::$messages as $msg) {
+			foreach($this->messages as $msg) {
 				$string .= PHP_EOL.$msg;
 			}
 		
-			file_put_contents(static::$log_file, $string, FILE_APPEND|LOCK_EX);
+			file_put_contents($this->file, $string, FILE_APPEND|LOCK_EX);
 		}
 	}
 }

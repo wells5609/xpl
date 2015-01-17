@@ -15,17 +15,18 @@ class Factory
 	 * 
 	 * @param \xpl\Routing\Resource\Definition
 	 */	
-	public function fromDefinition(Definition $definition) {
+	public function fromDefinition(Definition $def) {
 		
-		$resource = new Resource($definition->getName(), $definition->getPathPrefix());
+		$resource = new Resource($def->getName(), $def->getPathPrefix());
+		$tokens = new Tokens();
 		
-		$resource->setTokens($tokens = new Tokens());
-		
-		foreach($definition->getParams() as $token => $regex) {
+		foreach($def->getParams() as $token => $regex) {
 			$tokens->add($token, $regex);
 		}
 		
-		foreach($definition->getRoutes() as $name => $arr) {
+		$resource->setTokens($tokens);
+		
+		foreach($def->getRoutes() as $name => $arr) {
 			
 			$uri = $arr[0];
 			$method = isset($arr[1]) ? $arr[1] : 'GET';
@@ -34,11 +35,11 @@ class Factory
 			$resource->addRoute(new Route($name, $method, $uri, $action));
 		}
 		
-		if ($controller = $definition->getControllerClass()) {
+		if ($controller = $def->getControllerClass()) {
 			$resource->setOption('controller', $controller);
 		}
 		
-		if ($domain = $definition->getDomain()) {
+		if ($domain = $def->getDomain()) {
 			$resource->setOption('domain', $domain);
 		}
 		

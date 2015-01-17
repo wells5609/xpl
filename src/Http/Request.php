@@ -39,9 +39,7 @@ class Request implements RequestInterface
 	/**
 	 * Build a request from the $_SERVER (and possibly $_POST) superglobal(s).
 	 * 
-	 * @uses \Http\Http
-	 * 
-	 * @return HttpRequest
+	 * @return \xpl\Http\Request
 	 */
 	public static function createFromGlobals() {
 		
@@ -164,7 +162,7 @@ class Request implements RequestInterface
 	/**
 	 * Sets the session object.
 	 * 
-	 * @param \xpl\Component\Session\SessionInterface $session
+	 * @param \xpl\Session\SessionInterface $session
 	 * @return $this
 	 */
 	public function setSession(SessionInterface $session) {
@@ -175,7 +173,7 @@ class Request implements RequestInterface
 	/**
 	 * Returns session object.
 	 * 
-	 * @param return \Session\SessionInterface
+	 * @param return \xpl\Session\SessionInterface
 	 */
 	public function getSession() {
 		return isset($this->session) ? $this->session : null;

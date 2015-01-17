@@ -1,8 +1,8 @@
 <?php
 
-namespace xpl\Foundation;
+namespace xpl\Bundle;
 
-interface BundleProviderInterface {
+interface ProviderInterface {
 	
 	/**
 	 * Provides a bundle by type and name.

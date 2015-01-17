@@ -23,13 +23,13 @@ class Response extends \xpl\Http\Response {
 		return $this;
 	}
 	
-	public function getType($as_object = false) {
+	public function getType($rtn_object = false) {
 		
 		if (! isset($this->type)) {
 			return null;
 		}
 		
-		return $as_object ? $this->type : $this->type->getName();
+		return $rtn_object ? $this->type : $this->type->getName();
 	}
 	
 	public function send($exit = true) {

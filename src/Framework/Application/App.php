@@ -2,53 +2,43 @@
 
 namespace xpl\Framework\Application;
 
-use xpl\Common\Storage\Registry;
+use xpl\Routing\RoutableInterface;
 use xpl\Routing\Resource;
-use xpl\Routing\Router;
+use xpl\Routing\RouteInterface as Route;
+use xpl\Foundation\RequestInterface as Request;
+use xpl\Foundation\ControllerInterface as Controller;
 use xpl\Web\Response;
 
-class App extends \xpl\Web\Application implements AppInterface {
+class App extends \xpl\Bundle\Application implements RoutableInterface 
+{
+	
+	protected function onInit() {
+		$this->loadIncludes();
+	}
+	
+	/**
+	 * Called when one of the application's route is matched by the router.
+	 * 
+	 * @param \xpl\Routing\RouteInterface $route
+	 * @param \xpl\Foundation\RequestInterface $request
+	 * @param \xpl\Foundation\ControllerInterface $controller
+	 */
+	public function onRoute(Route $route, Request $request, Controller $controller) {}
 	
 	/**
 	 * Called before response is sent when this is the primary app.
-	 */
-	public function onRespond(Response $response) {
-		
-	}
-	
-	/**
-	 * Called when views are loaded.
-	 */
-	public function initViews(\Cms\Cms $cms) {
-		
-		$__FILE__ = $this->getPath('config').'views.php';
-		
-		file_exists($__FILE__) and include $__FILE__;
-	}
-	
-	/**
-	 * Sets a config item value.
 	 * 
-	 * @param string $item Config item key.
-	 * @param mixed $value Conifg item value. Pass null to unset the item.
+	 * @param \xpl\Web\Response $response
 	 */
-	public function setConfig($item, $value) {
-		if (null === $value) {
-			$this->config->remove($item);
-		} else {
-			$this->config->set($item, $value);
-		}
-		return $this;
-	}
+	public function onRespond(Response $response) {}
 	
 	/**
-	 * Returns a config item or the entire \App\Config object.
+	 * Checks whether the app is the primary app.
 	 * 
-	 * @param string $item [Optional] Item key to retrive, or null to get the object.
-	 * @return mixed
+	 * @return boolean
 	 */
-	public function getConfig($item = null) {
-		return isset($item) ? $this->config->get($item) : $this->config;
+	public function isPrimary() {
+		return (bool)$this->config->get('is_primary');
 	}
 	
 	/**
@@ -82,78 +72,73 @@ class App extends \xpl\Web\Application implements AppInterface {
 		return $this->config->get('paths');
 	}
 	
-	/**
-	 * Sets a component in the object registry.
-	 * 
-	 * @param string $name Component name.
-	 * @param object $object Component object.
-	 * @return $this
+	/** 
+	 * Alias of getName() 
 	 */
-	public function setComponent($name, $object) {
-		$this->registry->set($name, $object);
-		return $this;
-	}
-	
-	/**
-	 * Retrieves a component from the application's object registry.
-	 * 
-	 * @param string $name Component name.
-	 * @return mixed
-	 */
-	public function getComponent($name) {
-		return $this->registry->get($name);
-	}
-	
-	/** Alias of getName() */
 	public function getId() {
 		return $this->getName();
 	}
 	
 	/**
-	 * Checks whether the app is the primary app.
-	 * 
-	 * @return boolean
-	 */
-	public function isPrimary() {
-		return (bool) $this->config->get('is_primary');
-	}
-	
-	/**
 	 * Implementing \xpl\Web\Application
+	 * 
+	 * @param string $name [Optional]
+	 * @return \xpl\Routing\Resource
 	 */
 	public function getResource($name = null) {
 		
-		$key = 'resource'.(isset($name) ? ".{$name}" : '');
+		$key = 'resource'.(isset($name) ? '.'.$name : '');
 		
 		if (isset($this->registry[$key])) {
 			return $this->registry[$key];
 		}
 		
 		// resource definition class
-		$class = $this->getNamespace().'\\Resource'.(isset($name) ? '\\'.ucfirst($name) : '');
+		$class = $this->getResourceDefinitionClass($name);
 		
-		if (class_exists($class, true)) {
+		if (class_exists($class)) {
 			
 			$definition = new $class();
-			
-			$cache = $this->getDI()->offsetGet('cache');
-			$factory = $this->getDI()->offsetGet('resource.factory');
+			$cache = di('cache');
+			$factory = di('resource.factory');
+			$cache_is_active = env('cache_routes', true);
 			
 			// try to get from cache first
-			if ($resource = $factory->fromCache($cache, $definition->getName())) {
+			if ($cache_is_active && $resource = $factory->fromCache($cache, $definition->getName())) {
 				return $this->registry[$key] = $resource;
 			}
 			
 			// create from definition
 			if ($resource = $factory->fromDefinition($definition)) {
 				
-				$factory->cache($cache, $resource);
+				if ($cache_is_active) {
+					$factory->cache($cache, $resource);
+				}
 				
 				return $this->registry[$key] = $resource;
 			}
 		}
 		
-		throw new \RuntimeException("Resource definition class does not exist: '$class'.");
+		throw new \RuntimeException("No resource available (Could not find definition class: '$class').");
+	}
+	
+	protected function getResourceDefinitionClass($name = null) {
+		return $this->getNamespace().'\\Resource'.(isset($name) ? '\\'.ucfirst($name) : '');
+	}
+	
+	protected function loadIncludes() {
+		
+		if ($includes = $this->getConfig('include')) {
+			
+			$path = $this->getpath();
+			
+			foreach((array)$includes as $include) {
+				
+				if (file_exists($path.$include)) {
+					include $path.$include;
+				}
+			}
+		}
 	}
 	
 }

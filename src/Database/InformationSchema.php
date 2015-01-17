@@ -10,7 +10,7 @@ use PDO;
 class InformationSchema {
 	
 	/**
-	 * @var \xpl\Component\Database\Connection
+	 * @var \xpl\Database\Connection
 	 */
 	protected $connection;
 	

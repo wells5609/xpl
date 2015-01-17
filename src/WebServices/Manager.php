@@ -9,21 +9,36 @@ class Manager
 	 */
 	protected static $adapter;
 	
-	protected static $adapter_class;
-	
-	public static function setAdapterClass($class) {
-		static::$adapter_class = $class;
-	}
+	/**
+	 * @var string
+	 */
+	protected static $adapterClass;
 	
 	/**
-	 * Sets the request client adapter.
+	 * Sets the request client adapter object.
 	 * 
 	 * @param \xpl\WebServices\Client\RequestAdapterInterface $adapter
-	 * 
-	 * @return void
 	 */
 	public static function setAdapter(Client\RequestAdapterInterface $adapter) {
 		static::$adapter = $adapter;
+	}
+	
+	/**
+	 * Sets the request client adapter class.
+	 * 
+	 * @param string $class
+	 */
+	public static function setAdapterClass($class) {
+		static::$adapterClass = $class;
+	}
+	
+	/**
+	 * Returns whether an adapter or adapter class is set.
+	 * 
+	 * @return boolean
+	 */
+	public static function hasAdapter() {
+		return isset(static::$adapter) || isset(static::$adapterClass);
 	}
 	
 	/**
@@ -37,26 +52,30 @@ class Manager
 			return static::$adapter;
 		}
 		
-		if (isset(static::$adapter_class)) {
-			$class = static::$adapter_class;
+		if (isset(static::$adapterClass)) {
+			
+			$class = static::$adapterClass;
+			
 			static::setAdapter(new $class);
+			
 			return static::$adapter;
 		}
+		
+		return null;
 	}
 	
 	/**
-	 * @return boolean
-	 */
-	public static function hasAdapter() {
-		return isset(static::$adapter) || isset(static::$adapter_class);
-	}
-	
-	/**
+	 * Returns a Client instance if an adapter is set.
+	 * 
 	 * @return \xpl\WebServices\Client
 	 */
 	public static function getClient() {
+		
 		if ($adapter = static::getAdapter()) {
+		
 			return new Client($adapter);
 		}
+		
+		return null;
 	}
 }

@@ -41,12 +41,12 @@ abstract class Definition {
 			$tokens->add($token, $regex);
 		}
 		
-		foreach($this->getRoutes() as $name => $arr) {
+		foreach($this->getRoutes() as $name => $args) {
 			
-			$uri = $arr[0];
-			$method = isset($arr[1]) ? $arr[1] : 'GET';
-			$action = isset($arr[2]) ? $arr[2] : null;
-			
+			$uri = $args[0];
+			$method = isset($args[1]) ? strtoupper($args[1]) : 'GET';
+			$action = isset($args[2]) ? $args[2] : null;	
+		
 			$resource->addRoute(new Route($name, $method, $uri, $action));
 		}
 		

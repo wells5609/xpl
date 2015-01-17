@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\Foundation;
+namespace xpl\Bundle;
 
 use xpl\Common\Storage\Config;
 use xpl\Common\Storage\Registry;
@@ -8,7 +8,7 @@ use xpl\Common\Storage\Registry;
 /**
  * Application is a bundle representing an application.
  */
-class Application extends AbstractDiAwareBundle
+class Application extends BundleAbstract
 {
 	
 	/**
@@ -58,10 +58,16 @@ class Application extends AbstractDiAwareBundle
 		$this->onBoot();
 	}
 	
-	public function shutdown() {
-		return null;
-	}
+	/**
+	 * Runs when the application is shutdown.
+	 */
+	public function shutdown() {}
 	
+	/**
+	 * Returns the type of bundle, "app".
+	 * 
+	 * @return string
+	 */
 	final public function getType() {
 		return 'app';
 	}
@@ -90,7 +96,56 @@ class Application extends AbstractDiAwareBundle
 	 * @return boolean
 	 */
 	public function isBooted() {
-		return $this->booted;
+		return (bool)$this->booted;
+	}
+	
+	/**
+	 * Sets a config item value.
+	 * 
+	 * @param string $item Config item key.
+	 * @param mixed $value Conifg item value. Pass null to unset the item.
+	 */
+	public function setConfig($item, $value) {
+		
+		if (null === $value) {
+			$this->config->remove($item);
+		} else {
+			$this->config->set($item, $value);
+		}
+		
+		return $this;
+	}
+	
+	/**
+	 * Returns a config item or the entire \App\Config object.
+	 * 
+	 * @param string $item [Optional] Item key to retrive, or null to get the object.
+	 * @return mixed
+	 */
+	public function getConfig($item = null) {
+		return isset($item) ? $this->config->get($item) : $this->config;
+	}
+	
+	/**
+	 * Sets a component in the object registry.
+	 * 
+	 * @param string $name Component name.
+	 * @param object $object Component object.
+	 * @return $this
+	 */
+	public function setComponent($name, $object) {
+		$this->registry->set($name, $object);
+		return $this;
+	}
+	
+	/**
+	 * Retrieves a component from the application's object registry.
+	 * 
+	 * @param string $name Component name.
+	 * @return mixed
+	 */
+	public function getComponent($name) {
+		return $this->registry->get($name);
 	}
 	
 	/**

@@ -1,8 +1,9 @@
 <?php
 
-namespace xpl\Foundation\Exception;
+namespace xpl\Bundle;
 
-class BundleDependency extends \xpl\Foundation\Exception {
+class DependencyException extends \xpl\Foundation\Exception 
+{
 	
 	protected $missing;
 	

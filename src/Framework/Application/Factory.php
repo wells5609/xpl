@@ -2,19 +2,14 @@
 
 namespace xpl\Framework\Application;
 
-use xpl\Foundation\BundleProviderInterface;
-use xpl\Dependency\DiAwareInterface;
-use xpl\Framework\DiAwareTrait;
-
-class Factory implements BundleProviderInterface, DiAwareInterface
+class Factory implements \xpl\Bundle\ProviderInterface
 {
-	use DiAwareTrait;
 	
-	const DEFAULT_CLASS = 'xpl\\Framework\\Application\\App';
+	const BASE_CLASS = 'xpl\\Framework\\Application\\App';
 	
 	protected $path;
 	protected $class;
-	protected $allow_own_class = true;
+	protected $allow_custom_class = true;
 	protected $apps;
 	
 	/**
@@ -23,27 +18,43 @@ class Factory implements BundleProviderInterface, DiAwareInterface
 	 * @param string $apps_path Filesystem path to applications directory.
 	 * @param string $class [Optional] Default application class.
 	 */
-	public function __construct($apps_path, $class = self::DEFAULT_CLASS) {
+	public function __construct($apps_path, $class = self::BASE_CLASS) {
 		
 		if (! $realpath = realpath($apps_path)) {
 			throw new \RuntimeException("Apps directory does not exist: '$apps_path'.");
 		}
 		
 		if (! $this->isValidClass($class)) {
-			throw new \RuntimeException("App class '$class' must implement ".static::DEFAULT_CLASS);
+			throw new \RuntimeException("App class '$class' must implement ".static::BASE_CLASS);
 		}
 		
 		$this->path = $realpath.DIRECTORY_SEPARATOR;
 		$this->class = $class;
 		$this->apps = array();
 	}
+		
+	public function isValidClass($class) {
+		return trim($class, '\\') === static::BASE_CLASS || is_subclass_of($class, static::BASE_CLASS);
+	}
+	
+	public function setAllowCustomClass($value) {
+		$this->allow_custom_class = (bool)$value;
+	}
+	
+	public function exists($name) {
+		return isset($this->apps[$name]);
+	}
+	
+	public function get($name) {
+		return $this->exists($name) ? get_app($name) : null;
+	}
 	
 	/**
-	 * Implements \xpl\Foundation\BundleProviderInterface
+	 * Implements \xpl\Bundle\ProviderInterface
 	 * 
 	 * @param string $type Bundle type (must be "app").
 	 * @param string $name Bundle name (app name).
-	 * @return \xpl\Foundation\Application
+	 * @return \xpl\Bundle\Application
 	 */
 	public function provideBundle($type, $name) {
 		
@@ -52,69 +63,21 @@ class Factory implements BundleProviderInterface, DiAwareInterface
 		}
 		
 		if (isset($this->apps[$name])) {
-			throw new \LogicException("Application '$name' already exists.");
+			throw new \LogicException("Application already exists: '$name'.");
 		}
 		
-		$path = $this->path.$name.'/';
-		$configFile = $path.'config/config.php';
-		
-		if (! is_dir($path)) {
-			throw new \RuntimeException("Invalid application directory for '$name': '$path'.");
-		}
-		
-		if (! is_readable($configFile)) {
-			throw new \RuntimeException('Missing "config/config.php" for app: "'.$name.'".');
+		if (! is_dir($path = $this->path.$name.'/')) {
+			throw new \RuntimeException("Invalid directory for application '$name': '$path'.");
 		}
 		
 		// Set up config
 		$config = new Config($name, $path);
-		$config->setPath('config', $path.'config/');
 		
-		$vars = include $configFile;
+		$this->configure($config);
 		
-		foreach($vars as $key => $value) {
-			if ('paths' === $key || 'dirs' === $key) {
-				foreach($value as $dirname => $dirpath) {
-					$config->setPath($dirname, $dirpath);
-				}
-			} else {
-				$config->set($key, $value);
-			}
-		}
+		$class = $this->getAppClass($config);
 		
-		$class = $this->class;
-		$appClassFile = $config->get('class_file') ?: $path.'Application.php';
-		
-		// Use a custom App class?
-		if ($this->allow_own_class && is_readable($appClassFile)) {
-			
-			include $appClassFile;
-			
-			if ($namespace = $config->get('namespace')) {
-				$app_class = $namespace.'\\Application';
-			} else {
-				$app_class = ucfirst($name).'Application';
-			}
-			
-			if (class_exists($app_class, false) && $this->isValidClass($app_class)) {
-				$class = $app_class;
-			}
-		}
-		
-		// Set up autoloading
-		if ($autoload = $config->get('autoload') && $namespace = $config->get('namespace')) {
-			
-			$dir = $config->get('autoload_dir') ?: 'classes';
-			
-			if ($autoload_path = $config->getPath($dir)) {
-				
-				if ('psr-4' == $autoload) {
-					$this->getDI()->offsetGet('composer')->addPsr4($namespace.'\\', $autoload_path);
-				} else {
-					$this->getDI()->offsetGet('composer')->add($namespace.'\\', $autoload_path);
-				}
-			}
-		}
+		$this->setupAutoloader($config);
 		
 		if (empty($this->apps)) {
 			// 1st app is primary
@@ -125,27 +88,75 @@ class Factory implements BundleProviderInterface, DiAwareInterface
 		
 		return new $class($config);
 	}
-	
-	public function setAllowOwnClass($value) {
-		$this->allow_own_class = (bool) $value;
-	}
-	
-	public function isValidClass($class) {
-		return $class === static::DEFAULT_CLASS || is_subclass_of($class, static::DEFAULT_CLASS);
-	}
-	
-	public function get($name) {
+
+	protected function configure(Config $config) {
 		
-		if (isset($this->apps[$name])) {
-			return $this->di('bundles')->getBundle('app.'.$name);
+		$config_path = $config->getPath().'config/';
+		$config_file = $config_path.'config.php';
+		
+		$config->setPath('config', $config_path);
+		
+		if (is_readable($config_file)) {
+			
+			$vars = include $config_file;
+			
+			foreach($vars as $key => $value) {
+					
+				if ('paths' === $key || 'dirs' === $key) {
+					
+					foreach($value as $dirname => $dirpath) {
+						$config->setPath($dirname, $dirpath);
+					}
+				
+				} else {
+					$config->set($key, $value);
+				}
+			}
+		}
+	}
+	
+	protected function getAppClass(Config $config) {
+		
+		// Use a custom App class?
+		if ($this->allow_custom_class) {
+		
+			$file = $config->get('class_file') ?: $config->getPath().'Application.php';
+			
+			if (is_readable($file)) {
+				
+				include $file;
+				
+				if ($namespace = $config->get('namespace')) {
+					$class = $namespace.'\\Application';
+				} else {
+					$class = ucfirst($name).'Application';
+				}
+				
+				if (class_exists($class, false) && $this->isValidClass($class)) {
+					return $class;
+				}
+			}
 		}
 		
-		return null;
+		return $this->class;
 	}
 	
-	public function exists($name) {
-		return isset($this->apps[$name]);
+	protected function setupAutoloader(Config $config) {
+		
+		if ($autoload = $config->get('autoload') && $namespace = $config->get('namespace')) {
+			
+			$dirname = $config->get('autoload_dir') ?: 'classes';
+			
+			if ($path = $config->getPath($dirname)) {
+				
+				if ('psr-0' === strtolower($autoload)) {
+					di('autoloader')->addPsr0($namespace, $path);
+				} else {
+					di('autoloader')->addPsr4($namespace, $path);
+				}
+			}
+		}
 	}
-	
+
 }
 

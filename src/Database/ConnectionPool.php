@@ -26,17 +26,14 @@ class ConnectionPool {
 	 */
 	public function setIniPath($path) {
 		
-		if (! $realpath = realpath($path)) {
+		if (! $ini_file = realpath($path)) {
 			throw new \RuntimeException("Invalid filepath: '$path'.");
 		}
 		
-		if (is_dir($realpath)) {
-			
-			$realpath .= DIRECTORY_SEPARATOR.'db.ini';
-			
-			if (! file_exists($realpath)) {
-				throw new \RuntimeException("db.ini file does not exist: '$realpath'.");
-			}
+		$ini_file .= DIRECTORY_SEPARATOR.'db.ini';
+		
+		if (! file_exists($ini_file)) {
+			throw new \RuntimeException("db.ini file does not exist in: '$path'.");
 		}
 		
 		$this->ini_file = $realpath;

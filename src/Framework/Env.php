@@ -4,15 +4,21 @@ namespace xpl\Framework;
 
 use xpl\System\Server;
 
-class Env extends \xpl\Common\Storage\Container {
-	
+class Env extends \xpl\Common\Storage\Container 
+{	
 	protected $type;
 	protected $paths;
 	
 	public function __construct($type, $root_path) {
-		$this->paths = array();
+			
 		$this->type = $type;
-		$this->setRootPath($root_path);
+		$this->paths = array();
+		
+		if (! $realpath = realpath($root_path)) {
+			throw new \InvalidArgumentException("Invalid root path given: '$root_path'.");
+		}
+		
+		$this->paths['root'] = $realpath.DIRECTORY_SEPARATOR;
 	}
 	
 	public function getType() {
@@ -23,13 +29,9 @@ class Env extends \xpl\Common\Storage\Container {
 		return $type === $this->type;
 	}
 	
-	public function setRootPath($path) {
+	public function setPath($name, $path) {
 		
-		if (! $realpath = realpath($path)) {
-			throw new \InvalidArgumentException("Invalid root path given: '$path'.");
-		}
-		
-		$this->paths['root'] = $realpath.DIRECTORY_SEPARATOR;
+		$this->paths[$name] = rtrim($path, '/\\').DIRECTORY_SEPARATOR;
 		
 		return $this;
 	}
@@ -43,22 +45,26 @@ class Env extends \xpl\Common\Storage\Container {
 		return $this;
 	}
 	
-	public function setPath($name, $path) {
-		
-		if ($realpath = realpath($path)) {
-			$this->paths[$name] = $realpath.DIRECTORY_SEPARATOR;
-		}
-		
-		return $this;
-	}
-	
 	public function getPath($name = null) {
 		
-		if (null === $name) {
+		if (! isset($name)) {
 			return $this->paths['root'];
 		}
 		
 		return isset($this->paths[$name]) ? $this->paths[$name] : null;
+	}
+	
+	public function makeDirIfNotExists($path, $mkdir_mode = 0777) {
+		return is_dir($path) ? true : mkdir($path, $mkdir_mode, true);
+	}
+	
+	public function setVars(array $vars) {
+		$this->import($vars);
+		return $this;
+	}
+	
+	public function getVars() {
+		return $this->toArray();
 	}
 	
 	public function getDomain() {
@@ -89,15 +95,6 @@ class Env extends \xpl\Common\Storage\Container {
 		}
 		
 		return $subdomain;
-	}
-	
-	public function setVars(array $settings) {
-		$this->import($settings);
-		return $this;
-	}
-	
-	public function getVars() {
-		return $this->toArray();
 	}
 	
 }

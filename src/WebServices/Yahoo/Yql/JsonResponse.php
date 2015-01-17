@@ -22,7 +22,7 @@ class JsonResponse extends \xpl\WebServices\JsonResponse
 			// by the table (so we cannot access it generically).
 			// There is usually only 1 item, so we can just shift it off if so.
 			
-			$results = (array) $this->decoded_data->query->results;
+			$results = (array)$this->decoded_data->query->results;
 			
 			if (count($results) === 1) {
 				return $this->results = array_shift($results);

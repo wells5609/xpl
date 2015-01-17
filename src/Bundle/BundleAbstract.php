@@ -1,8 +1,8 @@
 <?php
 
-namespace xpl\Foundation;
+namespace xpl\Bundle;
 
-abstract class AbstractBundle implements BundleInterface {
+abstract class BundleAbstract implements BundleInterface {
 	
 	protected $name;
 	protected $namespace;

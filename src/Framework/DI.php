@@ -10,15 +10,17 @@ class DI extends \xpl\Dependency\DI {
 		
 		$this['session'] = \xpl\Session\Session::instance();
 		
-		$this['bundles'] = new BundleManager();
-		
 		$this['events'] = new \xpl\Event\Manager();
+		
+		$this['bundles'] = new BundleManager($this['events']);
 		
 		$this['router'] = new \xpl\Routing\Router();
 		
-		$this['dispatcher'] = new Dispatcher();
-		
 		$this['kernel'] = new Kernel($this);
+		
+		$this['dispatcher'] = function () {
+			return new Dispatcher();
+		};
 		
 		$this['request'] = function ($di) {
 			$request = \xpl\Web\Request::createFromGlobals();
@@ -39,7 +41,7 @@ class DI extends \xpl\Dependency\DI {
 		};
 		
 		$this['api'] = function () {
-			return new \xpl\Web\Api\Manager;
+			return new \xpl\Api\Manager;
 		};
 		
 		$this['resource.factory'] = function () {

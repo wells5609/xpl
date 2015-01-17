@@ -40,7 +40,6 @@ class Listener
 	 * Invokes the listener's callback function.
 	 *
 	 * @param array $args Array of arguments to pass to callback.
-	 * 
 	 * @return mixed Result of callback.
 	 */
 	public function __invoke(array $args) {

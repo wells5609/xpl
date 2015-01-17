@@ -141,7 +141,7 @@ class Collection extends Bin implements Sortable
 	 */
 	public function each(\Closure $func) {
 		
-		$func->bindTo($this, get_class($this));
+		$func = $func->bindTo($this, get_class($this));
 		
 		foreach($this->_data as $key => $value) {
 			$func($value, $key);

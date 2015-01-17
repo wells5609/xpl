@@ -1,15 +1,14 @@
 <?php
 
-namespace xpl\Foundation;
+namespace xpl\Bundle;
 
-class Library extends AbstractBundle {
-	
+class Library extends BundleAbstract 
+{
+		
 	protected $booted = false;
 	
 	public function __construct($directory) {
-		
 		$this->dirpath = realpath($directory).DIRECTORY_SEPARATOR;
-		
 		$this->name = strtolower(basename($this->dirpath));
 	}
 	
@@ -37,7 +36,7 @@ class Library extends AbstractBundle {
 	}
 	
 	public function isBooted() {
-		return $this->booted;
+		return (bool)$this->booted;
 	}
 	
 }

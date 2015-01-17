@@ -2,44 +2,34 @@
 
 namespace xpl\Framework;
 
-use xpl\Foundation\BundleManager as BaseBundleManager;
-use xpl\Foundation\BundleInterface;
-use xpl\Dependency\DiAwareInterface;
-use xpl\Dependency\DI;
-
-class BundleManager extends BaseBundleManager implements DiAwareInterface 
+class BundleManager extends \xpl\Bundle\Manager 
 {
 	
-	/**
-	 * Dependency injection container.
-	 * @var \xpl\Dependency\DI
-	 */
-	protected $di;
+	protected $events;
 	
-	/**
-	 * Sets the DI container.
-	 * 
-	 * @param \xpl\Dependency\DI $di
-	 */
-	public function setDI(DI $di) {
-		$this->di = $di;
+	public function __construct(\xpl\Event\Manager $events) {
+		$this->events = $events;
 	}
 	
-	/**
-	 * Returns the DI container.
-	 * 
-	 * @return \xpl\Dependency\DI
-	 */
-	public function getDI() {
-		return isset($this->di) ? $this->di : null;
-	}
-	
-	public function setBundle(BundleInterface $bundle) {
+	public function boot($name) {
 		
-		if ($bundle instanceof DiAwareInterface) {
-			$bundle->setDI($this->di);
+		if (parent::boot($name)) {
+			
+			$bundle = $this->getBundle($name);
+			
+			if ($bundle->isBooted()) {
+				
+				$type = $bundle->getType();
+				
+				$this->events->trigger("boot_{$type}", $bundle);
+				
+				$this->events->trigger("boot_{$type}/".$bundle->getName(), $bundle);
+			}
+			
+			return true;
 		}
 		
-		parent::setBundle($bundle);
+		return false;
 	}
+	
 }

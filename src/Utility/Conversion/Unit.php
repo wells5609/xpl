@@ -44,9 +44,10 @@ class Unit implements ConverterInterface
 		Mass::OUNCE => 'ounce',
 		Mass::POUND => 'pound',
 		Mass::TON => 'ton',
+		Mass::TONNE => 'tonne',
 		
 		Volume::GALLON => 'gallon',
-		Volume::IMP_GALLON => 'imperial gallon',
+		Volume::IMPERIAL_GALLON => 'imperial gallon',
 		Volume::LITER => 'liter',
 		Volume::BARREL => 'barrel',
 		Volume::CUBIC_INCH => 'cubic inch',
@@ -75,18 +76,24 @@ class Unit implements ConverterInterface
 		Mass::GRAM => array(
 			Mass::POUND => '453.592', // grams per pound
 			Mass::TON => '907185', // grams per ton
+			Mass::TONNE => '1000000',
 		),
 		Mass::OUNCE => array(
 			Mass::POUND => '16', // ounces per pound
 			Mass::TON => '32000', // etc...
+			Mass::TONNE => '35274',
 		),
 		Mass::POUND => array(
 			Mass::TON => '2000',
+			Mass::TONNE => '2204.62',
+		),
+		Mass::TON => array(
+			Mass::TONNE => '1.10231',
 		),
 		
 		// Volume
 		Volume::GALLON => array(
-			Volume::IMP_GALLON => '0.832674',
+			Volume::IMPERIAL_GALLON => '0.832674',
 			Volume::LITER => '3.78541',
 			Volume::BARREL => '42',
 			Volume::CUBIC_INCH => '0.004329',
@@ -94,7 +101,7 @@ class Unit implements ConverterInterface
 			Volume::CUBIC_METER => '264.172',
 		),
 		Volume::LITER => array(
-			Volume::IMP_GALLON => '4.54609',
+			Volume::IMPERIAL_GALLON => '4.54609',
 		),
 		Volume::CUBIC_INCH => array(
 			Volume::CUBIC_FOOT => '1728',
@@ -109,16 +116,19 @@ class Unit implements ConverterInterface
 			Length::FOOT => '12',
 			Length::YARD => '36',
 			Length::MILE => '63360',
+			Length::NAUTICAL_MILE => '72913.4',
 		),
 		Length::FOOT => array(
 			Length::YARD => '3',
 			Length::MILE => '5280',
+			Length::NAUTICAL_MILE => '6076.12',
 		),
 		Length::METER => array(
 			Length::INCH => '0.0254',
 			Length::FOOT => '0.3048',
 			Length::YARD => '0.9144',
 			Length::MILE => '1609.34',
+			Length::NAUTICAL_MILE => '1852',
 		),
 	);
 	

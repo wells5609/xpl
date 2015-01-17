@@ -157,7 +157,7 @@ class HmvcRequest implements RequestInterface
 	
 	public function setOptions(array $options) {
 		foreach($options as $name => $value) {
-			$this->setOption($name, $value);
+			$this->options[$name] = $value;
 		}
 		return $this;
 	}

@@ -14,10 +14,12 @@ class Html implements TypeInterface {
 			return '';
 		}
 		
-		is_callable($body) and $body = call_user_func($body);
+		if (is_callable($body)) {
+			$body = call_user_func($body);
+		}
 		
 		if (is_scalar($body) || method_exists($body, '__toString')) {
-			return (string) $body;
+			return (string)$body;
 		}
 		
 		xpl_log("Response format error: ".__CLASS__.' in '.__FILE__);

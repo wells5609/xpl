@@ -1,9 +1,12 @@
 <?php
 
-namespace xpl\Foundation;
+namespace xpl\Bundle;
 
-class BundleManager
-{	
+use InvalidArgumentException;
+use UnexpectedValueException;
+
+class Manager 
+{
 	/**
 	 * Bundles of joy.
 	 * @var array
@@ -11,7 +14,7 @@ class BundleManager
 	protected $bundles = array();
 	
 	/**
-	 * Callbacks or BundleProviderInterfaces that provide bundles.
+	 * Callbacks or ProviderInterfaces that provide bundles.
 	 * @var array
 	 */
 	protected $providers = array();
@@ -20,13 +23,13 @@ class BundleManager
 	 * Sets an object or callback that provides a bundle upon request.
 	 * 
 	 * @param string $bundle_name
-	 * @param \xpl\Bundle\BundleProviderInterface|callable $provider
+	 * @param \xpl\Bundle\ProviderInterface|callable $provider
 	 * @return void
 	 */
 	public function provide($bundle_name, $provider) {
 		
-		if (! $provider instanceof BundleProviderInterface && ! is_callable($provider)) {
-			throw new \InvalidArgumentException("Provider must be instance of BundleProviderInterface or callable.");
+		if (! $provider instanceof ProviderInterface && ! is_callable($provider)) {
+			throw new InvalidArgumentException("Provider must be instance of xpl\\Bundle\\ProviderInterface or callable.");
 		}
 		
 		$this->providers[strtolower($bundle_name)] = $provider;
@@ -36,13 +39,13 @@ class BundleManager
 	 * Sets an object or callback that provides bundles of a specific type.
 	 * 
 	 * @param string $bundle_type Type of bundle.
-	 * @param \xpl\Bundle\BundleProviderInterface|callable $provider
+	 * @param \xpl\Bundle\ProviderInterface|callable $provider
 	 * @return void
 	 */
 	public function provideType($bundle_type, $provider) {
 		
-		if (! $provider instanceof BundleProviderInterface && ! is_callable($provider)) {
-			throw new \InvalidArgumentException("Provider must be instance of BundleProviderInterface or callable.");
+		if (! $provider instanceof ProviderInterface && ! is_callable($provider)) {
+			throw new InvalidArgumentException("Provider must be instance of xpl\\Bundle\\ProviderInterface or callable.");
 		}
 		
 		$this->providers[strtolower($bundle_type)] = $provider;
@@ -52,13 +55,13 @@ class BundleManager
 	 * Sets an object or callback that provides multiple bundles.
 	 * 
 	 * @param array $bundles Indexed array of bundle names.
-	 * @param \xpl\Bundle\BundleProviderInterface|callable $provider
+	 * @param \xpl\Bundle\ProviderInterface|callable $provider
 	 * @return void
 	 */
 	public function provideMultiple(array $bundles, $provider) {
 		
-		if (! $provider instanceof BundleProviderInterface && ! is_callable($provider)) {
-			throw new \InvalidArgumentException("Provider must be instance of BundleProviderInterface or callable.");
+		if (! $provider instanceof ProviderInterface && ! is_callable($provider)) {
+			throw new InvalidArgumentException("Provider must be instance of xpl\\Bundle\\ProviderInterface or callable.");
 		}
 		
 		foreach($bundles as $bundle) {
@@ -71,11 +74,10 @@ class BundleManager
 	 * 
 	 * Overwrite this function to do stuff to bundles as they're set (e.g. inject DI).
 	 * 
-	 * @param \xpl\Foundation\BundleInterface $bundle
+	 * @param \xpl\Bundle\BundleInterface $bundle
 	 * @return void
 	 */
 	public function setBundle(BundleInterface $bundle) {
-		
 		$this->bundles[strtolower($bundle->getIdentifier())] = $bundle;
 	}
 	
@@ -179,21 +181,23 @@ class BundleManager
 		if (isset($this->providers[$name])) {
 			// Bundle-specific provider
 			$provider = $this->providers[$name];
+		
 		} else if (isset($this->providers[$bundle_type])) {
 			// Bundle type provider
 			$provider = $this->providers[$bundle_type];
+		
 		} else {
 			return false;
 		}
 		
-		if ($provider instanceof BundleProviderInterface) {
+		if ($provider instanceof ProviderInterface) {
 			$bundle = $provider->provideBundle($bundle_type, $bundle_name);
 		} else {
 			$bundle = call_user_func($provider, $bundle_type, $bundle_name);
 		}
 		
 		if (! $bundle instanceof BundleInterface) {
-			throw new \UnexpectedValueException("A valid bundle was not provided for '$name'.");
+			throw new UnexpectedValueException("A valid bundle was not provided for '$name'.");
 		}
 		
 		$this->setBundle($bundle);
@@ -236,9 +240,9 @@ class BundleManager
 	/**
 	 * Loads a bundle's dependencies.
 	 * 
-	 * @param \xpl\Foundation\BundleInterface $bundle
+	 * @param \xpl\Bundle\BundleInterface $bundle
 	 * 
-	 * @throws \xpl\Foundation\Exception\BundleDependency if missing dependency bundles.
+	 * @throws \xpl\Bundle\DependencyException if missing dependency bundles.
 	 */
 	protected function bootDependencies(BundleInterface $bundle) {
 		
@@ -257,8 +261,7 @@ class BundleManager
 					$missing[] = $dependency;
 				}
 				
-			} catch (Exception\BundleDependency $e) {
-				
+			} catch (DependencyException $e) {
 				// catch dependency exceptions while recursing
 				$missing = array_merge($missing, $e->getMissing());
 			}
@@ -272,7 +275,7 @@ class BundleManager
 				implode(', ', $missing)
 			);
 			
-			$exception = new Exception\BundleDependency($message, 793);
+			$exception = new DependencyException($message, 793);
 			$exception->setMissing($missing);
 			
 			throw $exception;

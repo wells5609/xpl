@@ -1,6 +1,6 @@
 <?php
 
-namespace xpl\Web\Api\Response;
+namespace xpl\Api\Response;
 
 use xpl\Common\Arrayable;
 use xpl\Utility\Arr;
@@ -14,7 +14,7 @@ class Structure implements Arrayable, \IteratorAggregate, \JsonSerializable {
 		'message' => 'Message',
 		'errors' => 'Errors',
 		'content' => 'Results',
-		'diagnostics' => 'Diagnostics',
+		'diag' => 'Diagnostics',
 	);
 	
 	public function __construct(array $array = null) {
@@ -75,7 +75,7 @@ class Structure implements Arrayable, \IteratorAggregate, \JsonSerializable {
 	}
 	
 	public function setDiagnostics($content) {
-		$this->setNode($this->getNodeKey('diagnostics'), $content);
+		$this->setNode($this->getNodeKey('diag'), $content);
 	}
 	
 	public function setNode($key, $value) {
@@ -94,6 +94,10 @@ class Structure implements Arrayable, \IteratorAggregate, \JsonSerializable {
 			$this->setNode($key, $value);
 		}
 		return $this;
+	}
+	
+	public function getNode($key) {
+		return Arr::get($this->nodes, $key);
 	}
 	
 	public function addNode($key, $subkey, $newval = null) {
@@ -118,13 +122,9 @@ class Structure implements Arrayable, \IteratorAggregate, \JsonSerializable {
 		return $this;
 	}
 	
-	public function removeNodes(array $data) {
-		array_map(array($this, 'removeNode'), $data);
+	public function removeNodes(array $keys) {
+		array_map(array($this, 'removeNode'), $keys);
 		return $this;
-	}
-	
-	public function getNode($key) {
-		return Arr::get($this->nodes, $key);
 	}
 	
 	public function toArray() {

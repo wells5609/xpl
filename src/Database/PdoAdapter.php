@@ -269,7 +269,15 @@ class PdoAdapter implements AdapterInterface {
 	public function delete($table, $where = "") {
 		
 		if (! empty($where) && is_array($where)) {
-			$where = implode(' AND ', $where);
+			$whr = array();
+			foreach($where as $key => $value) {
+				if (is_numeric($key)) {
+					$whr[] = $value;
+				} else {
+					$whr[] = $key.' = '.$value;
+				}
+			}
+			$where = implode(' AND ', $whr);
 		}
 		
 		$sql = "DELETE FROM ".$table.(($where) ? " WHERE ".$where : " ");

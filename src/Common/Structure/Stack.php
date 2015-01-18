@@ -5,7 +5,8 @@ namespace xpl\Common\Structure;
 /**
  * Stack is a list with Last-In-First-Out order.
  */
-class Stack extends Base implements StackInterface {
+class Stack extends Base implements StackInterface 
+{
 	
 	public function push($value) {
 		array_push($this->_data, $value);

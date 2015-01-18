@@ -2,6 +2,8 @@
 
 namespace xpl\Database;
 
+use RuntimeException;
+
 class ConnectionPool {
 	
 	protected $ini_file;
@@ -27,16 +29,18 @@ class ConnectionPool {
 	public function setIniPath($path) {
 		
 		if (! $ini_file = realpath($path)) {
-			throw new \RuntimeException("Invalid filepath: '$path'.");
+			throw new RuntimeException("Invalid filepath: '$path'.");
 		}
 		
-		$ini_file .= DIRECTORY_SEPARATOR.'db.ini';
+		if (is_dir($ini_file)) {
+			$ini_file .= DIRECTORY_SEPARATOR.'db.ini';
+		}
 		
 		if (! file_exists($ini_file)) {
-			throw new \RuntimeException("db.ini file does not exist in: '$path'.");
+			throw new RuntimeException("db.ini file does not exist in: '$path'.");
 		}
 		
-		$this->ini_file = $realpath;
+		$this->ini_file = $ini_file;
 	}
 	
 	/**
@@ -56,7 +60,7 @@ class ConnectionPool {
 		), $config);
 		
 		if (isset($this->configs[$vars['name']])) {
-			throw new \RuntimeException("Already configured database '{$vars['name']}'.");
+			throw new RuntimeException("Already configured database '{$vars['name']}'.");
 		}
 		
 		$this->configs[$vars['name']] = new Config\Database($vars);
@@ -75,7 +79,7 @@ class ConnectionPool {
 		if (! isset($this->connections[$dbname])) {
 			
 			if (! $config = $this->getConfig($dbname)) {
-				throw new \RuntimeException("Unknown database: '$dbname'.");
+				throw new RuntimeException("Unknown database: '$dbname'.");
 			}
 			
 			$this->connections[$dbname] = new PdoAdapter($config);
@@ -105,8 +109,10 @@ class ConnectionPool {
 	public function getConfig($dbname) {
 		
 		if (! $this->file_scanned && isset($this->ini_file)) {
+			
+			$config = parse_ini_file($this->ini_file, true);
 		
-			foreach(parse_ini_file($this->ini_file, true) as $database => $vars) {
+			foreach($config as $database => $vars) {
 				$vars['name'] = $database;
 				$this->configure($vars);
 			}
@@ -125,15 +131,15 @@ class ConnectionPool {
 	 */
 	public function getTotalQueries() {
 		
-		$n = 0;
+		$num = 0;
 			
 		if (! empty($this->connections)) {
 			foreach($this->connections as $conn) {
-				$n += $conn->getNumQueries();
+				$num += $conn->getNumQueries();
 			}
 		}
 		
-		return (int)$n;
+		return (int)$num;
 	}
 	
 	/**

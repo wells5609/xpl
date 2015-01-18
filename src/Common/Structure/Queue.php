@@ -5,7 +5,8 @@ namespace xpl\Common\Structure;
 /**
  * Queue is a list with First-In-First-Out order.
  */
-class Queue extends Base implements QueueInterface {
+class Queue extends Base implements QueueInterface 
+{
 	
 	public function enqueue($value) {
 		array_unshift($this->_data, $value);

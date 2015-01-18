@@ -8,7 +8,8 @@ namespace xpl\Common;
  * Implementation should either successfully import the data, or
  * throw an UnexpectedValueException.
  */
-interface Importable {
+interface Importable 
+{
 	
 	/**
 	 * Import some data to the object.

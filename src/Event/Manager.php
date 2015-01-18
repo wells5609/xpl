@@ -176,7 +176,7 @@ class Manager
 
 		return $this->execute($event, $listeners, $args);
 	}
-
+	
 	/**
 	 * Triggers an event with an array of arguments.
 	 * 
@@ -194,6 +194,32 @@ class Manager
 		list($event, $listeners) = $prepared;
 
 		return $this->execute($event, $listeners, $args);
+	}
+	
+	public function filter($event, $value) {
+
+		// get function args
+		$args = func_get_args();
+		
+		// remove event from args
+		array_shift($args);
+		
+		return $this->filterArray($event, $args);
+	}
+
+	public function filterArray($event, array $args) {
+		
+		if (false === ($prepared = $this->prepare($event))) {
+			return reset($args);
+		}
+
+		list($event, $listeners) = $prepared;
+		
+		$event->value = array_shift($args);
+
+		$this->execute($event, $listeners, $args);
+		
+		return $event->value;
 	}
 
 	/**
@@ -324,19 +350,26 @@ class Manager
 	 */
 	protected function execute(Event $event, array $listeners, array $args = array()) {
 		
-		$return = array();
+		$results = array();
 
-		// Sort the listeners by priority
+		// Sort listeners by priority
 		usort($listeners, array($this, $this->sort_func));
 		
-		// Prevent Event to args array
+		// Prepend event to args array
 		array_unshift($args, $event);
 		
 		// Call each listener
 		foreach ($listeners as $listener) {
 			
 			// Collect the returned value
-			$return[] = $listener($args);
+			$results[] = $value = $listener($args);
+			
+			// Update the event value
+			if ($value && $value !== $event->value) {
+				$event->value = $value;
+			}
+			
+			unset($value);
 			
 			// End if propagation stopped
 			if ($event->isPropagationStopped()) {
@@ -344,8 +377,8 @@ class Manager
 			}
 		}
 		
-		// Return the array of callback results
-		return $this->complete($event, $return);
+		// Return the array of results
+		return $this->complete($event, $results);
 	}
 
 	/**
@@ -388,14 +421,6 @@ class Manager
 	 */
 	protected function sortListenersDesc(Listener $a, Listener $b) {
 		return ($a->priority <= $b->priority) ? 1 : -1;
-	}
-	
-	public function debug() {
-		$d = array();
-		foreach($this->listeners as $name => $listeners) {
-			$d[$name] = count($listeners).' Listeners';
-		}
-		return $d;
 	}
 	
 }

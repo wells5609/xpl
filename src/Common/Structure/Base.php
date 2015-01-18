@@ -4,7 +4,8 @@ namespace xpl\Common\Structure;
 
 use xpl\Common\DataStructure;
 
-abstract class Base implements \IteratorAggregate, DataStructure {
+abstract class Base implements \IteratorAggregate, DataStructure 
+{
 	
 	protected $_data = array();
 	

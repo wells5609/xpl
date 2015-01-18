@@ -2,7 +2,8 @@
 
 namespace xpl\Common\Storage;
 
-class LockableRegistry extends Registry {
+class LockableRegistry extends Registry 
+{
 	
 	protected $_locked = array();
 	

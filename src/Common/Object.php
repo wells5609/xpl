@@ -4,7 +4,8 @@ namespace xpl\Common;
 
 use xpl\Common\Structure\MapInterface;
 
-class Object implements \IteratorAggregate, \Serializable, \JsonSerializable, MapInterface {
+class Object implements \IteratorAggregate, \Serializable, \JsonSerializable, MapInterface 
+{
 	
 	public function __construct($data = null) {
 		isset($data) and $this->import($data);

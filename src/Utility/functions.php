@@ -11,7 +11,7 @@ namespace {
 if (! function_exists('convert_units')) :
 	
 	function convert_units($quantity, $unit, $to_unit) {
-		return \xpl\Utility\Conversion\Unit::convert($quantity, $unit, $to_unit);
+		return xpl\Utility\Conversion\Unit::convert($quantity, $unit, $to_unit);
 	}
 	
 endif;
@@ -26,7 +26,7 @@ if (! function_exists('uri_template')) :
 	 * @return string
 	 */
 	function uri_template($name, array $args) {
-		return \xpl\Utility\Uri\Manager::build($name, $args);
+		return xpl\Utility\Uri\Manager::build($name, $args);
 	}
 	
 	/**
@@ -37,8 +37,8 @@ if (! function_exists('uri_template')) :
 	 * @return \xpl\Utility\Uri\Template
 	 */
 	function register_uri_template($name, $uri_template) {
-		$object = new \xpl\Utility\Uri\Template($uri_template, $name);
-		\xpl\Utility\Uri\Manager::register($object);
+		$object = new xpl\Utility\Uri\Template($uri_template, $name);
+		xpl\Utility\Uri\Manager::register($object);
 		return $object;
 	}
 	
@@ -58,7 +58,7 @@ if (! function_exists('alias')) :
 	 * @return void
 	 */
 	function alias($class, $alias) {
-		\xpl\Utility\ClassUtils\Alias::add($class, $alias);
+		xpl\Utility\ClassUtils\Alias::add($class, $alias);
 	}
 	
 endif;
@@ -72,7 +72,7 @@ if (! function_exists('autoloader')) :
 	 * @return \xpl\Utility\ClassUtils\Autoloader Autoloader for the given namespace.
 	 */
 	function autoloader($namespace) {
-		return \xpl\Utility\ClassUtils\Autoloader::instance($namespace);
+		return xpl\Utility\ClassUtils\Autoloader::instance($namespace);
 	}
 	
 endif;
@@ -91,7 +91,7 @@ if (! function_exists('token_generate')) :
 	 * @return string Token using hash_hmac().
 	 */
 	function token_generate($seed, $algo = null) {
-		return (string) new \xpl\Utility\Token($seed, $algo);
+		return (string) new xpl\Utility\Token($seed, $algo);
 	}
 
 endif;
@@ -107,7 +107,7 @@ if (! function_exists('token_verify')) :
 	 * @return boolean True if the token validates, otherwise false.
 	 */
 	function token_verify($token, $seed, $algo = null) {
-		$real = new \xpl\Utility\Token($seed, $algo);
+		$real = new xpl\Utility\Token($seed, $algo);
 		return $real->validate($token);
 	}
 
@@ -116,6 +116,21 @@ endif;
 /** ============================
 	Strings/Randomness
 ============================= */
+
+if (! function_exists('str_slug')) : 
+	
+	/**
+	 * Returns a "slug" for a given string.
+	 * 
+	 * @param string $string
+	 * @param string $separator [Optional] Default "-".
+	 * @return string
+	 */
+	function str_slug($string, $separator = '-') {
+		return xpl\Utility\Inflector::title($string, $separator);
+	}
+
+endif;
 
 if (! function_exists('str_rand')) :
 	
@@ -127,7 +142,7 @@ if (! function_exists('str_rand')) :
 	 * @return string A random string
 	 */
 	function str_rand($length = 16, $charlist = 'alnum') {
-		return \xpl\Utility\Rand::str($length, $charlist);
+		return xpl\Utility\Rand::str($length, $charlist);
 	}
 	
 endif;
@@ -143,7 +158,7 @@ if (! function_exists('rand_bytes')) :
 	 * @return string Random string of given length.
 	 */
 	function rand_bytes($length = 12, $strong = true) {
-		return \xpl\Utility\Rand::bytes($length, $strong);
+		return xpl\Utility\Rand::bytes($length, $strong);
 	}
 	
 endif;
@@ -160,7 +175,7 @@ if (function_exists('hash_format') && ! function_exists('generate_uuid')) :
 	 * @return string A 32-char length (36 with dashes) UUID (v4).
 	 */
 	function generate_uuid() {
-		return hash_format(\xpl\Utility\Rand::hex(32));
+		return hash_format(xpl\Utility\Rand::hex(32));
 	}
 
 endif;

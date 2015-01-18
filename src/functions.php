@@ -404,6 +404,31 @@ function trigger_array($event, array $args = array()) {
 	return xpl::get('events')->triggerArray($event, $args);
 }
 
+/**
+ * Triggers a filter event.
+ * 
+ * @param string|xpl\Event\Event $event Event ID or object.
+ * @param mixed $value Initial value to filter.
+ * @param ... Arguments to pass to callback(s).
+ * @return mixed Filtered value.
+ */
+function filter($event, $value) {
+	$args = func_get_args();
+	array_shift($args);
+	return xpl::get('events')->filterArray($event, $args);
+}
+
+/**
+ * Triggers a filter event.
+ * 
+ * @param string|xpl\Event\Event $event Event ID or object.
+ * @param array $args Initial value and callback arguments.
+ * @return mixed Filtered value.
+ */
+function filter_array($event, array $args) {
+	return xpl::get('events')->filterArray($event, $args);
+}
+
 
 /** ============================
 	URLs
@@ -508,14 +533,6 @@ function response_type($type = null) {
 	}
 	
 	xpl::get('response')->setType($type);
-}
-
-function response_set_cache($ttl = 86400) {
-	xpl::get('response')->setCacheHeaders($ttl);
-}
-
-function response_set_allow_origin($value = '*') {
-	xpl::get('response')->setAccessControlAllowOrigin($value);
 }
 
 

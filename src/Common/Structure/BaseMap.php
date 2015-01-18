@@ -4,7 +4,8 @@ namespace xpl\Common\Structure;
 
 use xpl\Common\Arrayable;
 
-class BaseMap extends Base implements MapInterface {
+class BaseMap extends Base implements MapInterface 
+{
 	
 	public function get($key) {
 		return isset($this->_data[$key]) ? $this->_data[$key] : null;

@@ -2,7 +2,8 @@
 
 namespace xpl\Common;
 
-interface DataStructure extends Arrayable, Importable, \ArrayAccess, \Countable, \Traversable {
+interface DataStructure extends Arrayable, Importable, \ArrayAccess, \Countable, \Traversable 
+{
 	
 	/**
 	 * Checks whether the object is empty (contains no items).

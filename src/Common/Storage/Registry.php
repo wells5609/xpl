@@ -9,7 +9,8 @@ use xpl\Common\Structure\BaseMap;
  * 
  * It also allows objects to be registered and loaded lazily via closures.
  */
-class Registry extends BaseMap {
+class Registry extends BaseMap 
+{
 	
 	/**
 	 * @var array

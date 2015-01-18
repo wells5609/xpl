@@ -2,7 +2,8 @@
 
 namespace xpl\Common\Structure;
 
-interface MapInterface extends \xpl\Common\DataStructure {
+interface MapInterface extends \xpl\Common\DataStructure 
+{
 	
 	public function get($key);
 	

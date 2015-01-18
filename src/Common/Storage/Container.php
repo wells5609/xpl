@@ -11,7 +11,8 @@ use xpl\Utility\Arr;
  * e.g. "some.item.key" corresponds to:
  * 	'some' => array('item' => array('key' => {VALUE}));
  */
-class Container extends BaseMap {
+class Container extends BaseMap 
+{
 	
 	public function get($key) {
 		return Arr::get($this->_data, $key);

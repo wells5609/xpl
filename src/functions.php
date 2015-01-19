@@ -488,6 +488,49 @@ function jquery_url($version = '1.11.1') {
 
 
 /** ============================
+	Request
+============================= */
+
+/**
+ * Returns the current request URI path.
+ * 
+ * @return string Current request path.
+ */
+function request_uri() {
+	return xpl::get('request')->getUri();
+}
+
+/**
+ * Returns the current request query string.
+ * 
+ * @return string Current request query.
+ */
+function request_query() {
+	return xpl::get('request')->getQuery();
+}
+
+/**
+ * Returns the value of a parameter from the current request.
+ * 
+ * @param string $name Parameter name.
+ * @return string|null Parameter value, if set, otherwise null.
+ */
+function request_param($name) {
+	return xpl::get('request')->getParam($name);
+}
+
+/**
+ * Returns whether a given request parameter exists.
+ * 
+ * @param string $name Parameter name.
+ * @return boolean True if the parameter exists, otherwise false.
+ */
+function request_param_exists($name) {
+	return xpl::get('request')->hasParam($name);
+}
+
+
+/** ============================
 	Response
 ============================= */
 

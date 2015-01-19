@@ -5,7 +5,7 @@ namespace xpl\Framework\Application;
 class Factory implements \xpl\Bundle\ProviderInterface
 {
 	
-	const BASE_CLASS = 'xpl\\Framework\\Application\\App';
+	const BASE_CLASS = 'xpl\Framework\Application\App';
 	
 	protected $path;
 	protected $class;
@@ -37,7 +37,12 @@ class Factory implements \xpl\Bundle\ProviderInterface
 		return trim($class, '\\') === static::BASE_CLASS || is_subclass_of($class, static::BASE_CLASS);
 	}
 	
-	public function setAllowCustomClass($value) {
+	public function allowCustomClass($value = null) {
+		
+		if (! isset($value)) {
+			return $this->allow_custom_class;
+		}
+		
 		$this->allow_custom_class = (bool)$value;
 	}
 	
@@ -58,26 +63,17 @@ class Factory implements \xpl\Bundle\ProviderInterface
 	 */
 	public function provideBundle($type, $name) {
 		
-		if ('app' !== $type) {
-			throw new \LogicException("App factory only creates apps, requested: '$type'.");
-		}
-		
 		if (isset($this->apps[$name])) {
 			throw new \LogicException("Application already exists: '$name'.");
 		}
 		
-		if (! is_dir($path = $this->path.$name.'/')) {
-			throw new \RuntimeException("Invalid directory for application '$name': '$path'.");
+		if (! is_dir($app_path = $this->path.$name.'/')) {
+			throw new \RuntimeException("Invalid directory for application '$name': '$app_path'.");
 		}
 		
-		// Set up config
-		$config = new Config($name, $path);
-		
-		$this->configure($config);
+		$config = $this->configure($name, $app_path);
 		
 		$class = $this->getAppClass($config);
-		
-		$this->setupAutoloader($config);
 		
 		if (empty($this->apps)) {
 			// 1st app is primary
@@ -89,16 +85,15 @@ class Factory implements \xpl\Bundle\ProviderInterface
 		return new $class($config);
 	}
 
-	protected function configure(Config $config) {
+	protected function configure($app_name, $app_path) {
 		
-		$config_path = $config->getPath().'config/';
-		$config_file = $config_path.'config.php';
+		$config = new Config($app_name, $app_path);
 		
-		$config->setPath('config', $config_path);
+		$conf_file = $config->getPath().'config.php';
 		
-		if (is_readable($config_file)) {
+		if (is_readable($conf_file)) {
 			
-			$vars = include $config_file;
+			$vars = include $conf_file;
 			
 			foreach($vars as $key => $value) {
 					
@@ -113,8 +108,24 @@ class Factory implements \xpl\Bundle\ProviderInterface
 				}
 			}
 		}
+		
+		if ($autoload = $config->get('autoload') && $namespace = $config->get('namespace')) {
+			
+			$dir = $config->get('autoload_dir') ?: 'classes';
+			
+			if ($path = $config->getPath($dir)) {
+				
+				if ('psr-0' === strtolower($autoload)) {
+					di('autoloader')->addPsr0($namespace, $path);
+				} else {
+					di('autoloader')->addPsr4($namespace, $path);
+				}
+			}
+		}
+		
+		return $config;
 	}
-	
+
 	protected function getAppClass(Config $config) {
 		
 		// Use a custom App class?
@@ -141,22 +152,5 @@ class Factory implements \xpl\Bundle\ProviderInterface
 		return $this->class;
 	}
 	
-	protected function setupAutoloader(Config $config) {
-		
-		if ($autoload = $config->get('autoload') && $namespace = $config->get('namespace')) {
-			
-			$dirname = $config->get('autoload_dir') ?: 'classes';
-			
-			if ($path = $config->getPath($dirname)) {
-				
-				if ('psr-0' === strtolower($autoload)) {
-					di('autoloader')->addPsr0($namespace, $path);
-				} else {
-					di('autoloader')->addPsr4($namespace, $path);
-				}
-			}
-		}
-	}
-
 }
 

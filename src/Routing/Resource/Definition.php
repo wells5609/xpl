@@ -31,42 +31,4 @@ abstract class Definition {
 		return '/';
 	}
 	
-	public function create() {
-		
-		$resource = new Resource($this->getName(), $this->getPathPrefix());
-		
-		$resource->setTokens($tokens = new Tokens());
-		
-		foreach($this->getParams() as $token => $regex) {
-			$tokens->add($token, $regex);
-		}
-		
-		foreach($this->getRoutes() as $name => $args) {
-			
-			$uri = $args[0];
-			$method = isset($args[1]) ? strtoupper($args[1]) : 'GET';
-			$action = isset($args[2]) ? $args[2] : null;	
-		
-			$resource->addRoute(new Route($name, $method, $uri, $action));
-		}
-		
-		$resource->setOption('controller', $this->getControllerClass());
-		
-		if ($domain = $this->getDomain()) {
-			$resource->setOption('domain', $domain);
-		}
-		
-		return $resource;
-	}
-	
-	public function getCached(Cache $cache) {
-		if ($resource = $cache->get('route_resource_'.$this->getName())) {
-			return unserialize($resource);
-		}
-	}
-	
-	public function cache(Cache $cache, Resource $resource) {
-		$cache->set('route_resource_'.$this->getName(), serialize($resource));
-	}
-	
 }

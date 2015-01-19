@@ -133,11 +133,15 @@ class Request implements RequestInterface
 	 * @return mixed Value of property or parameter, if set, otherwise null.
 	 */
 	public function __get($var) {
+			
 		if (isset($this->$var)) {
 			return $this->$var;
-		} else if (isset($this->params[$var])) {
+		}
+		
+		if (isset($this->params[$var])) {
 			return $this->params[$var];
 		}
+		
 		return null;
 	}
 	
@@ -260,9 +264,9 @@ class Request implements RequestInterface
 	}
 	
 	/**
-	 * Returns a parameter value
+	 * Returns a parameter value if set and not null.
 	 * 
-	 * @param string $name Parameter name
+	 * @param string $name Parameter name.
 	 * @return mixed Parameter value.
 	 */
 	public function getParam($name) {
@@ -272,7 +276,7 @@ class Request implements RequestInterface
 	/**
 	 * Checks whether a parameter exists.
 	 * 
-	 * @param string $name Parameter name
+	 * @param string $name Parameter name.
 	 * @return boolean True if parameter exists, otherwise false.
 	 */
 	public function hasParam($name) {

@@ -49,7 +49,10 @@ class ClassLoader
 			throw new \InvalidArgumentException("Invalid autoload path: '$path'.");
 		}
 		
-		$this->psr0[trim($namespace, '\\')] = $realpath.'/';
+		// PSR-0: case-insensitive match
+		$key = strtolower(trim($namespace, '\\'));
+		
+		$this->psr0[$key] = $realpath.'/';
 		
 		return $this;
 	}
@@ -60,7 +63,10 @@ class ClassLoader
 			throw new \InvalidArgumentException("Invalid autoload path: '$path'.");
 		}
 		
-		$this->psr4[trim($namespace, '\\')] = $realpath.'/';
+		// PSR-4: case-sensitive match
+		$key = trim($namespace, '\\');
+		
+		$this->psr4[$key] = $realpath.'/';
 		
 		return $this;
 	}
@@ -96,10 +102,12 @@ class ClassLoader
 	 * @param string $class Classname to load.
 	 */
 	protected function loadPsr0($class) {
+			
+		$found = false;
 		
-		$namespace = strstr($class, '\\', true);
+		// PSR-0: case-insensitive match
+		$namespace = strtolower(strstr($class, '\\', true));
 
-		// case-insensitive match, retain prefix
 		if (isset($this->psr0[$namespace])) {
 			
 			$file = $this->psr0[$namespace];
@@ -122,11 +130,13 @@ class ClassLoader
 	
 			if (file_exists($file)) {
 				include $file;
-				return;
+				$found = true;
 			}
 		}
 		
-		$this->loadFallbacks($class);
+		if (! $found) {
+			$this->loadFallbacks($class);
+		}
 	}
 
 	/**
@@ -135,29 +145,34 @@ class ClassLoader
 	 */
 	protected function loadPsr4($class) {
 
+		$found = false;
+		
+		// PSR-4: case-sensitive match
 		$namespace = strstr($class, '\\', true);
 
-		// PSR-4: case-sensitive match
 		if (isset($this->psr4[$namespace])) {
 			
 			$file = $this->psr4[$namespace];
 			
 			// strip namespace prefix
 			$class = substr($class, strlen($namespace) + 1);
-	
+			
 			$file .= str_replace('\\', DIRECTORY_SEPARATOR, $class).'.php';
 	
 			if (file_exists($file)) {
 				include $file;
-				return;
+				$found = true;
 			}
-		
 		}
 		
-		$this->loadFallbacks($class);
+		if (! $found) {
+			$this->loadFallbacks($class);
+		}
 	}
 	
 	protected function loadFallbacks($class) {
+		
+		$found = false;
 		
 		if (! empty($this->fallback_psr4)) {
 			
@@ -167,12 +182,13 @@ class ClassLoader
 		
 				if (file_exists($file = $dirpath.$classpath.'.php')) {
 					include $file;
-					return;
+					$found = true;
+					break;
 				}
 			}
 		}
 		
-		if (! empty($this->fallback_psr0)) {
+		if (! $found && ! empty($this->fallback_psr0)) {
 			
 			$classpath = '';
 			
@@ -195,7 +211,7 @@ class ClassLoader
 			foreach($this->fallback_psr0 as $dirpath) {
 				if (file_exists($file = $dirpath.$classpath.'.php')) {
 					include $file;
-					return;
+					break;
 				}
 			}
 		}

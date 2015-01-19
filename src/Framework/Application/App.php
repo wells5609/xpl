@@ -12,25 +12,43 @@ use xpl\Web\Response;
 class App extends \xpl\Bundle\Application implements RoutableInterface 
 {
 	
+	// Called on construct
 	protected function onInit() {
 		$this->loadIncludes();
 	}
 	
 	/**
-	 * Called when one of the application's route is matched by the router.
+	 * Called when one of the application's routes is matched by the router.
+	 * 
+	 * This method is called when the "route" event is triggered.
+	 * 
+	 * Note: the controller has not yet been instantiated at this point.
+	 * 
+	 * @param \xpl\Routing\RouteInterface $route
+	 * @param \xpl\Foundation\RequestInterface $request
+	 */
+	public function onRoute(Route $route, Request $request) {
+	}
+	
+	/**
+	 * Called prior to the invoking the controller action for the route.
+	 * 
+	 * This method is called on the "dispatch".
 	 * 
 	 * @param \xpl\Routing\RouteInterface $route
 	 * @param \xpl\Foundation\RequestInterface $request
 	 * @param \xpl\Foundation\ControllerInterface $controller
 	 */
-	public function onRoute(Route $route, Request $request, Controller $controller) {}
+	public function onDispatch(Route $route, Request $request, Controller $controller) {
+	}
 	
 	/**
 	 * Called before response is sent when this is the primary app.
 	 * 
 	 * @param \xpl\Web\Response $response
 	 */
-	public function onRespond(Response $response) {}
+	public function onRespond(Response $response) {
+	}
 	
 	/**
 	 * Checks whether the app is the primary app.
@@ -87,39 +105,40 @@ class App extends \xpl\Bundle\Application implements RoutableInterface
 	 */
 	public function getResource($name = null) {
 		
-		$key = 'resource'.(isset($name) ? '.'.$name : '');
+		$key = 'resource'.(isset($name) ? ".{$name}" : '');
 		
 		if (isset($this->registry[$key])) {
 			return $this->registry[$key];
 		}
 		
-		// resource definition class
+		// Get the resource definition class
 		$class = $this->getResourceDefinitionClass($name);
 		
-		if (class_exists($class)) {
-			
-			$definition = new $class();
-			$cache = di('cache');
-			$factory = di('resource.factory');
-			$cache_is_active = env('cache_routes', true);
-			
-			// try to get from cache first
-			if ($cache_is_active && $resource = $factory->fromCache($cache, $definition->getName())) {
-				return $this->registry[$key] = $resource;
-			}
-			
-			// create from definition
-			if ($resource = $factory->fromDefinition($definition)) {
-				
-				if ($cache_is_active) {
-					$factory->cache($cache, $resource);
-				}
-				
-				return $this->registry[$key] = $resource;
-			}
+		if (! class_exists($class)) {
+			throw new \RuntimeException("Could not get resource (definition class not found: '$class').");
 		}
 		
-		throw new \RuntimeException("No resource available (Could not find definition class: '$class').");
+		$definition = new $class();
+		$factory = di('resource.factory');
+		$use_cache = env('routes.cache', true);
+		
+		// First, try to get a cached resource
+		if ($use_cache && $resource = $factory->fromCache(di('cache'), $definition->getName())) {
+			
+			return $this->registry[$key] = $resource;
+		}
+		
+		// Create the resource from its definition
+		if ($resource = $factory->fromDefinition($definition)) {
+			
+			if ($use_cache) {
+				$factory->cache(di('cache'), $resource);
+			}
+			
+			return $this->registry[$key] = $resource;
+		}
+		
+		throw new \RuntimeException("Could not get resource.");
 	}
 	
 	protected function getResourceDefinitionClass($name = null) {
@@ -128,15 +147,17 @@ class App extends \xpl\Bundle\Application implements RoutableInterface
 	
 	protected function loadIncludes() {
 		
-		if ($includes = $this->getConfig('include')) {
+		$path = $this->getpath();
+		
+		$includes = (array)$this->getConfig('include');
+		
+		$includes[] = 'functions.php';
+		$includes[] = 'events.php';
+		
+		foreach($includes as $include) {
 			
-			$path = $this->getpath();
-			
-			foreach((array)$includes as $include) {
-				
-				if (file_exists($path.$include)) {
-					include $path.$include;
-				}
+			if (file_exists($path.$include)) {
+				include_once $path.$include;
 			}
 		}
 	}

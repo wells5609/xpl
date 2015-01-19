@@ -35,8 +35,8 @@ class Factory
 			$resource->addRoute(new Route($name, $method, $uri, $action));
 		}
 		
-		if ($controller = $def->getControllerClass()) {
-			$resource->setOption('controller', $controller);
+		if ($cls = $def->getControllerClass()) {
+			$resource->setOption('controller_class', $cls);
 		}
 		
 		if ($domain = $def->getDomain()) {

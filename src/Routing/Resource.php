@@ -3,6 +3,7 @@
 namespace xpl\Routing;
 
 use xpl\Foundation\RequestInterface;
+use xpl\Foundation\ControllerInterface;
 
 /**
  * A resource encapsulates a group of routes that share a common mount point (possibly just "/").
@@ -111,27 +112,34 @@ class Resource implements \Serializable
 		return $this->generator;
 	}
 	
-	public function getController(RequestInterface $request, RouteInterface $route) {
+	/**
+	 * Sets the controller instance.
+	 * 
+	 * @param \xpl\Foundation\ControllerInterface
+	 */
+	public function setController(ControllerInterface $controller) {
+		$this->controller = $controller;
+	}
+	
+	/**
+	 * Returns the controller, creating from "controller_class" option if set.
+	 * 
+	 * @return \xpl\Foundation\ControllerInterface The controller to handle the request.
+	 */
+	public function getController() {
 		
-		if (isset($this->controller)) {
-			return $this->controller;
-		}
-		
-		$controller = $this->getOption('controller');
-		
-		if (is_string($controller)) {
+		if (! isset($this->controller)) {
 			
-			if (! class_exists($controller)) {
-				throw new \RuntimeException("Invalid controller class: '{$controller}'.");
+			$class = $this->getOption('controller_class');
+			
+			if (! $class || ! class_exists($class)) {
+				throw new \RuntimeException("Invalid controller class: '{$class}'.");
 			}
 			
-			$controller = new $controller();
+			$this->controller = new $class();
 		}
 		
-		$controller->setRequest($request);
-		$controller->setRoute($route);
-		
-		return $this->controller = $controller;
+		return $this->controller;
 	}
 	
 	/**

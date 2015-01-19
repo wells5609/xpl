@@ -4,18 +4,52 @@ namespace xpl\Utility;
 
 class Url {
 	
-	protected $current_url;
-	protected $schemas = array();
+	/** 
+	 * Current URI path
+	 * @var string
+	 */
+	protected $path;
 	
-	public function __construct($request_uri, $request_query = null) {
-		$this->current_url = $this->to($request_uri, $request_query);
+	/**
+	 * Current URI query.
+	 * @var string
+	 */
+	protected $query;
+	
+	/**
+	 * Current URL.
+	 * @var string
+	 */
+	protected $url;
+	
+	public function __construct($request_path, $request_query = null) {
+		
+		$this->path = '/'.trim($request_path, '/');
+		$this->query = (string)$request_query;
+		
+		$this->url = $this->to($this->path, $this->query);
 	}
 	
 	/**
-	 * The current request URL.
+	 * The current request URL, or other information ('path' or 'query').
 	 */
-	public function getCurrent() {
-		return $this->current_url;
+	public function getCurrent($var = null) {
+		
+		if (empty($var)) {
+			return $this->url;
+		}
+		
+		switch(strtolower($var)) {
+			case 'path':
+			case 'uri':
+				return $this->path;
+			case 'query':
+				return $this->query;
+			case 'url':
+				return $this->url;
+			default:
+				return null;
+		}
 	}
 	
 	/**
@@ -37,10 +71,17 @@ class Url {
 	 */
 	public function toApp($id = APPID, $path = null, $query = null) {
 		
-		$parts = array('host' => $this->getDomain($id));
+		$parts = array(
+			'host' => $this->getDomain($id)
+		);
 		
-		empty($path) OR $parts['path'] = '/'.trim($path, '/');
-		empty($query) OR $parts['query'] = $query;
+		if (! empty($path)) {
+			$parts['path'] = '/'.trim($path, '/');
+		}
+		
+		if (! empty($query)) {
+			$parts['query'] = $query;
+		}
 		
 		return http_build_url('/', $parts);
 	}

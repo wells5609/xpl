@@ -2,12 +2,16 @@
 
 namespace xpl\Data\Provider;
 
-use xpl\Data\AdapterInterface;
 use xpl\Data\ProviderInterface;
+use xpl\Data\AdapterInterface;
+use xpl\Data\FactoryInterface;
+use xpl\Data\Factory;
 
-abstract class AbstractProvider implements ProviderInterface {
+abstract class AbstractProvider implements ProviderInterface 
+{
 	
 	protected $adapter;
+	protected $factory;
 	
 	abstract public function fetchOne(array $conditions);
 	
@@ -25,10 +29,6 @@ abstract class AbstractProvider implements ProviderInterface {
 		$this->adapter = $adapter;
 	}
 	
-	public function setDataSourceAdapter(AdapterInterface $adapter) {
-		$this->setAdapter($adapter);
-	}
-	
 	public function getAdapter() {
 		
 		if (! isset($this->adapter)) {
@@ -39,16 +39,38 @@ abstract class AbstractProvider implements ProviderInterface {
 	}
 	
 	/**
+	 * Set the object factory.
+	 * 
+	 * @param \xpl\Data\FactoryInterface
+	 */
+	public function setFactory(FactoryInterface $factory) {
+		$this->factory = $factory;
+	}
+	
+	/**
+	 * Returns the object factory.
+	 * 
+	 * If not set at the time called, a xpl\Data\Factory will be created.
+	 * 
+	 * @return \xpl\Data\FactoryInterface
+	 */
+	public function getFactory() {
+		
+		if (! isset($this->factory)) {
+			$this->factory = new Factory($this->getEntityClass(), $this->getCollectionClass());
+		}
+		
+		return $this->factory;
+	}
+	
+	/**
 	 * Maps a stored entity to an object.
 	 * 
 	 * @param array $data Entity data.
 	 * @return \xpl\Common\Object Instance of data model.
 	 */
 	public function createEntity(array $data) {
-		
-		$class = $this->getEntityClass();
-		
-		return new $class($data);
+		return $this->getFactory()->createEntity($data);
 	}
 	
 	/**
@@ -58,12 +80,7 @@ abstract class AbstractProvider implements ProviderInterface {
 	 * @return \xpl\Common\Storage\Collection Instance of data model.
 	 */
 	public function createCollection(array $objects) {
-			
-		$class = $this->getCollectionClass();
-		
-		$data = array_map(array($this, 'createEntity'), $objects);
-		
-		return new $class($data);
+		return $this->getFactory()->createCollection($objects);
 	}
 	
 }

@@ -4,7 +4,8 @@ namespace xpl\Data\Provider;
 
 use xpl\Database\PdoAdapter;
 
-abstract class AbstractDatabase extends AbstractReadWrite {
+abstract class AbstractDatabase extends AbstractReadWrite 
+{
 	
 	/**
 	 * @var \xpl\Database\Table

@@ -11,9 +11,14 @@ class Inflector {
 	 * @return string
 	 */
 	public static function underscore($camelCased) {
-		return strtolower(preg_replace('/([A-Z]+)([A-Z])/', '$1_$2', 
-			str_replace(' ', '_', preg_replace('/([a-z\d]+)([A-Z])/', '$1_$2', $camelCased))
-		));
+		
+		// Insert whitespace where a lowercase character meets an uppercase character.
+		// Convert the whitespace to underscores.
+		$string = str_replace(' ', '_', preg_replace('/([a-z\d]+)([A-Z])/', '$1_$2', $camelCased));
+		
+		// Insert underscores in between sequential uppercase characters.
+		// Lowercase the string.
+		return strtolower(preg_replace('/([A-Z]+)([A-Z])/', '$1_$2', $string));
 	}
 	
 	/**
@@ -22,8 +27,18 @@ class Inflector {
 	 * @param string
 	 * @return string
 	 */
-	public static function camelcase($under_scored) {
-		return lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $under_scored))));
+	public static function camelcase($string) {
+		
+		// Lowercase the string.
+		// Replace underscores and dashes with whitespace.
+		$string = str_replace(array('_', '-'), ' ', strtolower($string));
+		
+		// Strip non alphanumeric characters.
+		// Upper the first letter in each word.
+		$string = preg_replace('/[^a-z0-9]/i', '', ucwords(trim($string)));
+		
+		// Remove whitespace and lowercase the first letter.
+		return lcfirst(str_replace(' ', '', $string));
 	}
 	
 	/**
@@ -48,7 +63,7 @@ class Inflector {
 		$str = preg_replace("#[\"\'\’]#", '', $str);
 		$str = preg_replace("#[^a-z0-9]#i", $sep, $str);
 		$str = preg_replace("#[/_|+ -]+#u", $sep, $str);
-		return trim($str, $sep);
+		return strtolower(trim($str, $sep));
 	}
 	
 }

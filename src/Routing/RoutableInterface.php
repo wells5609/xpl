@@ -3,12 +3,23 @@
 namespace xpl\Routing;
 
 use xpl\Foundation\RequestInterface;
-use xpl\Foundation\ControllerInterface;
 
-interface RoutableInterface {
+interface RoutableInterface 
+{
 	
-	public function getResource($name = null);
+	/**
+	 * Returns a route collection.
+	 * 
+	 * @return \xpl\Routing\Route\Collection
+	 */
+	public function getRoutes();
 	
+	/**
+	 * Called when one of the routable's routes is matched.
+	 * 
+	 * @param \xpl\Routing\RouteInterface $route
+	 * @param \xpl\Foundation\RequestInterface $request
+	 */
 	public function onRoute(RouteInterface $route, RequestInterface $request);
 	
 	/**
@@ -16,8 +27,7 @@ interface RoutableInterface {
 	 * 
 	 * @param \xpl\Routing\RouteInterface $route
 	 * @param \xpl\Foundation\RequestInterface $request
-	 * @param \xpl\Foundation\ControllerInterface $controller
 	 */
-	public function onDispatch(RouteInterface $route, RequestInterface $request, ControllerInterface $controller);
+	public function onDispatch(RouteInterface $route, RequestInterface $request);
 	
 }

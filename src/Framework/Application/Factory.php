@@ -72,11 +72,10 @@ class Factory implements \xpl\Bundle\ProviderInterface
 		}
 		
 		$config = $this->configure($name, $app_path);
-		
 		$class = $this->getAppClass($config);
 		
+		// Set first booted app as primary
 		if (empty($this->apps)) {
-			// 1st app is primary
 			$config->set('is_primary', true);
 		}
 		
@@ -85,41 +84,27 @@ class Factory implements \xpl\Bundle\ProviderInterface
 		return new $class($config);
 	}
 
-	protected function configure($app_name, $app_path) {
+	protected function configure($name, $path) {
 		
-		$config = new Config($app_name, $app_path);
+		$config = new Config($name, $path);
 		
-		$conf_file = $config->getPath().'config.php';
+		$__file = $config->getPath().'config/config.php';
 		
-		if (is_readable($conf_file)) {
+		if (is_readable($__file)) {
 			
-			$vars = include $conf_file;
+			$vars = include $__file;
+			
+			if (isset($vars['dirs'])) {
+				
+				foreach($vars['dirs'] as $dirname => $dirpath) {
+					$config->setPath($dirname, $dirpath);
+				}
+				
+				unset($vars['dirs']);
+			}
 			
 			foreach($vars as $key => $value) {
-					
-				if ('paths' === $key || 'dirs' === $key) {
-					
-					foreach($value as $dirname => $dirpath) {
-						$config->setPath($dirname, $dirpath);
-					}
-				
-				} else {
-					$config->set($key, $value);
-				}
-			}
-		}
-		
-		if ($autoload = $config->get('autoload') && $namespace = $config->get('namespace')) {
-			
-			$dir = $config->get('autoload_dir') ?: 'classes';
-			
-			if ($path = $config->getPath($dir)) {
-				
-				if ('psr-0' === strtolower($autoload)) {
-					di('autoloader')->addPsr0($namespace, $path);
-				} else {
-					di('autoloader')->addPsr4($namespace, $path);
-				}
+				$config->set($key, $value);
 			}
 		}
 		
@@ -131,14 +116,14 @@ class Factory implements \xpl\Bundle\ProviderInterface
 		// Use a custom App class?
 		if ($this->allow_custom_class) {
 		
-			$file = $config->get('class_file') ?: $config->getPath().'Application.php';
+			$__file = $config->get('class_file') ?: $config->getPath().'Application.php';
 			
-			if (is_readable($file)) {
+			if (is_readable($__file)) {
 				
-				include $file;
+				include $__file;
 				
-				if ($namespace = $config->get('namespace')) {
-					$class = $namespace.'\\Application';
+				if ($config->has('namespace')) {
+					$class = $config->get('namespace').'\\Application';
 				} else {
 					$class = ucfirst($name).'Application';
 				}

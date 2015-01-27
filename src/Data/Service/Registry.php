@@ -4,65 +4,67 @@ namespace xpl\Data\Service;
 
 use xpl\Data\ServiceInterface as Service;
 
-class Registry {
+class Registry 
+{
 	
 	protected $services = array();
 	protected $registered = array();
 	
-	public function set($svc, Service $service) {
-		$this->services[$svc] = $service;
+	public function set($name, Service $service) {
+		$this->services[$name] = $service;
 		return $this;
 	}
 	
-	public function register($svc, $class) {
+	public function register($name, $class) {
 		
 		if ($class instanceof Service) {
-			return $this->set($svc, $class);
+			return $this->set($name, $class);
 		}
 		
 		if (! is_string($class)) {
-			throw new \InvalidArgumentException("Class for service '$svc' must be string, given: ".gettype($class));
+			throw new \InvalidArgumentException("Class for service '$name' must be string, given: ".gettype($class));
 		}
 		
-		$this->registered[$svc] = $class;
+		$this->registered[$name] = $class;
 		
 		return $this;
 	}
 	
-	public function get($svc) {
+	public function get($name) {
 		
-		if (! isset($this->services[$svc])) {
+		if (! isset($this->services[$name])) {
 			
-			if (! isset($this->registered[$svc])) {
-				throw new \RuntimeException("Unknown service '$svc'.");
+			if (! isset($this->registered[$name])) {
+				throw new \RuntimeException("Unknown service: '$name'.");
 			}
 			
-			$class = $this->registered[$svc];
-			$this->services[$svc] = new $class();
+			$class = $this->registered[$name];
+			
+			$this->services[$name] = new $class();
 		}
 		
-		return $this->services[$svc];
+		return $this->services[$name];
 	}
 	
-	public function has($svc) {
-		return isset($this->services[$svc]) || isset($this->registered[$svc]);
+	public function has($name) {
+		return isset($this->services[$name]) || isset($this->registered[$name]);
 	}
 	
-	public function exists($svc) {
-		return isset($this->services[$svc]) || isset($this->registered[$svc]);
+	public function exists($name) {
+		return isset($this->services[$name]) || isset($this->registered[$name]);
 	}
 	
-	public function unregister($svc, $class = null) {
+	public function unregister($name, $class = null) {
 			
-		if (isset($this->services[$svc])) {
-			if (empty($class) || $this->services[$svc] instanceof $class) {
-				unset($this->services[$svc]);
+		if (isset($this->services[$name])) {
+			if (empty($class) || $this->services[$name] instanceof $class) {
+				unset($this->services[$name]);
 			}
 		}
 		
-		if (isset($this->registered[$svc])) {
-			if (empty($class) || $this->registered[$svc] == $class) {
-				unset($this->registered[$svc]);
+		if (isset($this->registered[$name])) {
+			if (empty($class) || $this->registered[$name] == $class) {
+				unset($this->registered[$name]);
 			}
 		}
 		

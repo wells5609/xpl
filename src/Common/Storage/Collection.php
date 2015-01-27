@@ -25,9 +25,11 @@ class Collection extends Bin implements Sortable
 	 */
 	public function merge($data) {
 
-		is_array($data) or $data = $this->makeArray($data);
+		if (! is_array($data)) {
+			$data = $this->makeArray($data);
+		}
 		
-		$this->_data = isset($this->_data) ? array_merge($this->_data, $data) : $data;
+		$this->_data = array_merge($this->_data, $data);
 	}
 	
 	/**
@@ -38,9 +40,11 @@ class Collection extends Bin implements Sortable
 	 */
 	public function replace($data) {
 
-		is_array($data) or $data = $this->makeArray($data);
+		if (! is_array($data)) {
+			$data = $this->makeArray($data);
+		}
 		
-		$this->_data = isset($this->_data) ? array_replace($this->_data, $data) : $data;
+		$this->_data = array_replace($this->_data, $data);
 	}
 	
 	/**
@@ -81,7 +85,9 @@ class Collection extends Bin implements Sortable
 	 */
 	public function intersect($data) {
 		
-		is_array($data) or $data = $this->makeArray($data);
+		if (! is_array($data)) {
+			$data = $this->makeArray($data);
+		}
 		
 		return new static(array_intersect_assoc($this->_data, $data));
 	}
@@ -94,7 +100,9 @@ class Collection extends Bin implements Sortable
 	 */
 	public function diff($data) {
 
-		is_array($data) or $data = $this->makeArray($data);
+		if (! is_array($data)) {
+			$data = $this->makeArray($data);
+		}
 		
 		return new static(array_diff_assoc($this->_data, $data));
 	}
@@ -107,7 +115,9 @@ class Collection extends Bin implements Sortable
 	 */
 	public function keyDiff($data) {
 
-		is_array($data) or $data = $this->makeArray($data);
+		if (! is_array($data)) {
+			$data = $this->makeArray($data);
+		}
 		
 		return new static(array_diff_key($this->_data, $data));
 	}
@@ -190,6 +200,10 @@ class Collection extends Bin implements Sortable
 
 	public function natcasesort() {
 		return natcasesort($this->_data);
+	}
+	
+	public function usort($func) {
+		return usort($this->_data, $func);
 	}
 
 	public function uasort($func) {

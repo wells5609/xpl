@@ -2,7 +2,7 @@
 
 namespace xpl\Bundle;
 
-class DependencyException extends \xpl\Foundation\Exception 
+class DependencyException extends Exception 
 {
 	
 	protected $missing;

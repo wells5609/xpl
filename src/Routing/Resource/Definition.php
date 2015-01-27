@@ -7,7 +7,8 @@ use xpl\Routing\Resource;
 use xpl\Routing\Route;
 use xpl\Routing\Route\Tokens;
 
-abstract class Definition {
+abstract class Definition 
+{
 	
 	abstract public function getName();
 	

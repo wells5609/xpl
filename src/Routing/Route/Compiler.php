@@ -9,17 +9,17 @@ class Compiler
 {
 	
 	/**
-	 * @var \xpl\Routing\Resource
+	 * @var \xpl\Routing\Route\Tokens
 	 */
-	protected $resource;
+	protected $tokens;
 	
 	/**
 	 * Constructor.
 	 * 
-	 * @param \xpl\Routing\Resource $resource
+	 * @param \xpl\Routing\Route\Tokens $tokens
 	 */
-	public function __construct(Resource $resource) {
-		$this->resource = $resource;
+	public function __construct(Tokens $tokens) {
+		$this->tokens = $tokens;
 	}
 	
 	/**
@@ -38,11 +38,9 @@ class Compiler
 		
 		if (preg_match_all('#\{(\w+)\}(\?)?#', $uri, $vars)) {
 			
-			$resource_tokens = $this->resource->getTokens();
-			
 			foreach($vars[1] as $i => $token) {
 				
-				if (! $regex = $resource_tokens->get($token)) {
+				if (! $regex = $this->tokens->get($token)) {
 					throw new \InvalidArgumentException("Unknown route token: '$token'.");
 				}
 				

@@ -7,7 +7,7 @@ namespace xpl\Common {
 }
 
 namespace {
-	
+
 /**
  * Filters a Bin of objects into an array. 
  * 
@@ -20,7 +20,7 @@ namespace {
  * 
  * @return array
  */
-function xpl_bin_filter(\xpl\Common\Storage\Bin $objects, $index_by = null, $field = null) {
+function xpl_bin_filter(xpl\Common\Storage\Bin $objects, $index_by = null, $field = null) {
 		
 	$list = array();
 	$isArrayField = isset($field) && is_array($field);
@@ -64,30 +64,28 @@ function xpl_bin_filter(\xpl\Common\Storage\Bin $objects, $index_by = null, $fie
  * Sorts a collection of objects by field value.
  * 
  * @param \xpl\Common\Storage\Common $collection A collection containing objects.
- * @param string $sort_field Object field name upon which to sort the objects.
+ * @param string $field Field name to sort the objects by.
  * @param int|string $order [Optional] One of SORT_ASC or SORT_DESC (or "asc" or "desc"). Default SORT_ASC.
  * 
  * @return \xpl\Common\Storage\Collection The sorted collection.
  */
-function xpl_collection_sort(\xpl\Common\Storage\Collection $collection, $sort_field, $order = SORT_ASC) {
+function xpl_collection_sort(xpl\Common\Storage\Collection $collection, $field, $order = SORT_ASC) {
 	
 	if (is_string($order)) {
 		$order = strtolower($order) === 'asc' ? SORT_ASC : SORT_DESC;
 	}
 	
-	$collection->uasort(function ($a, $b) use($order, $sort_field) {
+	$collection->uasort(function ($a, $b) use($order, $field) {
 		
-		if (isset($a->$sort_field) && isset($b->$sort_field)) {
-			
-			if (SORT_ASC === $order) {
-				return ($a->$sort_field > $b->$sort_field);
-			
-			} else {
-				return ($a->$sort_field < $b->$sort_field);
-			}
+		if (! isset($a->$field) || ! isset($b->$field)) {
+			return 0;
 		}
 	
-		return 0;
+		if (SORT_ASC === $order) {
+			return $a->$field > $b->$field;
+		}
+		
+		return $a->$field < $b->$field;
 	});
 	
 	return $collection;

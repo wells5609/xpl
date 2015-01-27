@@ -2,7 +2,8 @@
 
 namespace xpl\Bundle;
 
-interface ProviderInterface {
+interface ProviderInterface 
+{
 	
 	/**
 	 * Provides a bundle by type and name.

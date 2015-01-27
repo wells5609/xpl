@@ -2,7 +2,8 @@
 
 namespace xpl\Framework\Application;
 
-class Config extends \xpl\Common\Storage\Config {
+class Config extends \xpl\Common\Storage\Config 
+{
 	
 	public function __construct($name, $path) {
 		$this->set('name', $name);

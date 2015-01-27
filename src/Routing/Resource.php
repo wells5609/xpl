@@ -83,7 +83,7 @@ class Resource implements \Serializable
 	public function getCompiler() {
 		
 		if (! isset($this->compiler)) {
-			$this->compiler = new Route\Compiler($this);
+			$this->compiler = new Route\Compiler($this->getTokens());
 		}
 		
 		return $this->compiler;
@@ -106,7 +106,7 @@ class Resource implements \Serializable
 	public function getGenerator() {
 		
 		if (! isset($this->generator)) {
-			$this->generator = new Route\Generator($this);
+			$this->generator = new Route\Generator();
 		}
 		
 		return $this->generator;

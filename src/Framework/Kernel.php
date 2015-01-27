@@ -2,32 +2,24 @@
 
 namespace xpl\Framework;
 
-use xpl\Routing\Router;
-use xpl\Routing\RoutableInterface as Routable;
-use xpl\Routing\Exception\MethodNotAllowed;
-use xpl\Routing\Exception\NotFound;
-use xpl\Web\Api\Exception as ApiError;
+use xpl\Dependency\DI;
+use xpl\Api\Exception as ApiError;
 use xpl\Http\Exception as HttpError;
-use xpl\Http\Exception\MethodNotAllowed as HTTP_405;
 use xpl\Http\Exception\NotFound as HTTP_404;
-use xpl\Foundation\RequestInterface as Request;
+use xpl\Foundation\ControllerInterface;
+use xpl\Routing\Router as Router;
+use xpl\Routing\RouteInterface as Route;
+use xpl\Bundle\BundleInterface as Bundle;
 
 class Kernel 
 {
 	
 	protected $di;
-	protected $app;
+	protected $request;
+	protected $response;
 	
 	public function __construct(DI $di) {
 		$this->di = $di;
-	}
-	
-	public function __get($var) {
-		return $this->di[$var];
-	}
-	
-	public function getApp() {
-		return isset($this->app) ? $this->app : null;
 	}
 	
 	/**
@@ -35,10 +27,10 @@ class Kernel
 	 * 
 	 * @param string $appID Application ID.
 	 */
-	public function run($appID) {
-		$this->start($appID);
-		$this->request();
-		$this->send();
+	public function __invoke($appID) {
+		$app = $this->start($appID);
+		$this->run($app);
+		$this->send($app);
 	}
 
 	/**
@@ -47,107 +39,127 @@ class Kernel
 	 * @param string $appID Application ID string.
 	 */
 	public function start($appID) {
+			
+		$this->request = $this->di->resolve('request');
+		$this->response = $this->di->resolve('response');
 		
-		// @event start
-		$this->di['events']->trigger('start', $this->di, $appID);
+		trigger('start', $this->di, $appID);
 		
 		// Boot the app
 		$this->di['bundles']->boot("app.{$appID}");
 		
 		// Set the app
-		$this->app = $this->di['bundles']->getBundle("app.{$appID}");
+		return $this->di['bundles']->getBundle("app.{$appID}");
 	}
 	
-	public function request() {
+	/**
+	 * Routes the request.
+	 */
+	public function run(Bundle $app) {
 		
-		$events = $this->di['events'];
-		
-		// @event run
-		$events->trigger('run', $this->app, $this->di);
+		trigger('run', $app, $this->di);
 		
 		// Catch HTTP exceptions in or prior to the "respond" event.
 		try {
+			
 			// Catch API exceptions in or prior to the controller
 			try {
 				
-				// Route the request and invoke the controller.
-				$body = $this->dispatch($this->di['router'], $this->di['request']);
+				if ($route = $this->route($app)) {
+					
+					$body = $this->dispatch($app, $route);
+					
+					$this->response->setBody($body);
+				}
 				
-				// Set response body
-				$this->di['response']->setBody($body);
-			
-			} catch (ApiError $exception) {
-				// @event api_error
-				$events->trigger('api_error', $exception, $this->app, $this->di);
+			} catch (ApiError $e) {
+				trigger('api_error', $e, $app, $this->di);
 			}
 			
-			// @event respond
-			$events->trigger('respond', $this->app, $this->di);
+			trigger('respond', $app, $this->di);
+			
+			$app->onRespond($this->response);
 		
-		} catch (HttpError $exception) {
-			// @event http_error
-			$events->trigger('http_error', $exception, $this->app, $this->di);
+		} catch (HttpError $e) {
+			trigger('http_error', $e, $app, $this->di);
 		}
 	}
 	
 	/**
 	 * Sends the response.
-	 * 
-	 * @return void
 	 */
-	public function send() {
+	public function send(Bundle $app) {
 		
-		// @event send
-		$this->di['events']->trigger('send', $this->app, $this->di);
+		trigger('send', $app, $this->di);
 		
 		// Send response headers & body
-		$this->di['response']->send();
+		$this->response->send();
 	}
 	
-	protected function dispatch(Router $router, Request $request) {
+	/**
+	 * Routes the request and returns the matched route.
+	 * 
+	 * @return \xpl\Routing\RouteInterface Matched route.
+	 * 
+	 * @throws \xpl\Http\Exception\NotFound if no route is matched.
+	 */
+	protected function route(Bundle $app) {
 		
-		$events = $this->di['events'];
+		$collection = $app->getRoutes();
 		
-		try {
-			
-			$resource = $this->app->getResource();
-			
-			if (! $router->has($resource)) {
-				$router->add($resource);
-			}
-			
-			if (! $router($request->getMethod(), $request->getUri())) {
-				throw new HTTP_404('Page not found.', 404);
-			}
-			
-			$route = $router->getMatchedRoute();
-			
-			if ($params	= $route->getParams()) {
-				$request->setPathParams($params);
-			}
-			
-			// @event route
-			$events->trigger('route', $this->app, $route, $request);
-			
-			// Get the controller instance
-			$controller = $resource->getController();
-			
-			$controller->setRequest($request);
-			$controller->setRoute($route);
-			
-			// @event dispatch
-			$events->trigger('dispatch', $this->app, $route, $request, $controller);
-			
-			return call_user_func_array(array($controller, $route->getAction()), $params);
+		$router = $this->di->resolve('router', $collection);
+		$kernel = $this->di->resolve('web.kernel', $this->request, $router);
 		
-		} catch (MethodNotAllowed $e) {
-			$http405 = new HTTP_405(null, 405, $e);
-			$http405->setAllowedValues($e->getAllowedValues());
-			throw $http405;
-		
-		} catch (NotFound $e) {
-			throw new HTTP_404($e->getMessage(), 404, $e);
+		if (! $route = $kernel()) {
+			throw new HTTP_404('Page not found.');
 		}
+		
+		trigger('route', $app, $route, $this->request);
+		
+		$app->onRoute($route, $this->request);
+		
+		return $route;
 	}
-
+	
+	/**
+	 * Routes the request and invokes the controller.
+	 * 
+	 * @param \xpl\Routing\RouteInterface $route
+	 * @return mixed Body content.
+	 */
+	protected function dispatch(Bundle $app, Route $route) {
+		
+		$callback = $this->getRouteCallback($route, $app);
+		
+		trigger('dispatch', $app, $route, $this->request);
+		
+		$app->onDispatch($route, $this->request);
+		
+		return call_user_func_array($callback, $route->getParams());
+	}
+	
+	/**
+	 * Returns the callback for a route.
+	 * 
+	 * @param \xpl\Routing\RouteInterface $route
+	 * @return callable Route callback.
+	 */
+	protected function getRouteCallback(Route $route, Bundle $app) {
+		
+		$callback = $route->getAction();
+		
+		if (is_string($callback) && false !== strpos($callback, '::')) {
+			
+			list($class, $method) = explode('::', $callback);
+			
+			$controller = $this->di->resolve($class, $this->request, $this->response, $route, $app);
+			
+			if ($controller) {
+				$callback = array($controller, $method);
+			}
+		}
+		
+		return $callback;
+	}
+	
 }

@@ -4,17 +4,16 @@ namespace xpl\Routing;
 
 use xpl\Foundation\RequestInterface;
 use xpl\Foundation\ControllerInterface;
-use xpl\Event\Manager as Events;
 
 /**
  * Encapsulates the operations required for routing, including adding resources to the router, 
  * matching the request to a route, and invoking the route's callback function.
  */
-class Dispatcher 
+class Dispatcher2 
 {
 	
 	/**
-	 * @var \xpl\Routing\Router
+	 * @var \xpl\Routing\Router2
 	 */
 	protected $router;
 	
@@ -29,7 +28,7 @@ class Dispatcher
 	 * @param \xpl\Routing\Router $router
 	 * @param \xpl\Foundation\RequestInterface $request
 	 */
-	public function __construct(Router $router, RequestInterface $request) {
+	public function __construct(Router2 $router, RequestInterface $request) {
 		$this->router = $router;
 		$this->request = $request;
 	}
@@ -50,8 +49,6 @@ class Dispatcher
 	 */
 	public function __invoke(RoutableInterface $routable) {
 		
-		$this->prepareRouter($routable);
-		
 		if ($this->router->__invoke($this->request->getMethod(), $this->request->getUri())) {
 			
 			$route = $this->router->getMatchedRoute();
@@ -61,11 +58,6 @@ class Dispatcher
 		} else {
 			return $this->noMatch($routable);
 		}
-	}
-	
-	protected function prepareRouter(RoutableInterface $routable) {
-		
-		$this->router->add($routable->getResource());
 	}
 	
 	protected function match(RoutableInterface $routable, Route $route) {

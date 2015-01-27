@@ -137,7 +137,7 @@ class Autoloader
 			$class = substr($class, $this->namespaceStrlen + 1);
 	
 			$file = str_replace('\\', DIRECTORY_SEPARATOR, $class).'.php';
-	
+			
 			$this->includeFile($file);
 		}
 	}

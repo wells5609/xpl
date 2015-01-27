@@ -4,7 +4,8 @@ namespace xpl\Bundle;
 
 class Library extends BundleAbstract 
 {
-		
+	protected $name;
+	protected $dirpath;
 	protected $booted = false;
 	
 	public function __construct($directory) {
@@ -16,10 +17,8 @@ class Library extends BundleAbstract
 		
 		if (! $this->booted) {
 			
-			$bootstrap = $this->dirpath.'bootstrap.php';
-			
-			if (file_exists($bootstrap)) {
-				require $bootstrap;
+			if (file_exists($this->dirpath.'bootstrap.php')) {
+				require $this->dirpath.'bootstrap.php';
 			}
 			
 			$this->booted = true;

@@ -32,6 +32,48 @@ class DI implements \ArrayAccess, \Countable {
 		}
 	}
 	
+	public function register($key, $newval) {
+		$this->offsetSet($key, $newval);
+	}
+	
+	/**
+	 * Resolves a named dependency to an object.
+	 * 
+	 * @param string $key Identifier for the object.
+	 * @param ... Additional arguments
+	 * @return mixed
+	 */
+	public function resolve($key, $args = null) {
+		
+		if (isset($this->values[$key])) {
+			return $this->values[$key];
+		}
+		
+		if (isset($this->registered[$key])) {
+			
+			if (isset($args)) {
+				$args = func_get_args();
+				array_shift($args);
+				return $this->values[$key] = call_user_func_array($this->registered[$key], $args);
+			}
+			
+			return $this->values[$key] = call_user_func($this->registered[$key], $this);
+		}
+		
+		if (isset($this->factories[$key])) {
+			
+			if (isset($args)) {
+				$args = func_get_args();
+				array_shift($args);
+				return call_user_func_array($this->factories[$key], $args);
+			}
+			
+			return call_user_func($this->factories[$key], $this);
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Resolves a dependency or value.
 	 * 
@@ -39,44 +81,34 @@ class DI implements \ArrayAccess, \Countable {
 	 * @return mixed
 	 */
 	public function offsetGet($key) {
-		
-		if (isset($this->values[$key])) {
-			return $this->values[$key];
-		}
-		
-		if (isset($this->registered[$key])) {
-			return $this->values[$key] = call_user_func($this->registered[$key], $this);
-		}
-		
-		if (isset($this->factories[$key])) {
-			return call_user_func($this->factories[$key], $this);
-		}
-		
-		return null;
+		return $this->resolve($key);
 	}
 	
-	public function offsetExists($key) {
-		return isset($this->keys[$key]);
-	}
-	
-	public function offsetUnset($key) {
-		if (isset($this->keys[$key])) {
-			unset($this->registered[$key], $this->values[$key], $this->factories[$key], $this->keys[$key]);
-		}
-	}
-	
+	/**
+	 * Adds a factory to the container.
+	 * 
+	 * @param string $key Identifier for the factory.
+	 * @param Closure $factory Factory closure.
+	 */
 	public function factory($key, Closure $factory) {
 		$this->keys[$key] = true;
 		$this->factories[$key] = $factory;
 	}
 	
+	/**
+	 * Extends an object in the container.
+	 * 
+	 * @param string $key Identifier for the object.
+	 * @param Closure $call Extension callback.
+	 * @throws \xpl\Dependency\Exception if given an invalid object identifier.
+	 */
 	public function extend($key, Closure $call) {
 		
 		if (! isset($this->keys[$key])) {
 			throw new Exception("No item '$key' found.");
 		}
 		
-		$object = $this[$key];
+		$object = $this->resolve($key);
 		
 		if (! is_object($object)) {
 			throw new Exception("Cannot extend non-object item: '$key'.");
@@ -91,24 +123,42 @@ class DI implements \ArrayAccess, \Countable {
 		$this[$key] = $new_object;
 	}
 	
+	public function has($key) {
+		return isset($this->keys[$key]);
+	}
+	
+	public function offsetExists($key) {
+		return $this->has($key);
+	}
+	
+	public function remove($key) {
+		if (isset($this->keys[$key])) {
+			unset($this->registered[$key], $this->values[$key], $this->factories[$key], $this->keys[$key]);
+		}
+	}
+	
+	public function offsetUnset($key) {
+		$this->remove($key);
+	}
+	
 	public function get($key) {
-		return $this->offsetGet($key);
+		return $this->resolve($key);
 	}
 	
 	public function __get($var) {
-		return $this->offsetGet($var);
+		return $this->resolve($var);
 	}
 	
-	public function __invoke($key) {
-		return $this->offsetGet($key);
+	public function __set($key, $value) {
+		$this->register($key, $value);
 	}
 	
-	public function resolve($key) {
-		return $this->offsetGet($key);
+	public function __isset($var) {
+		return $this->has($var);
 	}
 	
-	public function register($key, $newval) {
-		$this->offsetSet($key, $newval);
+	public function __unset($var) {
+		$this->remove($var);
 	}
 	
 	public function count() {

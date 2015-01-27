@@ -1,19 +1,14 @@
 <?php
 
-namespace xpl\Framework;
+namespace xpl\Platform;
 
 class StaticFacade {
 	
-	private static $di;
 	protected static $identifier;
-	
-	public static function setDI(DI $di) {
-		self::$di = $di;
-	}
 	
 	public static function __callStatic($func, array $args) {
 		
-		$object = self::$di[static::$identifier];
+		$object = Platform::get(static::$identifier);
 		
 		if (! $object) {
 			trigger_error("Cannot get object for function call: '$func'.", E_USER_WARNING);

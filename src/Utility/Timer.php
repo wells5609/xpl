@@ -2,14 +2,14 @@
 
 namespace xpl\Utility;
 
-class Timer {
-	
+class Timer 
+{	
 	protected $id;
 	protected $start;
 	protected $last;
 	protected $end;
 	protected $touches;
-	protected $useMilliseconds = false;
+	protected $use_milliseconds = false;
 	
 	public function __construct($id = null, $start_time = null) {
 			
@@ -26,7 +26,7 @@ class Timer {
 	}
 	
 	public function useMilliseconds($value) {
-		$this->useMilliseconds = (bool) $value;
+		$this->use_milliseconds = (bool)$value;
 	}
 	
 	public function start($time = null) {
@@ -100,7 +100,7 @@ class Timer {
 	
 	
 	protected function value($num) {
-		if ($this->useMilliseconds) {
+		if ($this->use_milliseconds) {
 			return $num*1000;
 		}
 		return $num;

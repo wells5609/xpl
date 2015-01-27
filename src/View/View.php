@@ -4,24 +4,30 @@ namespace xpl\View;
 
 class View extends DataWrapper 
 {
-	
+	protected $manager;
 	protected $template;
-	protected $data;
 	protected $content;
 	
-	public function __construct($template, Data $data = null) {
+	public function __construct(Manager $manager, Data $data = null) {
+		
+		$this->manager = $manager;
+		$this->setData($data ?: new Data());
+	}
+	
+	public function setTemplate($template) {
 		
 		if (! is_readable($template)) {
 			throw new \InvalidArgumentException("Unreadable file template: '$template'.");
 		}
 		
 		$this->template = $template;
-		$this->data = $data ?: new Data();
 	}
 	
 	public function __toString() {
+		
 		try {
 			return $this->render();
+		
 		} catch (\Exception $e) {
 			xpl_log((string)$e);
 			return getenv('DEBUG') ? (string)$e : ' --- Rendering error --- ';

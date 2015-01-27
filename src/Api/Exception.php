@@ -6,12 +6,16 @@ class Exception extends \xpl\Foundation\Exception {
 	
 	protected $httpStatusCode;
 	
-	public function setHttpStatus($statusCode) {
-		$this->httpStatusCode = (int)$statusCode;
+	public function setHttpStatus($code) {
+		$this->httpStatusCode = (int)$code;
 	}
 	
 	public function getHttpStatus() {
-		return isset($this->httpStatusCode) ? $this->httpStatusCode : null;
+		return $this->httpStatusCode;
+	}
+	
+	public function hasHttpStatus() {
+		return isset($this->httpStatusCode);
 	}
 	
 	public function report(Manager $api_manager) {

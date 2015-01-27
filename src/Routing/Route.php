@@ -3,7 +3,7 @@
 namespace xpl\Routing;
 
 /**
- * Route represents a request destination/action.
+ * Route represents a request destination.
  */
 class Route implements RouteInterface
 {
@@ -16,12 +16,12 @@ class Route implements RouteInterface
 	/**
 	 * @var string
 	 */
-	protected $uri;
+	protected $method;
 	
 	/**
 	 * @var string
 	 */
-	protected $method;
+	protected $uri;
 	
 	/**
 	 * @var string
@@ -36,41 +36,33 @@ class Route implements RouteInterface
 	/**
 	 * @var array
 	 */
-	protected $tokens;
+	protected $params;
 	
 	/**
 	 * @var array
 	 */
-	protected $params;
+	protected $tokens;
 	
 	/**
 	 * Constructor.
 	 * 
-	 * @param string $name Route name (does not need to be unique).
+	 * @param string $name Route name.
 	 * @param string $method HTTP method allowed.
 	 * @param string $uri Route URI path (unparsed).
-	 * @param string $action [Optional] Route action. Default is to prepend the lowercased method
-	 * to the route's name with the first letter uppercased: e.g. "GET" + "myroute" => "getMyroute"
+	 * @param string $action [Optional] Route action. Default is value of name.
 	 */
 	public function __construct($name, $method, $uri, $action = null) {
-		
 		$this->name = $name;
 		$this->method = strtoupper($method);
 		$this->uri = trim($uri, '/');
+		$this->action = empty($action) ? $this->name : $action;
 		$this->params = array();
-		
-		if (empty($action)) {
-			$action = strtolower($this->method).ucfirst($this->name);
-		}
-		
-		$this->action = $action;
 	}
 	
 	/**
 	 * Method used for identifying a route by string.
 	 * 
-	 * Default implementation uses "$this->action", since some routes can 
-	 * potentially have the same name (e.g. if their HTTP methods differ).
+	 * Default implementation uses "$this->action".
 	 * 
 	 * @return string
 	 */
@@ -112,6 +104,15 @@ class Route implements RouteInterface
 	 */
 	public function getAction() {
 		return $this->action;
+	}
+	
+	/**
+	 * Sets the route action (overwrites constructor argument).
+	 * 
+	 * @param mixed $action
+	 */
+	public function setAction($action) {
+		$this->action = $action;
 	}
 	
 	/**
@@ -209,22 +210,6 @@ class Route implements RouteInterface
 	 */
 	public function getParam($token) {
 		return isset($this->params[$token]) ? $this->params[$token] : null;
-	}
-	
-	/**
-	 * Prepends a string to the route's URI.
-	 * 
-	 * Called by Resource.
-	 * 
-	 * @param string $uri_prefix
-	 */
-	public function prefixUri($uri_prefix) {
-		
-		$this->uri = rtrim($uri_prefix, '/').'/'.$this->uri;
-		
-		if (isset($this->compiled_uri)) {
-			$this->compiled_uri = $uri_prefix.'/'.$this->compiled_uri;
-		}
 	}
 	
 	/**

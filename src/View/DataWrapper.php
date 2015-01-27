@@ -4,6 +4,16 @@ namespace xpl\View;
 
 abstract class DataWrapper implements \ArrayAccess 
 {
+	protected $data;
+	
+	public function setData(array $data) {
+		$this->data = $data;
+		return $this;
+	}
+	
+	public function getData() {
+		return isset($this->data) ? $this->data : null;
+	}
 	
 	public function set($var, $val) {
 		$this->data->set($var, $val);

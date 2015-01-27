@@ -2,7 +2,8 @@
 
 namespace xpl\Data\Provider;
 
-abstract class AbstractReadWrite extends AbstractProvider implements ReadWriteInterface {
+abstract class AbstractReadWrite extends AbstractProvider implements ReadWriteInterface 
+{
 	
 	abstract public function insert(array $data);
 	

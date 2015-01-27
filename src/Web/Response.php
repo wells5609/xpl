@@ -2,20 +2,21 @@
 
 namespace xpl\Web;
 
-class Response extends \xpl\Http\Response {
-	
+class Response extends \xpl\Http\Response 
+{
+	protected $request_mimetype;
 	protected $type;
 	
 	/**
 	 * Construct response.
 	 */
 	public function __construct(Request $request) {
-		parent::__construct($request);
+		$this->send_body = ! $request->is('HEAD');
 		$this->request_mimetype = $request->getMimetype();
 	}
 	
 	public function getRequestMimetype() {
-		return isset($this->request_mimetype) ? $this->request_mimetype : null;
+		return $this->request_mimetype;
 	}
 	
 	public function setType(Response\TypeInterface $type) {
@@ -32,6 +33,10 @@ class Response extends \xpl\Http\Response {
 		return $rtn_object ? $this->type : $this->type->getName();
 	}
 	
+	public function getTypeObject() {
+		return isset($this->type) ? $this->type : null;
+	}
+	
 	public function send($exit = true) {
 		
 		if ($this->send_body) {
@@ -40,7 +45,10 @@ class Response extends \xpl\Http\Response {
 				$this->type = new Response\Html();
 			}
 			
-			$this->setBody($this->type->format($this->getBody()));
+			$raw_body = $this->getBody();
+			$formatted = $this->type->format($raw_body);
+			
+			$this->setBody($formatted);
 			
 			$this->setContentType($this->type->getMimetype());
 		}

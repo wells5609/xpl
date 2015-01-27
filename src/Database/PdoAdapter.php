@@ -7,7 +7,8 @@ use PDO;
 use PDOException;
 use RuntimeException;
 
-class PdoAdapter implements AdapterInterface {
+class PdoAdapter implements AdapterInterface 
+{
 	
 	const EXCEPTION_CODE = 417;
 	

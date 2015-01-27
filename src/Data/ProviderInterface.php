@@ -2,7 +2,8 @@
 
 namespace xpl\Data;
 
-interface ProviderInterface {
+interface ProviderInterface 
+{
 	
 	public function setAdapter(AdapterInterface $adapter);
 	

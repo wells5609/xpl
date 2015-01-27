@@ -103,7 +103,7 @@ class Object implements \IteratorAggregate, \Serializable, \JsonSerializable, Ma
 	public function import($data) {
 		
 		if (! is_array($data)) {
-			$data = is_callable(array($data, 'toArray')) ? $data->toArray() : (array)$data;
+			$data = $this->makeArray($data);
 		}
 		
 		foreach($data as $key => $value) {
@@ -115,35 +115,37 @@ class Object implements \IteratorAggregate, \Serializable, \JsonSerializable, Ma
 	
 	/**
 	 * @param string|int $var
-	 * @return mixed
-	 */
-	public function __get($var) {
-		return $this->get($var);
-	}
-
-	/**
-	 * @param string|int $var
 	 * @param mixed $val
 	 * @return void
 	 */
-	public function __set($var, $val) {
-		$this->set($var, $val);
+	public function __set($key, $value) {
+		$this->$key = $value;
+		return $this;
 	}
-
+	
+	/**
+	 * @param string|int $var
+	 * @return mixed
+	 */
+	public function __get($key) {
+		return isset($this->$key) ? $this->$key : null;
+	}
+	
 	/**
 	 * @param string|int $var
 	 * @return boolean
 	 */
-	public function __isset($var) {
-		return $this->has($var);
+	public function __isset($key) {
+		return isset($this->$key);
 	}
-
+	
 	/**
 	 * @param string|int $var
 	 * @return void
 	 */
-	public function __unset($var) {
-		$this->unset($var);
+	public function __unset($key) {
+		unset($this->$key);
+		return $this;
 	}
 	
 	/**
@@ -170,6 +172,24 @@ class Object implements \IteratorAggregate, \Serializable, \JsonSerializable, Ma
 	 */
 	public function jsonSerialize() {
 		return $this->toArray();
+	}
+	
+	protected function makeArray($data) {
+		
+		if (is_object($data)) {
+			
+			if (method_exists($data, 'toArray')) {
+				return $data->toArray();
+			}
+			
+			if ($data instanceof \Traversable) {
+				return iterator_to_array($data);
+			}
+			
+			return get_object_vars($data);
+		}
+	
+		return (array)$data;
 	}
 	
 }

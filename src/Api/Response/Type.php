@@ -8,10 +8,10 @@ class Type implements \xpl\Web\Response\TypeInterface
 {
 	
 	protected $accept = array(
-		'application/json' => 'Json', 
-		'text/javascript' => 'Jsonp', 
-		'text/xml' => 'Xml',
-		'application/xml' => 'Xml',
+		'application/json' => 'json', 
+		'text/javascript' => 'jsonp', 
+		'text/xml' => 'xml',
+		'application/xml' => 'xml',
 	);
 
 	protected $api;

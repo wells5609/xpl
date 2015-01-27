@@ -11,10 +11,10 @@
  * Returns an item from the dependency injection container, or the container itself.
  * 
  * @param string $key [Optional] Item key, or null to return the container.
- * @return \xpl\Dependency\Container|mixed
+ * @return \xpl\Dependency\DI|mixed
  */
 function di($key = null) {
-	return isset($key) ? xpl::get($key) : xpl::getInstance();
+	return isset($key) ? xpl::get($key) : xpl::getDi();
 }
 
 /**
@@ -250,7 +250,7 @@ function domain_name($flags = null) {
 }
 
 /**
- * Returns a server path.
+ * Returns a named path.
  * 
  * @param string $name Path name.
  * @return string Path if found, otherwise null.
@@ -272,6 +272,16 @@ function get_path($name) {
  */
 function service($name) {
 	return xpl::get('services')->get($name);
+}
+
+/**
+ * Returns whether a service is running or registered.
+ * 
+ * @param string $name Service name.
+ * @return boolean True if the service exists, otherwise false.
+ */
+function service_exists($name) {
+	return xpl::get('services')->exists($name);
 }
 
 /**
@@ -367,7 +377,7 @@ function on($event, $callback, $priority = 10) {
 }
 
 /**
- * Binds a "one" callback to an event.
+ * Binds a callback to an event, where all other bindings are ignored.
  * 
  * Events with a "one" callback will only have their "one" listener
  * called - any others will be ignored.
@@ -376,7 +386,7 @@ function on($event, $callback, $priority = 10) {
  * @param callable $callback Callback to run on event trigger.
  * @param int $priority [Optional] Listener priority. Default 10.
  */
-function event_once($event, $callback, $priority = 10) {
+function once($event, $callback, $priority = 10) {
 	xpl::get('events')->one($event, $callback, $priority);
 }
 
@@ -407,6 +417,12 @@ function trigger_array($event, array $args = array()) {
 /**
  * Triggers a filter event.
  * 
+ * Filter events pass their value through as a public
+ * property on Event (e.g. $event->value).
+ * 
+ * The function returns the value as last modified by the 
+ * event listeners, or the initial value if none exist.
+ * 
  * @param string|xpl\Event\Event $event Event ID or object.
  * @param mixed $value Initial value to filter.
  * @param ... Arguments to pass to callback(s).
@@ -433,6 +449,13 @@ function filter_array($event, array $args) {
 /** ============================
 	URLs
 ============================= */
+
+/**
+ * @return \xpl\Utility\Url
+ */
+function url() {
+	return xpl::get('url');
+}
 
 /**
  * Returns URL to the specified application.
@@ -534,7 +557,7 @@ function request_param_exists($name) {
 	Response
 ============================= */
 
-function response_redirect($url, $status = 0) {
+function redirect($url, $status = 0) {
 	xpl::get('response')->redirect($url, $status);
 }
 
@@ -570,9 +593,11 @@ function response_type($type = null) {
 			$class = 'xpl\\Web\\Response\\'.ucfirst($type);
 		}
 		
-		if (class_exists($class)) {
-			$type = new $class();
+		if (! class_exists($class)) {
+			throw new Exception("Error Processing Request");
 		}
+		
+		$type = new $class();
 	}
 	
 	xpl::get('response')->setType($type);
@@ -603,3 +628,8 @@ load_functions('xpl\Session');
 	Http
 ============================= */
 load_functions('xpl\Http');
+
+/** ============================
+	Framework
+============================= */
+load_functions('xpl\Framework');

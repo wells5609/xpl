@@ -3,17 +3,17 @@
 namespace xpl\Framework\Application;
 
 use xpl\Routing\RoutableInterface;
-use xpl\Routing\Resource;
 use xpl\Routing\RouteInterface as Route;
 use xpl\Foundation\RequestInterface as Request;
+use xpl\Foundation\ResponseInterface as Response;
 use xpl\Foundation\ControllerInterface as Controller;
-use xpl\Web\Response;
 
 class App extends \xpl\Bundle\Application implements RoutableInterface 
 {
 	
 	// Called on construct
 	protected function onInit() {
+		$this->autoloadInit();
 		$this->loadIncludes();
 	}
 	
@@ -33,13 +33,12 @@ class App extends \xpl\Bundle\Application implements RoutableInterface
 	/**
 	 * Called prior to the invoking the controller action for the route.
 	 * 
-	 * This method is called on the "dispatch".
+	 * This method is called on the "dispatch" event.
 	 * 
 	 * @param \xpl\Routing\RouteInterface $route
 	 * @param \xpl\Foundation\RequestInterface $request
-	 * @param \xpl\Foundation\ControllerInterface $controller
 	 */
-	public function onDispatch(Route $route, Request $request, Controller $controller) {
+	public function onDispatch(Route $route, Request $request) {
 	}
 	
 	/**
@@ -90,74 +89,101 @@ class App extends \xpl\Bundle\Application implements RoutableInterface
 		return $this->config->get('paths');
 	}
 	
-	/** 
-	 * Alias of getName() 
-	 */
+	/** Alias of getName() */
 	public function getId() {
 		return $this->getName();
 	}
 	
 	/**
-	 * Implementing \xpl\Web\Application
+	 * Returns a collection of routes.
 	 * 
-	 * @param string $name [Optional]
-	 * @return \xpl\Routing\Resource
+	 * @return \xpl\Routing\Route\Collection
 	 */
-	public function getResource($name = null) {
+	public function getRoutes() {
 		
-		$key = 'resource'.(isset($name) ? ".{$name}" : '');
+		$this->registerControllers();
 		
-		if (isset($this->registry[$key])) {
-			return $this->registry[$key];
+		$cache = env('routes.cache');
+		
+		if ($cache && $cached = cache_get("app.{$this->getName()}", 'routes')) {
+			return unserialize($cached);
 		}
 		
-		// Get the resource definition class
-		$class = $this->getResourceDefinitionClass($name);
+		$file = $this->getPath().'config/routes.php';
 		
-		if (! class_exists($class)) {
-			throw new \RuntimeException("Could not get resource (definition class not found: '$class').");
+		if (! file_exists($file)) {
+			throw new \RuntimeException("Missing routes.php file in application config/ directory.");
 		}
 		
-		$definition = new $class();
-		$factory = di('resource.factory');
-		$use_cache = env('routes.cache', true);
+		$collection = require $file;
 		
-		// First, try to get a cached resource
-		if ($use_cache && $resource = $factory->fromCache(di('cache'), $definition->getName())) {
-			
-			return $this->registry[$key] = $resource;
+		if ($cache) {
+			cache_set("app.{$this->getName()}", serialize($collection), 'routes', 43200);
 		}
 		
-		// Create the resource from its definition
-		if ($resource = $factory->fromDefinition($definition)) {
-			
-			if ($use_cache) {
-				$factory->cache(di('cache'), $resource);
-			}
-			
-			return $this->registry[$key] = $resource;
-		}
+		trigger('routes.init', $collection, $this);
 		
-		throw new \RuntimeException("Could not get resource.");
+		return $collection;
 	}
 	
-	protected function getResourceDefinitionClass($name = null) {
-		return $this->getNamespace().'\\Resource'.(isset($name) ? '\\'.ucfirst($name) : '');
+	/**
+	 * Registers the controller classes (set in config.php) with the DI container.
+	 */
+	public function registerControllers() {
+		if ($classes = $this->getConfig('controllers')) {
+			array_walk($classes, array($this, 'registerController'));
+		}
+	}
+	
+	/**
+	 * Registers a controller class with the DI container.
+	 * 
+	 * @param string $class Controller class name.
+	 */
+	public function registerController($class) {
+		
+		$class = trim($class, '\\');
+		
+		register($class, function (Request $request, Response $response, Route $route, RoutableInterface $app) use($class) {
+			return new $class($request, $response, $route, $app);
+		});
+	}
+	
+	protected function autoloadInit() {
+		
+		$namespace = $this->getNamespace();
+		$autoload = $this->getConfig('autoload');
+		
+		if (! $namespace || ! $autoload) {
+			return;
+		}
+		
+		$dir = $this->getConfig('autoload_dir') ?: 'classes';
+		
+		if ($path = $this->getPath($dir)) {
+			
+			$namespace = rtrim($namespace, '\\').'\\';
+			
+			if ('psr-0' === strtolower($autoload)) {
+				di('autoloader')->addPsr0($namespace, $path);
+			} else {
+				di('autoloader')->addPsr4($namespace, $path);
+			}
+		}
 	}
 	
 	protected function loadIncludes() {
 		
-		$path = $this->getpath();
+		$__path = $this->getPath();
 		
 		$includes = (array)$this->getConfig('include');
 		
-		$includes[] = 'functions.php';
-		$includes[] = 'events.php';
+		$includes[] = 'config/functions.php';
+		$includes[] = 'config/events.php';
 		
-		foreach($includes as $include) {
-			
-			if (file_exists($path.$include)) {
-				include_once $path.$include;
+		foreach($includes as $__include) {
+			if (file_exists($__path.$__include)) {
+				include_once $__path.$__include;
 			}
 		}
 	}

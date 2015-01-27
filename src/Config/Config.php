@@ -2,12 +2,13 @@
 
 namespace xpl\Config;
 
+use xpl\Common\Storage\Config;
 use xpl\Utility\Arr;
 
 /**
  * A basic Config object.
  */
-class Container extends \xpl\Common\Storage\Config
+class Container extends Config
 {
 	/**
 	 * @var boolean
@@ -128,14 +129,14 @@ class Container extends \xpl\Common\Storage\Config
 	/**
 	 * Enables default values for config items.
 	 */
-	public function defaultsEnable() {
+	public function enableDefaults() {
 		$this->defaults = array();
 	}
 	
 	/**
 	 * Disables default values for config items.
 	 */
-	public function defaultsDisable() {
+	public function disableDefaults() {
 		$this->defaults = false;
 	}
 
@@ -144,7 +145,7 @@ class Container extends \xpl\Common\Storage\Config
 	 * 
 	 * @return boolean
 	 */
-	public function hasDefaultsEnabled() {
+	public function defaultsEnabled() {
 		return false !== $this->defaults;
 	}
 

@@ -1,6 +1,6 @@
 <?php
 
-use xpl\Framework\StaticFacade;
+use xpl\Platform\StaticFacade;
 
 class Request extends StaticFacade {
 	protected static $identifier = 'request';

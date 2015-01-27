@@ -2,8 +2,9 @@
 
 namespace xpl\Bundle;
 
-use InvalidArgumentException;
 use UnexpectedValueException;
+use xpl\Bundle\BundleInterface as Bundle;
+use xpl\Bundle\ProviderInterface as Provider;
 
 class Manager 
 {
@@ -28,8 +29,8 @@ class Manager
 	 */
 	public function provide($bundle_name, $provider) {
 		
-		if (! $provider instanceof ProviderInterface && ! is_callable($provider)) {
-			throw new InvalidArgumentException("Provider must be instance of xpl\\Bundle\\ProviderInterface or callable.");
+		if (! $provider instanceof Provider && ! is_callable($provider)) {
+			throw new InvalidProviderException;
 		}
 		
 		$this->providers[strtolower($bundle_name)] = $provider;
@@ -44,8 +45,8 @@ class Manager
 	 */
 	public function provideType($bundle_type, $provider) {
 		
-		if (! $provider instanceof ProviderInterface && ! is_callable($provider)) {
-			throw new InvalidArgumentException("Provider must be instance of xpl\\Bundle\\ProviderInterface or callable.");
+		if (! $provider instanceof Provider && ! is_callable($provider)) {
+			throw new InvalidProviderException;
 		}
 		
 		$this->providers[strtolower($bundle_type)] = $provider;
@@ -60,8 +61,8 @@ class Manager
 	 */
 	public function provideMultiple(array $bundles, $provider) {
 		
-		if (! $provider instanceof ProviderInterface && ! is_callable($provider)) {
-			throw new InvalidArgumentException("Provider must be instance of xpl\\Bundle\\ProviderInterface or callable.");
+		if (! $provider instanceof Provider && ! is_callable($provider)) {
+			throw new InvalidProviderException;
 		}
 		
 		foreach($bundles as $bundle) {
@@ -77,7 +78,7 @@ class Manager
 	 * @param \xpl\Bundle\BundleInterface $bundle
 	 * @return void
 	 */
-	public function setBundle(BundleInterface $bundle) {
+	public function setBundle(Bundle $bundle) {
 		$this->bundles[strtolower($bundle->getIdentifier())] = $bundle;
 	}
 	
@@ -190,13 +191,13 @@ class Manager
 			return false;
 		}
 		
-		if ($provider instanceof ProviderInterface) {
+		if ($provider instanceof Provider) {
 			$bundle = $provider->provideBundle($bundle_type, $bundle_name);
 		} else {
 			$bundle = call_user_func($provider, $bundle_type, $bundle_name);
 		}
 		
-		if (! $bundle instanceof BundleInterface) {
+		if (! $bundle instanceof Bundle) {
 			throw new UnexpectedValueException("A valid bundle was not provided for '$name'.");
 		}
 		
@@ -211,26 +212,13 @@ class Manager
 	 * @param \xpl\Bundle\BundleInterface $bundle
 	 * @return boolean
 	 */
-	protected function bootBundle(BundleInterface $bundle) {
+	protected function bootBundle(Bundle $bundle) {
 		
 		// Boot bundle dependencies
 		$this->bootDependencies($bundle);
 		
 		// Shutdown and remove any bundles that this bundle overrides.
-		if ($overrides = $bundle->getOverrides()) {
-			
-			foreach($overrides as $name) {
-			
-				$name = strtolower($name);
-				
-				if (isset($this->bundles[$name])) {
-						
-					$this->bundles[$name]->shutdown();
-					
-					unset($this->bundles[$name]);
-				}
-			}
-		}
+		$this->shutdownOverrides($bundle);
 		
 		$bundle->boot();
 		
@@ -244,7 +232,7 @@ class Manager
 	 * 
 	 * @throws \xpl\Bundle\DependencyException if missing dependency bundles.
 	 */
-	protected function bootDependencies(BundleInterface $bundle) {
+	protected function bootDependencies(Bundle $bundle) {
 		
 		if (! $depends = $bundle->getDependencies()) {
 			return;
@@ -253,6 +241,7 @@ class Manager
 		$missing = array();
 		
 		foreach($depends as $dependency) {
+			
 			try {
 				
 				$dependOn = $this->getBundle($dependency);
@@ -279,6 +268,29 @@ class Manager
 			$exception->setMissing($missing);
 			
 			throw $exception;
+		}
+	}
+	
+	/**
+	 * Shuts down bundles that are overridden by another bundle.
+	 * 
+	 * @param \xpl\Bundle\BundleInterface $bundle Bundle that may override others.
+	 */
+	protected function shutdownOverrides(Bundle $bundle) {
+		
+		if ($overrides = $bundle->getOverrides()) {
+			
+			foreach($overrides as $name) {
+			
+				$name = strtolower($name);
+				
+				if (isset($this->bundles[$name])) {
+						
+					$this->bundles[$name]->shutdown();
+					
+					unset($this->bundles[$name]);
+				}
+			}
 		}
 	}
 	

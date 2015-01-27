@@ -36,7 +36,9 @@ class BaseMap extends Base implements MapInterface
 	 */
 	public function import($data) {
 		
-		is_array($data) or $data = $this->makeArray($data);
+		if (! is_array($data)) {
+			$data = $this->makeArray($data);
+		}
 		
 		foreach($data as $key => $value) {
 			$this->set($key, $value);

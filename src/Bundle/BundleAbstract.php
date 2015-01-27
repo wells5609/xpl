@@ -2,11 +2,8 @@
 
 namespace xpl\Bundle;
 
-abstract class BundleAbstract implements BundleInterface {
-	
-	protected $name;
-	protected $namespace;
-	protected $dirpath;
+abstract class BundleAbstract implements BundleInterface 
+{
 	
 	abstract public function boot();
 	
@@ -26,7 +23,7 @@ abstract class BundleAbstract implements BundleInterface {
 	
 	public function getName() {
 		
-		if (null === $this->name) {
+		if (! isset($this->name)) {
 			
 			$class = strtolower(get_class($this));
 			
@@ -44,7 +41,7 @@ abstract class BundleAbstract implements BundleInterface {
 	
 	public function getNamespace() {
 			
-		if (null === $this->namespace) {
+		if (! isset($this->namespace)) {
 			$class = get_class($this);
 			$this->namespace = substr($class, 0, strrpos($class, '\\'));
 		}
@@ -54,7 +51,7 @@ abstract class BundleAbstract implements BundleInterface {
 	
 	public function getDirpath() {
 			
-		if (null === $this->dirpath) {
+		if (! isset($this->dirpath)) {
 			$refl = new \ReflectionObject($this);
 			$this->dirpath = str_replace('\\', '/', dirname($refl->getFileName())).'/';
 		}

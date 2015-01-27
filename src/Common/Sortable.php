@@ -40,6 +40,13 @@ interface Sortable {
 	 * 
 	 * @return boolean TRUE on success, or FALSE on failure.
 	 */
+	public function usort($func);
+
+	/**
+	 * Sort items using a given callback function.
+	 * 
+	 * @return boolean TRUE on success, or FALSE on failure.
+	 */
 	public function uasort($func);
 
 	/**

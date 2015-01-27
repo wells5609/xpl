@@ -2,7 +2,8 @@
 
 namespace xpl\Framework\Application;
 
-class Info extends \xpl\Common\Object implements \JsonSerializable {
+class Info extends \xpl\Common\Object implements \JsonSerializable 
+{
 	
 	protected $path;
 	protected $name;
@@ -13,7 +14,7 @@ class Info extends \xpl\Common\Object implements \JsonSerializable {
 		$this->path = realpath($path).DIRECTORY_SEPARATOR;
 		$this->name = basename($this->path);
 		$this->label = trim(ucwords(str_replace(array('_','-','.'), ' ', $this->name)));
-		$this->host = ('main' == $this->name) ? DOMAIN : $this->name.'.'.DOMAIN;
+		$this->host = ('main' == $this->name) ? env('domain') : $this->name.'.'.env('domain');
 	}
 	
 	public function getId() {

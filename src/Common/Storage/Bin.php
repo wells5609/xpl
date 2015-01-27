@@ -53,14 +53,11 @@ class Bin extends Map implements StackInterface, \Serializable
 	}
 	
 	public function attach($value, $prepend = false) {
-		if ($prepend) {
-			return array_unshift($this->_data, $value);
-		}
-		return array_push($this->_data, $value);
+		return $prepend ? $this->unshift($value) : $this->push($value);
 	}
 	
 	public function detach($value) {
-		if ($key = array_search($value, $this->_data, true)) {
+		if ($key = $this->indexOf($value)) {
 			$item = $this->_data[$key];
 			unset($this->_data[$key]);
 			return $item;

@@ -10,6 +10,7 @@ class Manager
 	protected $config;
 	protected $structure;
 	protected $errors;
+	protected $http_status;
 	
 	public function __construct(Config $config = null) {
 		$this->config = $config ?: new Config();
@@ -55,6 +56,11 @@ class Manager
 	}
 	
 	public function reportError(Exception $exception) {
+		
+		if ($exception->hasHttpStatus()) {
+			$this->http_status = $exception->getHttpStatus();
+		}
+		
 		$this->errors[] = $exception;
 	}
 	
@@ -64,6 +70,14 @@ class Manager
 	
 	public function getErrors() {
 		return $this->errors;
+	}
+	
+	public function hasHttpStatus() {
+		return isset($this->http_status);
+	}
+	
+	public function getHttpStatus() {
+		return $this->http_status;
 	}
 	
 	public function getErrorOutput() {

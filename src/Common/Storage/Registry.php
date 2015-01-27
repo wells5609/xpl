@@ -63,14 +63,10 @@ class Registry extends BaseMap
 		
 		if (isset($this->_data[$key])) {
 			return $this->_data[$key];
+		}
 		
-		} else if (isset($this->registered[$key])) {
-		
-			$this->_data[$key] = call_user_func($this->registered[$key], $this);
-		
-			unset($this->registered[$key]);
-		
-			return $this->_data[$key];
+		if (isset($this->registered[$key])) {
+			return $this->_data[$key] = call_user_func($this->registered[$key], $this);
 		}
 		
 		return null;	
@@ -106,8 +102,9 @@ class Registry extends BaseMap
 			if (empty($class) || $this->_data[$key] instanceof $class) {
 				unset($this->_data[$key]);
 			}
+		}
 		
-		} else if (isset($this->registered[$key])) {
+		if (isset($this->registered[$key])) {
 			
 			if (empty($class) || $class === $this->registered[$key]) {
 				unset($this->registered[$key]);

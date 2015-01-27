@@ -44,8 +44,6 @@ class Manager
 	 * Associative array of events and their listeners.
 	 * 
 	 * Event name/IDs are used as keys.
-	 * Each value is an array of listeners, each of which, until 
-	 * triggered, remains as an indexed array of callback and priority.
 	 * 
 	 * @var array
 	 */
@@ -110,21 +108,19 @@ class Manager
 			throw new \InvalidArgumentException('Event must be string or instance of Event, given: '.gettype($event));
 		}
 		
-		// no listeners to unset
-		if (empty($this->listeners[$id])) {
-			return $this;
-		}
-		
-		// if no callback given, unset all listeners
-		if (empty($callback)) {
-			unset($this->listeners[$id]);
-		
-		} else {
-			// iterate through listeners and unset matching callback
-			foreach($this->listeners[$id] as $i => $listener) {
+		if (! empty($this->listeners[$id])) {
+				
+			// if no callback given, unset all listeners
+			if (empty($callback)) {
+				unset($this->listeners[$id]);
 			
-				if ($callback == $listener->callback) {
-					unset($this->listeners[$id][$i]);
+			} else {
+				// iterate through listeners and unset matching callback
+				foreach($this->listeners[$id] as $i => $listener) {
+				
+					if ($callback == $listener->callback) {
+						unset($this->listeners[$id][$i]);
+					}
 				}
 			}
 		}
@@ -210,6 +206,7 @@ class Manager
 	public function filterArray($event, array $args) {
 		
 		if (false === ($prepared = $this->prepare($event))) {
+			// No listeners, return the initial value
 			return reset($args);
 		}
 
@@ -261,7 +258,7 @@ class Manager
 	 * 
 	 * Tip: you can also use PHP's SORT_ASC and SORT_DESC
 	 *
-	 * @param int $order One of self::LOW_TO_HIGH (4) or self::HIGH_TO_LOW (3)
+	 * @param int $order One of self::LOW_TO_HIGH or self::HIGH_TO_LOW
 	 * 
 	 * @return $this
 	 * 

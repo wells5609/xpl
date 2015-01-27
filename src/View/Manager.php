@@ -6,42 +6,28 @@ use xpl\Dependency\DI;
 use xpl\Dependency\DiAwareInterface;
 use xpl\Utility\Filesystem\FileLocator;
 
-class Manager extends DataWrapper implements DiAwareInterface 
+class Manager extends DataWrapper
 {	
-	protected $di;
 	protected $views;
 	protected $data;
 	protected $locator;
 	protected $cache_path;
 	
-	public function __construct($template_path, $cache_path = null) {
+	public function __construct($template_path, array $dirs = array()) {
 		
 		$this->views = array();
 		$this->data = new Data();
 		$this->locator = new FileLocator();
 		
-		if (isset($cache_path)) {
-			$this->cache_path = realpath($cache_path).DS;
-		}
+		$this->locator->setRootPath(realpath($template_path).'/');
 		
-		$template_path = realpath($template_path).DS;
-		
-		$this->locator->setRootPath($template_path);
-		$this->locator->setPath('templates', 'templates/');
-		$this->locator->setPath('partials', 'partials/');
-		$this->locator->setPath('assets', 'public/');
-		
-		if (file_exists($template_path.'theme-init.php')) {
-			include $template_path.'theme-init.php';
+		foreach($dirs as $dirname => $dirpath) {
+			$this->locator->setPath(trim($dirname, '/\\'), trim($dirpath, '/\\').'/');
 		}
 	}
 	
-	public function setDI(DI $di) {
-		$this->di = $di;
-	}
-	
-	public function getDI() {
-		return isset($this->di) ? $this->di : null;
+	public function setCachePath($cache_path) {
+		$this->cache_path = realpath($cache_path).DIRECTORY_SEPARATOR;
 	}
 	
 	public function locateFile($filename) {

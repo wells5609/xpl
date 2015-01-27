@@ -22,6 +22,12 @@ class Url {
 	 */
 	protected $url;
 	
+	/**
+	 * Build a URL using the current request path and query.
+	 * 
+	 * @param string $request_path Request URI path.
+	 * @param string $request_query [Optional] Request query string.
+	 */
 	public function __construct($request_path, $request_query = null) {
 		
 		$this->path = '/'.trim($request_path, '/');
@@ -32,6 +38,9 @@ class Url {
 	
 	/**
 	 * The current request URL, or other information ('path' or 'query').
+	 * 
+	 * @param string $var [Optional] One of "path", "query" or "url". Default "url".
+	 * @return string
 	 */
 	public function getCurrent($var = null) {
 		
@@ -53,23 +62,54 @@ class Url {
 	}
 	
 	/**
-	 * Returns the host (subdomain + domain) for an application.
+	 * Returns the current URL string.
+	 * @return string
 	 */
-	public function getDomain($id = APPID) {
-		return ('main' === $id) ? DOMAIN : "{$id}.".DOMAIN;
+	public function __toString() {
+		return $this->url;
+	}
+	
+	/**
+	 * Returns the host (subdomain + domain) for an application.
+	 * 
+	 * @param string $id [Optional] Application ID.
+	 * @return string
+	 */
+	public function getDomain($id = null) {
+		
+		$domain = env('domain');
+		
+		if (! isset($id)) {
+			$id = env('app');
+		}
+		
+		return ('main' === $id) ? $domain : "{$id}.{$domain}";
 	}
 	
 	/**
 	 * URL to a path in the current application.
+	 * 
+	 * @param string $path [Optional] Relative path.
+	 * @param string $query [Optional] URL query.
+	 * @return string
 	 */
 	public function to($path = null, $query = null) {
-		return $this->toApp(APPID, $path, $query);
+		return $this->toApp(null, $path, $query);
 	}
 	
 	/**
 	 * URL to an application.
+	 * 
+	 * @param string $id [Optional] Application ID.
+	 * @param string $path [Optional] Relative path.
+	 * @param string $query [Optional] URL query.
+	 * @return string
 	 */
-	public function toApp($id = APPID, $path = null, $query = null) {
+	public function toApp($id = null, $path = null, $query = null) {
+		
+		if (! isset($id)) {
+			$id = env('app');
+		}
 		
 		$parts = array(
 			'host' => $this->getDomain($id)
@@ -88,6 +128,9 @@ class Url {
 	
 	/**
 	 * URL to a file in DOCROOT path.
+	 * 
+	 * @param string $filepath Absolute path to the file.
+	 * @return string
 	 */
 	public function toFile($filepath) {
 		return http_build_url(str_replace(DOCROOT, '', '/'.ltrim($filepath, '/\\')));
@@ -95,6 +138,9 @@ class Url {
 	
 	/**
 	 * URL to Google-hosted jQuery library.
+	 * 
+	 * @param string $version [Optional] jQuery version string. Default "1.11.1"
+	 * @return string
 	 */
 	public function toJquery($version = '1.11.1') {
 		return "//ajax.googleapis.com/ajax/libs/jquery/{$version}/jquery.min.js";

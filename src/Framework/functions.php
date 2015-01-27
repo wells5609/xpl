@@ -13,9 +13,17 @@ namespace xpl\Framework {
 namespace {
 
 /**
- * Whether XDebug is loaded and enabled.
+ * Returns whether XDebug is loaded and enabled.
+ * 
+ * @return boolean True if XDebug is loaded and enabled, otherwise false.
  */
-define('XDEBUG_ENABLED', extension_loaded('xdebug') && xdebug_is_enabled());
+function xdebug_active() {
+	static $active;
+	if (! isset($active)) {
+		$active = extension_loaded('xdebug') ? xdebug_is_enabled() : false;
+	}
+	return $active;
+}
 
 /**
  * Returns time elapsed since start of request.
@@ -26,7 +34,7 @@ define('XDEBUG_ENABLED', extension_loaded('xdebug') && xdebug_is_enabled());
  */
 function xpl_time_index($decimals = 4, $milliseconds = false) {
 	
-	if (XDEBUG_ENABLED) {
+	if (xdebug_active()) {
 		$time = xdebug_time_index();
 	
 	} else if (isset($_SERVER['REQUEST_TIME_FLOAT'])) {
@@ -48,7 +56,7 @@ function xpl_time_index($decimals = 4, $milliseconds = false) {
  */
 function xpl_memory_usage($decimals = 4, $peak = false) {
 		
-	if (XDEBUG_ENABLED) {
+	if (xdebug_active()) {
 		$usage = $peak ? xdebug_peak_memory_usage() : xdebug_memory_usage();
 	} else {
 		$usage = $peak ? memory_get_peak_usage() : memory_get_usage();
@@ -123,9 +131,9 @@ function xpl_log($message, $function = null) {
 }
 
 /**
- * Initializes the framework logger.
+ * Sets or returns the log file path.
  * 
- * @param string $log_file
+ * @param string $file
  */
 function xpl_log_file($file = null) {
 	
@@ -134,18 +142,6 @@ function xpl_log_file($file = null) {
 	}
 	
 	xpl\Framework\SimpleLog::setFile($file);
-}
-
-/**
- * Initializes the framework's static facades.
- * 
- * @param \xpl\Framework\DI $di
- */
-function xpl_facades_init(xpl\Framework\DI $di) {
-	
-	xpl\Framework\StaticFacade::setDI($di);
-	
-	require_once 'facades/facades.php';
 }
 
 } // namespace

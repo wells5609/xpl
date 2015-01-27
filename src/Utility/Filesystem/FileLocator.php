@@ -13,21 +13,21 @@ class FileLocator extends Container
 	/**
 	 * Returns a full path for a given file name.
 	 *
-	 * @param mixed   $name        The file name to locate
-	 * @param string  $currentPath The current path
-	 * @param bool    $first       Whether to return the first occurrence or an array of filenames
+	 * @param mixed   $name        The name of the file to locate, with file extension.
+	 * @param bool    $first       Whether to return the first occurrence (default) or an array of filenames.
+	 * @param string  $search_path	A path to search within first.
 	 *
 	 * @return string|array The full path to the file or an array of file paths.
 	 */
-	public function locateFile($name, $currentPath = null, $first = true) {
+	public function locateFile($name, $first = true, $search_path = null) {
 
 		$filepaths = array();
 		
-		if (null !== $currentPath) {
+		if (null !== $search_path) {
 			
-			$currentPath = rtrim($currentPath, '/\\').DIRECTORY_SEPARATOR;
+			$search_path = rtrim($search_path, '/\\').DIRECTORY_SEPARATOR;
 			
-			if (file_exists($file = $currentPath.$name)) {
+			if (file_exists($file = $search_path.$name)) {
 				
 				if (true === $first) {
 					return $file;

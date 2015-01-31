@@ -46,10 +46,10 @@ class Template {
 				$var = rtrim($var, '?');
 				
 				if (isset($args[$var])) {
-					$srch = '{'.$var.'?}';
+					$srch = '{'.$var.'}?';
 					$repl = $args[$var];
 				} else {
-					$srch = '/{'.$var.'?}';
+					$srch = '/{'.$var.'}?';
 					$repl = '';
 				}
 			

@@ -3,6 +3,7 @@
 namespace xpl\Web;
 
 use xpl\Routing\Router;
+use xpl\Routing\Matcher\UriStrategy;
 
 class Kernel
 {
@@ -28,7 +29,11 @@ class Kernel
 	 */
 	public function __invoke() {
 		
-		if (! $this->router->__invoke($this->request->getMethod(), $this->request->getUri())) {
+		if (! $this->router->hasStrategy()) {
+			$this->router->setStrategy(new UriStrategy($this->request->getMethod(), $this->request->getUri()));
+		}
+		
+		if (! $this->router->__invoke()) {
 			return false;
 		}
 		

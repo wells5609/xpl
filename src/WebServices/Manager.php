@@ -12,7 +12,7 @@ class Manager
 	/**
 	 * @var string
 	 */
-	protected static $adapterClass;
+	protected static $adapter_class;
 	
 	/**
 	 * Sets the request client adapter object.
@@ -29,7 +29,7 @@ class Manager
 	 * @param string $class
 	 */
 	public static function setAdapterClass($class) {
-		static::$adapterClass = $class;
+		static::$adapter_class = $class;
 	}
 	
 	/**
@@ -38,7 +38,7 @@ class Manager
 	 * @return boolean
 	 */
 	public static function hasAdapter() {
-		return isset(static::$adapter) || isset(static::$adapterClass);
+		return isset(static::$adapter) || isset(static::$adapter_class);
 	}
 	
 	/**
@@ -52,9 +52,9 @@ class Manager
 			return static::$adapter;
 		}
 		
-		if (isset(static::$adapterClass)) {
+		if (isset(static::$adapter_class)) {
 			
-			$class = static::$adapterClass;
+			$class = static::$adapter_class;
 			
 			static::setAdapter(new $class);
 			

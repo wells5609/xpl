@@ -31,13 +31,14 @@ class Container
 	public function __construct($paths = null) {
 			
 		$this->isWindows = DIRECTORY_SEPARATOR === '\\';
+		$this->paths = array();
 		
-		if (null === $paths) {
-			$this->paths = array();
-		} else if (is_array($paths)) {
-			$this->setPaths($paths);
-		} else {
-			$this->setRootPath($paths);
+		if (isset($paths)) {
+			if (is_array($paths)) {
+				$this->setPaths($paths);
+			} else {
+				$this->setRootPath($paths);
+			}
 		}
 	}
 	
@@ -63,9 +64,9 @@ class Container
 	 * Sets a named directory path.
 	 * 
 	 * If a root path is set, paths can be given as relative to the root directory and
-	 * will be changed to absolute paths upon adding.
+	 * will be changed to absolute paths when added.
 	 * 
-	 * @param string $name Path name.
+	 * @param string $name Directory identifier.
 	 * @param string $path Absolute directory path, or relative path if root path set.
 	 * 
 	 * @throws \InvalidArgumentException if given a relative path and no root path is set.
@@ -97,10 +98,21 @@ class Container
 		}
 	}
 	
+	/**
+	 * Returns a named path, if it exists.
+	 * 
+	 * @param string $name Path identifier.
+	 * @return string|null Directory path, if set, otherwise null.
+	 */
 	public function getPath($name) {
 		return isset($this->paths[$name]) ? $this->paths[$name] : null;
 	}
 	
+	/**
+	 * Returns an array of all directory paths.
+	 * 
+	 * @return array
+	 */
 	public function getPaths() {
 		return $this->paths;
 	}
@@ -129,6 +141,11 @@ class Container
 		);
 	}
 	
+	/**
+	 * Returns the root path as a string, if set.
+	 * 
+	 * @return string
+	 */
 	public function __toString() {
 		return isset($this->root) ? $this->root : '';
 	}

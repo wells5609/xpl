@@ -32,6 +32,20 @@ class Env extends Container
 		);
 	}
 	
+	public function configure($config) {
+		
+		$config = (array)$config;
+		
+		if (isset($config['paths'])) {
+			$this->setPaths($config['paths']);
+			unset($config['paths']);
+		}
+		
+		$this->import($config);
+		
+		return $this;
+	}
+	
 	public function getType() {
 		return $this->type;
 	}
@@ -57,10 +71,6 @@ class Env extends Container
 			return $this->paths['root'];
 		}
 		return isset($this->paths[$name]) ? $this->paths[$name] : null;
-	}
-	
-	public function makeDirIfNotExists($path, $mkdir_mode = 0777) {
-		return is_dir($path) ? true : mkdir($path, $mkdir_mode, true);
 	}
 	
 	public function getDomain() {

@@ -23,7 +23,7 @@ class Token {
 	public function getHmacKey() {
 		
 		if (! isset($this->hmacKey)) {
-			$this->hmacKey = env('token.hash_hmac_key') ?: '&h3#I/pv#Rtoi,1n"]|1$3tq>^l(2Iu%84I/kg*J=Kk.fb@2m';
+			$this->hmacKey = env('token.hash.hmac_key') ?: '&h3#I/pv#Rtoi,1n"]|1$3tq>^l(2Iu%84I/kg*J=Kk.fb@2m';
 		}
 		
 		return $this->hmacKey;
@@ -32,7 +32,7 @@ class Token {
 	public function getAlgo($algo = null) {
 		
 		if (! isset($this->algo)) {
-			$this->algo = isset($algo) ? $algo : env('token.hash_algo') ?: 'sha224';
+			$this->algo = isset($algo) ? $algo : env('token.hash.algo') ?: 'sha224';
 		}
 		
 		return $this->algo;

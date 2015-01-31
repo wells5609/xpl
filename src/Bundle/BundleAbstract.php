@@ -25,38 +25,16 @@ abstract class BundleAbstract implements BundleInterface
 		
 		if (! isset($this->name)) {
 			
-			$class = strtolower(get_class($this));
+			$name = strtolower(get_class($this));
 			
-			if (false !== $pos = strrpos($class, '\\')) {
-				$name = substr($class, $pos+1);
-			} else {
-				$name = $class;
+			if (false !== $pos = strrpos($name, '\\')) {
+				$name = substr($name, $pos+1);
 			}
 			
 			$this->name = str_replace(array('bundle', $this->getType()), '', $name);
 		}
 		
 		return $this->name;
-	}
-	
-	public function getNamespace() {
-			
-		if (! isset($this->namespace)) {
-			$class = get_class($this);
-			$this->namespace = substr($class, 0, strrpos($class, '\\'));
-		}
-		
-		return $this->namespace;
-	}
-	
-	public function getDirpath() {
-			
-		if (! isset($this->dirpath)) {
-			$refl = new \ReflectionObject($this);
-			$this->dirpath = str_replace('\\', '/', dirname($refl->getFileName())).'/';
-		}
-		
-		return $this->dirpath;
 	}
 	
 	public function getIdentifier() {

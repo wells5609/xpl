@@ -54,7 +54,7 @@ class Route implements RouteInterface
 	public function __construct($name, $method, $uri, $action = null) {
 		$this->name = $name;
 		$this->method = strtoupper($method);
-		$this->uri = trim($uri, '/');
+		$this->uri = '/'.trim($uri, '/');
 		$this->action = empty($action) ? $this->name : $action;
 		$this->params = array();
 	}

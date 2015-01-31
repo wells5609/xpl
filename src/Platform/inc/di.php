@@ -59,3 +59,16 @@ $di['api'] = function () {
 $di['url'] = function ($di) {
 	return new xpl\Utility\Url($di['request']->getUri(), $di['request']->getQuery());
 };
+
+$di['view.template_locator'] = function ($template_path, $file_ext = 'php') {
+	return new xpl\View\TemplateLocator($template_path, $file_ext);
+};
+
+$di['view.factory'] = function () {
+	return new xpl\View\Factory();
+};
+
+$di['view.manager'] = function ($di) {
+	return new xpl\View\Manager($di['view.template_locator'], $di['view.factory']);
+};
+

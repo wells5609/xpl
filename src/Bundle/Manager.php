@@ -92,11 +92,7 @@ class Manager
 		
 		$name = strtolower($name);
 		
-		if (isset($this->bundles[$name])) {
-			return $this->bundles[$name];
-		}
-		
-		if ($this->provideBundle($name)) {
+		if (isset($this->bundles[$name]) || $this->setBundleFromProvider($name)) {
 			return $this->bundles[$name];
 		}
 		
@@ -122,10 +118,7 @@ class Manager
 		}
 		
 		if (! empty($this->providers)) {
-			
-			list($bundle_type, $bundle_name) = explode('.', $name, 2);
-			
-			return isset($this->providers[$bundle_type]);
+			return isset($this->providers[strstr($name, '.', true)]);
 		}
 		
 		return false;
@@ -164,30 +157,46 @@ class Manager
 	}
 	
 	/**
+	 * Boots a bundle, including its dependencies.
+	 * 
+	 * @param \xpl\Bundle\BundleInterface $bundle
+	 * @return boolean
+	 */
+	protected function bootBundle(Bundle $bundle) {
+		
+		// Boot bundle dependencies
+		$this->bootDependencies($bundle);
+		
+		// Shutdown and remove any bundles that this bundle overrides.
+		$this->shutdownOverrides($bundle);
+		
+		// If installable and not installed, install.
+		if ($bundle instanceof InstallableInterface && ! $bundle->isInstalled()) {
+			$bundle->install();
+		}
+		
+		$bundle->boot();
+		
+		return true;
+	}
+	
+	/**
 	 * Sets a bundle object from its provider.
 	 * 
 	 * @param string $name Bundle name.
 	 * @return boolean True if bundle was provided, otherwise false.
 	 * @throws \UnexpectedValueException if an implementation of BundleInterface is not provided.
 	 */
-	protected function provideBundle($name) {
+	protected function setBundleFromProvider($name) {
+		
+		$bundle_type = null;
+		$bundle_name = $name;
 		
 		if (false !== strpos($name, '.')) {
 			list($bundle_type, $bundle_name) = explode('.', $name, 2);
-		} else {
-			$bundle_type = null;
-			$bundle_name = $name;
 		}
 		
-		if (isset($this->providers[$name])) {
-			// Bundle-specific provider
-			$provider = $this->providers[$name];
-		
-		} else if (isset($this->providers[$bundle_type])) {
-			// Bundle type provider
-			$provider = $this->providers[$bundle_type];
-		
-		} else {
+		if (! $provider = $this->getProviderFor($bundle_type, $bundle_name)) {
 			return false;
 		}
 		
@@ -206,23 +215,19 @@ class Manager
 		return true;
 	}
 	
-	/**
-	 * Boots a bundle, including its dependencies.
-	 * 
-	 * @param \xpl\Bundle\BundleInterface $bundle
-	 * @return boolean
-	 */
-	protected function bootBundle(Bundle $bundle) {
+	protected function getProviderFor($type, $name) {
 		
-		// Boot bundle dependencies
-		$this->bootDependencies($bundle);
+		// Bundle-specific provider
+		if (isset($this->providers[$name])) {
+			return $this->providers[$name];
+		}
 		
-		// Shutdown and remove any bundles that this bundle overrides.
-		$this->shutdownOverrides($bundle);
+		// Bundle type provider
+		if (isset($this->providers[$type])) {
+			return $this->providers[$type];
+		}
 		
-		$bundle->boot();
-		
-		return true;
+		return false;
 	}
 	
 	/**
@@ -234,19 +239,19 @@ class Manager
 	 */
 	protected function bootDependencies(Bundle $bundle) {
 		
-		if (! $depends = $bundle->getDependencies()) {
+		if (! $dependencies = $bundle->getDependencies()) {
 			return;
 		}
 		
 		$missing = array();
 		
-		foreach($depends as $dependency) {
+		foreach($dependencies as $dependency) {
 			
 			try {
 				
-				$dependOn = $this->getBundle($dependency);
+				$dep = $this->getBundle($dependency);
 				
-				if (! $dependOn || ! $this->bootBundle($dependOn)) {
+				if (! $dep || (! $dep->isBooted() && ! $this->bootBundle($dep))) {
 					$missing[] = $dependency;
 				}
 				

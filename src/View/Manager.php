@@ -2,76 +2,90 @@
 
 namespace xpl\View;
 
-use xpl\Dependency\DI;
-use xpl\Dependency\DiAwareInterface;
-use xpl\Utility\Filesystem\FileLocator;
-
-class Manager extends DataWrapper
-{	
-	protected $views;
-	protected $data;
+class Manager
+{
+	
+	/**
+	 * Template locator.
+	 * 
+	 * @var \xpl\View\TemplateLocator
+	 */
 	protected $locator;
-	protected $cache_path;
 	
-	public function __construct($template_path, array $dirs = array()) {
-		
+	/**
+	 * View factory.
+	 * 
+	 * @var \xpl\View\Factory
+	 */
+	protected $factory;
+	
+	/**
+	 * Views.
+	 * 
+	 * @var array
+	 */
+	protected $views;
+	
+	/**
+	 * Constructor
+	 */
+	public function __construct(TemplateLocator $locator, Factory $factory = null) {
+		$this->locator = $locator;
+		$this->factory = $factory ?: new Factory();
 		$this->views = array();
-		$this->data = new Data();
-		$this->locator = new FileLocator();
-		
-		$this->locator->setRootPath(realpath($template_path).'/');
-		
-		foreach($dirs as $dirname => $dirpath) {
-			$this->locator->setPath(trim($dirname, '/\\'), trim($dirpath, '/\\').'/');
-		}
 	}
 	
-	public function setCachePath($cache_path) {
-		$this->cache_path = realpath($cache_path).DIRECTORY_SEPARATOR;
-	}
-	
-	public function locateFile($filename) {
-		return $this->locator->locateFile($filename);
-	}
-	
-	public function view($template, $refresh_cache = false) {
+	/**
+	 * Produces a view using the template found by the given filename.
+	 * 
+	 * @param string $filename Filename of the template to use (relative to template path).
+	 */
+	public function getView($filename) {
 		
-		if (isset($this->views[$template])) {
-			return $this->views[$template];
-		}
-		
-		if (! $file = $this->locateFile($template)) {
-			return null;
-		}
-	
-		if (isset($this->cache_path)) {
+		if (! isset($this->views[$filename])) {
 			
-			$cache_file = $this->getCacheFile($file);
+			$template = $this->locator->__invoke($filename);
 			
-			if ($refresh_cache || ! file_exists($cache_file)) {
-				$this->cacheFile($cache_file, $this->parseFile($file));
-			}
-			
-			$file = $cache_file;
+			$this->views[$filename] = $this->factory->__invoke($template);
 		}
 		
-		return $this->views[$template] = new View($file, $this->data);
+		return $this->views[$filename];
 	}
 	
-	protected function parseFile($file) {
-		return str_replace(
-			array('{URL}', '{ASSETS}', '{SITE_TITLE}', '{COPYRIGHT}'), 
-			array(rtrim(http_build_url('/'), '/'), $this->locator->getPath('assets'), $this['site_title'], '&copy; '.date('Y')),
-			file_get_contents($file)
-		);
+	/**
+	 * Sets the template locator.
+	 * 
+	 * @param \xpl\View\TemplateLocator $locator
+	 */
+	public function setTemplateLocator(TemplateLocator $locator) {
+		$this->locator = $locator;
 	}
 	
-	protected function cacheFile($cache_file, $contents) {
-		return file_put_contents($cache_file, $contents, LOCK_EX);
+	/**
+	 * Returns the template locator.
+	 * 
+	 * @return \xpl\View\TemplateLocator
+	 */
+	public function getTemplateLocator() {
+		return $this->locator;
 	}
 	
-	protected function getCacheFile($file) {
-		return $this->cache_path.pathinfo($file, PATHINFO_BASENAME).'.cache';
+	/**
+	 * Sets the view factory.
+	 * 
+	 * @param \xpl\View\Factory
+	 */
+	public function setFactory(Factory $factory) {
+		$this->factory = $factory;
+	}
+	
+	/**
+	 * Returns the view factory.
+	 * 
+	 * @return \xpl\View\Factory
+	 */
+	public function getFactory() {
+		return $this->factory;
 	}
 	
 }

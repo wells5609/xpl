@@ -43,32 +43,48 @@ class DI implements \ArrayAccess, \Countable {
 	 * @param ... Additional arguments
 	 * @return mixed
 	 */
-	public function resolve($key, $args = null) {
+	public function resolve($key) {
+		
+		if (isset($this->values[$key])) {
+			return $this->values[$key];
+		}
+		
+		if (func_num_args() !== 1) {
+			$args = func_get_args();
+			array_shift($args);
+			return $this->resolveArray($key, $args);
+		}
+		
+		if (isset($this->registered[$key])) {
+			return $this->values[$key] = call_user_func($this->registered[$key], $this);
+		}
+		
+		if (isset($this->factories[$key])) {
+			return call_user_func($this->factories[$key], $this);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Resolves a named dependency to an object using an array of arguments.
+	 * 
+	 * @param string $key Identifier for the object.
+	 * @param array $args Arguments to pass to registration closure or factory.
+	 * @return mixed
+	 */
+	public function resolveArray($key, array $args = array()) {
 		
 		if (isset($this->values[$key])) {
 			return $this->values[$key];
 		}
 		
 		if (isset($this->registered[$key])) {
-			
-			if (isset($args)) {
-				$args = func_get_args();
-				array_shift($args);
-				return $this->values[$key] = call_user_func_array($this->registered[$key], $args);
-			}
-			
-			return $this->values[$key] = call_user_func($this->registered[$key], $this);
+			return $this->values[$key] = call_user_func_array($this->registered[$key], $args);
 		}
 		
 		if (isset($this->factories[$key])) {
-			
-			if (isset($args)) {
-				$args = func_get_args();
-				array_shift($args);
-				return call_user_func_array($this->factories[$key], $args);
-			}
-			
-			return call_user_func($this->factories[$key], $this);
+			return call_user_func_array($this->factories[$key], $args);	
 		}
 		
 		return null;

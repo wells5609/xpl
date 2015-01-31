@@ -29,6 +29,25 @@ function register($key, $object) {
 }
 
 /**
+ * Resolves a dependency using the given arguments.
+ * 
+ * @param string $key Object identifier.
+ * @param ... Additional arguments.
+ * @return mixed
+ */
+function resolve($key, $args = null) {
+	
+	if (! isset($args)) {
+		return xpl::getDi()->resolve($key);
+	}
+	
+	$args = func_get_args();
+	array_shift($args);
+	
+	return xpl::getDi()->resolveArray($key, $args);
+}
+
+/**
  * Autoload a namespace from a given directory using PSR-4 spec.
  * 
  * @param string $namespace Class namespace.
@@ -224,8 +243,13 @@ function app_config($key, $value = null, $appID = null) {
  * @param mixed $default [Optional] Default value to return if not set.
  * @return mixed Environment variable value, or default value if not set.
  */
-function env($key, $default = null) {
-	return xpl::get('env')->get($key) ?: $default;
+function env($key, $value = null) {
+	
+	if (isset($value)) {
+		return xpl::get('env')->set($key, $value);
+	}
+	
+	return xpl::get('env')->get($key);
 }
 
 /**
@@ -530,6 +554,15 @@ function request_uri() {
  */
 function request_query() {
 	return xpl::get('request')->getQuery();
+}
+
+/**
+ * Returns the array of request parameters.
+ * 
+ * @return array Request parameters.
+ */
+function request_params() {
+	return xpl::get('request')->getParams();
 }
 
 /**

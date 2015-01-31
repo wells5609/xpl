@@ -51,20 +51,6 @@ interface BundleInterface
 	public function getName();
 	
 	/**
-	 * Returns the bundle namespace.
-	 * 
-	 * @return string Namespace
-	 */
-	public function getNamespace();
-	
-	/**
-	 * Returns path to the directory where the class file resides.
-	 * 
-	 * @return string Directory path to implementation.
-	 */
-	public function getDirpath();
-	
-	/**
 	 * Returns the bundle type and name like "<type>.<name>"
 	 * 
 	 * @return string Bundle ID.

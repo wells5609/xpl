@@ -78,23 +78,18 @@ class Server
 		$domain = $subdomain = $tld = null;
 		
 		if (empty($http_host)) {
-			
 			if (! isset($_SERVER['HTTP_HOST'])) {
 				throw new \RuntimeException("Cannot get domain info: HTTP host not available.");
 			}
-			
 			$http_host = $_SERVER['HTTP_HOST'];
 		}
 		
 		if (false === strpos($http_host, '.')) {
 			$domain = $http_host;
-		
 		} else {
-			
 			$parts = explode('.', $http_host);
 			$tld = array_pop($parts);
 			$domain = array_pop($parts);
-			
 			if (! empty($parts)) {
 				static::$subdomains = $parts;
 				$subdomain = (count($parts) === 1) ? reset($parts) : implode('.', $parts);

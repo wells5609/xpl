@@ -44,15 +44,15 @@ class Compiler
 					throw new \InvalidArgumentException("Unknown route token: '$token'.");
 				}
 				
-				$regex = "({$regex})";
+				$regex = "/?({$regex})";
 				
 				if (! empty($vars[2][$i])) {
+					// Optional parameter
 					$regex .= '?';
 				}
 				
-				$search[] = $vars[0][$i];
+				$search[] = '/'.$vars[0][$i];
 				$replace[] = $regex;
-				
 				$tokens[$token] = $token;
 			}
 			

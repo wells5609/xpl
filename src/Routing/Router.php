@@ -16,6 +16,13 @@ class Router
 	protected $collection;
 	
 	/**
+	 * The route matching strategy.
+	 * 
+	 * @var \xpl\Routing\Matcher\StrategyInterface
+	 */
+	protected $strategy;
+	
+	/**
 	 * The matched route.
 	 * 
 	 * @var \xpl\Routing\Route
@@ -32,21 +39,54 @@ class Router
 	}
 	
 	/**
-	 * Matches the given method and URI to a resource route.
+	 * Sets the matcher strategy.
 	 * 
-	 * @param string $method Request HTTP method.
-	 * @param string $uri Request URI.
+	 * @param \xpl\Routing\Matcher\StrategyInterface $strategy
+	 */
+	public function setStrategy(Matcher\StrategyInterface $strategy) {
+		$this->strategy = $strategy;
+	}
+	
+	/**
+	 * Returns the matcher strategy.
+	 * 
+	 * @return \xpl\Routing\Matcher\StrategyInterface
+	 * @throws \RuntimeException if a strategy is not set.
+	 */
+	public function getStrategy() {
+		
+		if (isset($this->strategy)) {
+			return $this->strategy;
+		}
+		
+		throw new \RuntimeException("No route matcher strategy set.");
+	}
+	
+	/**
+	 * Whether a matcher strategy has been set.
+	 * 
+	 * @return boolean
+	 */
+	public function hasStrategy() {
+		return isset($this->strategy);
+	}
+	
+	/**
+	 * Finds a matching route.
 	 * 
 	 * @return boolean True if a match was found, otherwise false.
 	 */
-	public function __invoke($method, $uri) {
+	public function __invoke() {
 		
-		$method = strtoupper($method);
-		$uri = trim($uri, '/');
+		$strategy = $this->getStrategy();
 		
 		foreach($this->collection as $route) {
 			
-			if ($this->matchRoute($route, $method, $uri)) {
+			if (! $route->isCompiled()) {
+				$this->collection->getCompiler()->compile($route);
+			}
+			
+			if ($strategy->matchRoute($route)) {
 				
 				$this->match = $route;
 				
@@ -74,39 +114,5 @@ class Router
 	public function getMatch() {
 		return isset($this->match) ? $this->match : null;
 	}
-	
-	/**
-	 * Attempts to match a route to a request method and URI.
-	 * 
-	 * If matched, sets the route's parameters from the regex matches.
-	 * 
-	 * @param \xpl\Routing\Route $route
-	 * @param string $method
-	 * @param string $uri
-	 * 
-	 * @return boolean True if the route matched, otherwise false.
-	 */
-	protected function matchRoute(Route $route, $method, $uri) {
 		
-		if (! $route->isCompiled()) {
-			$this->collection->getCompiler()->compile($route);
-		}
-		
-		if ($route->getMethod() === $method) {
-		
-			if (preg_match('#^/?'.$route->getCompiledUri().'/?$#i', $uri, $params)) {
-				
-				unset($params[0]);
-				
-				if (! empty($params)) {
-					$route->setParams($params);
-				}
-				
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
 }

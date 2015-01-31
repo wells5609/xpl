@@ -28,7 +28,8 @@ class Cache
 	
 	public function start() {
 		if (! isset($this->driver)) {
-			$this->setDriver(Driver\Factory::create());
+			$factory = new Driver\Factory();
+			$this->setDriver($factory->create());
 		}
 	}
 	

@@ -1,0 +1,5 @@
+
+extern zend_class_entry *xpl_cache_invalidargumentexception_ce;
+
+ZEPHIR_INIT_CLASS(Xpl_Cache_InvalidArgumentException);
+

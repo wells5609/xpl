@@ -1,24 +1,22 @@
 {
 	"name": "wells5609/xpl",
-	"type": "library",
-	"description": "XPL, a PHP Component Library",
-	"keywords": ["Components", "Library", "Framework", "MVC", "HMVC"],
-	"homepage": "https://github.com/wells5609/xpl",
-	"license": "MIT",
+	"description": "PHP utility library written in Zephir",
+	"keywords": [
+		"extension", 
+		"zephir", 
+		"phalcon", 
+		"utility", 
+		"utilities"
+	],
 	"authors": [
 		{
-			"name": "The Developer",
-			"email": "wellspeterson@live.com"
+			"name": "Wells Peterson",
+			"email": "peterson.wells@gmail.com"
 		}
 	],
 	"require": {
-		"php": ">=5.4",
-		"wells5609/php-util": "dev-master"
+		"php": ">=5.5.9"
 	},
-	"autoload": {
-		"psr-4": {
-			"xpl\\": "src/"
-		}
-	},
-	"minimum-stability": "dev"
+	"homepage": "https://github.com/wells5609/xpl",
+	"license": "MIT"
 }
